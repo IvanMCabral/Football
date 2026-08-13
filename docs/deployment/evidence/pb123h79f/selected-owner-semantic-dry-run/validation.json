@@ -1,0 +1,12 @@
+{
+  "schema": "pb123h79f-selected-owner-validation-v1",
+  "productFocusedTests": {
+    "WorldStorageMigrationPlannerTest": {"tests": 5, "failures": 0, "errors": 0, "skipped": 0},
+    "WorldSemanticOverlayCompletenessTest": {"tests": 29, "failures": 0, "errors": 0, "skipped": 0},
+    "WorldSemanticComparatorMutationMatrixTest": {"tests": 38, "failures": 0, "errors": 0, "skipped": 0}
+  },
+  "realRedisPhysicalSemanticMatrix": {"tests": 49, "failures": 0, "errors": 0, "skipped": 0},
+  "selectedOwnerLocalPlannerRuns": 10,
+  "publicRedisWrites": 0,
+  "publicPostgresqlWrites": 0
+}

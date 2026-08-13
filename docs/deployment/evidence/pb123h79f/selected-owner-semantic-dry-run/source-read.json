@@ -1,0 +1,20 @@
+{
+  "schema": "pb123h79f-selected-owner-source-read-v2",
+  "ownerHash": "6d963e62a2a6095b976ca78156a7ef0a",
+  "state": "LEGACY",
+  "sourceSha256": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+  "serializedBytes": 2483461,
+  "memoryUsageBytes": 2483493,
+  "pttl": -1,
+  "ownerMatch": true,
+  "leagues": 3,
+  "teams": 70,
+  "players": 1680,
+  "careerRoot": false,
+  "careerIndex": false,
+  "runtimeReferences": 0,
+  "stateReferences": 0,
+  "commandReferences": 0,
+  "activeMatchReferences": 0,
+  "readOnlyCommands": ["GET", "GETRANGE", "STRLEN", "TYPE", "PTTL", "MEMORY USAGE", "EXISTS", "DBSIZE"]
+}

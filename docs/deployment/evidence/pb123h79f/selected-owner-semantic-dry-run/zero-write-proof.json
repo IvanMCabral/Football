@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-selected-owner-zero-write-proof-v1",
+  "redisDbsizeBefore": 9555,
+  "redisDbsizeAfter": 9555,
+  "worldShaBefore": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+  "worldShaAfter": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+  "catalogExistsBefore": false,
+  "catalogExistsAfter": false,
+  "redisWrites": 0,
+  "redisDeletes": 0,
+  "postgresqlMutations": 0,
+  "providerChanges": 0,
+  "cleanupAuthorized": false
+}

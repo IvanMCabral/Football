@@ -45,3 +45,16 @@ one-owner canary. No owner world, catalog or reference graph was read, and no
 canonical execution plan or hash was produced. The exact stop condition is
 `PB1.2.3H7.9F ONE-OWNER CANARY BLOCKED_OWNER`; provider accounting is separately
 `PROVIDER_ACCOUNTING_TOO_COARSE`.
+
+## Semantic plan supersession (2026-08-13)
+
+The owner provenance and semantic dry-run are now complete for the selected
+owner. The exact product planner and comparator passed, with a stable catalog
+fingerprint and aliases across 10 isolated runs. The executable plan remains
+non-authorizing solely because provider accounting is coarse. The plan is
+`READY_NOT_AUTHORIZABLE_ACCOUNTING`; it must not be executed until a separate
+capacity authorization is obtained.
+
+`CANARY EXECUTION AUTHORIZED`: `NO`
+`BULK MIGRATION AUTHORIZED`: `NO`
+`CLEANUP AUTHORIZED`: `NO`

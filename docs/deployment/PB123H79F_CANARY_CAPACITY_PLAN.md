@@ -64,3 +64,18 @@ hash remains `NOT_PRODUCED`. Provider accounting is independently
 The canary is not authorized and no migration or cleanup was executed. See
 `evidence/pb123h79f/safe-test-owner-provenance/` and
 `PB123H79F_SAFE_TEST_OWNER_PROVENANCE.md`.
+
+## Selected-owner capacity update (2026-08-13)
+
+The selected-owner semantic plan is now available. Exact in-memory
+representations are 525,284 bytes PREPARED, 980,748 bytes COMMITTED and
+1,356,780 bytes for the canonical catalog, with the observed legacy key at
+2,483,493 physical bytes. The owner-specific logical replacement is smaller
+than the legacy representation. This does not remove the provider gate:
+Upstash still exposes only the rounded `253 MB / 256 MB` usage and does not
+provide an exact conservative upper bound for write admission.
+
+Capacity status: `READY_NOT_AUTHORIZABLE_ACCOUNTING`.
+Semantic status: `SEMANTIC_PLAN_PASS`.
+Execution remains explicitly unauthorized; see
+`evidence/pb123h79f/selected-owner-semantic-dry-run/`.

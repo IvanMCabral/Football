@@ -113,6 +113,25 @@ Redis keys. The reconciled verdict is therefore
 No world payload, catalog, reference graph or semantic representation was
 read; no migration or cleanup authorization exists.
 
+## Selected-owner semantic dry-run supersession (2026-08-13)
+
+The preceding `BLOCKED_SEMANTIC` conclusion is superseded for the selected
+owner by `PB123H79F_SELECTED_OWNER_SEMANTIC_DRY_RUN.md` and its evidence
+directory. The exact legacy payload was read again without mutation. The
+productive `WorldStorageMigrationPlanner` returned `READY`; the catalog
+fingerprint was derived in memory, the overlay was built, and the product
+`WorldSemanticComparator` returned zero differences. Independent field-level
+comparison and ten isolated repeatability runs also passed.
+
+The resulting status is:
+
+`PB1.2.3H7.9F ONE-OWNER CANARY DRY-RUN READY WITH ACCOUNTING BLOCKER`
+
+This changes semantic readiness only. Upstash remains
+`PROVIDER_ACCOUNTING_TOO_COARSE` (`253 MB / 256 MB`, `DBSIZE=9555`), so the
+canary is still not authorizable and no PREPARED, COMMITTED, catalog, cleanup,
+or public migration write was executed.
+
 ## H7.9F safe-owner provenance recovery (2026-08-13)
 
 The exact Neon `manager-staging` / `production` / `neondb` authority was

@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-selected-owner-canonical-source-v1",
+  "source": "PostgreSQL public SELECT-only catalog",
+  "databaseAuthority": "neondb / public / manager-staging production branch",
+  "leagues": 3,
+  "teams": 70,
+  "players": 1680,
+  "playerSpecialAttributeRows": 3360,
+  "catalogFingerprint": "1e654bec389796d232aba91685ac87d9ef1de08bcf3f5a7da563fdedbfb27000",
+  "ownerPayloadTeamFieldMismatchesCapturedAsOverlay": 70,
+  "ownerPayloadPlayerFieldMismatchesCapturedAsOverlay": 1680,
+  "selectOnly": true,
+  "postgresqlMutations": 0
+}

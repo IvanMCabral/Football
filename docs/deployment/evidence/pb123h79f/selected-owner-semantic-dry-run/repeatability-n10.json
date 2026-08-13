@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-selected-owner-repeatability-v1",
+  "runs": 10,
+  "semanticPass": 10,
+  "independentFieldPass": 10,
+  "stableCatalogFingerprint": 10,
+  "stableCanonicalIds": 10,
+  "stableOverlaySemantics": 10,
+  "canonicalSource": "PostgreSQL public SELECT-only catalog",
+  "overlayTeamDeltas": 70,
+  "overlayPlayerDeltas": 1680,
+  "sourceSha256": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+  "mutationCount": 0
+}

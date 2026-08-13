@@ -1,0 +1,19 @@
+{
+  "schema": "pb123h79f-selected-owner-representation-sizes-v1",
+  "legacySerializedBytes": 2483461,
+  "legacyPhysicalBytes": 2483493,
+  "preparedSerializedBytes": 525284,
+  "preparedLocalPhysicalBytes": 525540,
+  "committedSerializedBytes": 980748,
+  "committedLocalPhysicalBytes": 981004,
+  "catalogSerializedBytes": 1356780,
+  "catalogLocalPhysicalBytes": 1357036,
+  "overlaySerializedBytes": 980378,
+  "aliasCount": 1680,
+  "metadataFields": ["CREATED_AT", "LAST_UPDATED"],
+  "logicalSteadyStateDeltaBytes": -145453,
+  "localIncrementalPeakBytesWithReplacementCredit": 0,
+  "conservativeOldPlusNewOverlapBytes": 2338040,
+  "minimumKnownRequiredHeadroomBytes": 2338040,
+  "providerAccounting": "PROVIDER_ACCOUNTING_TOO_COARSE"
+}

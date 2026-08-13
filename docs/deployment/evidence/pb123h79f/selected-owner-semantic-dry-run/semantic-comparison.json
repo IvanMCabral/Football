@@ -1,0 +1,15 @@
+{
+  "schema": "pb123h79f-selected-owner-semantic-comparison-v1",
+  "productComparator": "PASS",
+  "independentFieldCrosscheck": "PASS",
+  "mismatchCount": 0,
+  "mismatchPaths": [],
+  "fieldsChecked": 29279,
+  "aliasRelationsChecked": 1680,
+  "ownerMatch": "PASS",
+  "stableIdentity": "PASS",
+  "nullSemantics": "PASS",
+  "localRedisRoundTrip": "PASS",
+  "redisDurableWrites": 0,
+  "postgresqlWrites": 0
+}
