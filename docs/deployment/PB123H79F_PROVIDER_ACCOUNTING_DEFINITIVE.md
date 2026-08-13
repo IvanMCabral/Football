@@ -87,16 +87,15 @@ catalog key absent. The service recovered naturally: liveness `2/2` and
 readiness `2/2` are HTTP 200 with `database=UP` and `redis=UP`. The prior
 readiness failure is classified as `TRANSIENT_DATABASE_RECOVERY`.
 
-## Secure runtime handoff recheck (2026-08-13)
+## Secure credential stats recheck (2026-08-13)
 
-The process environment was checked by variable name only. Neither
-`UPSTASH_EMAIL` nor `UPSTASH_API_KEY` was present, and neither name exists in
-the repository `.env`. No Basic-authenticated request was sent and no secret
-was printed, persisted or transmitted. Exact `current_storage`, exact quota
-and available headroom therefore remain unknown; the minimum known required
-headroom remains `2,436,344` bytes and the capacity classification remains
-`PROVIDER_ACCOUNTING_UNBOUNDED`.
+The secure runtime variable names were present. The single documented
+Management API GET returned HTTP `401 Unauthorized`; no credential material,
+Authorization header or response secret was persisted. Exact
+`current_storage`, exact quota and available headroom therefore remain
+unknown; the minimum known required headroom remains `2,436,344` bytes and the
+capacity classification remains `PROVIDER_ACCOUNTING_UNBOUNDED`.
 
-The bounded health recheck passed independently: liveness `2/2` HTTP 200 and
-readiness `2/2` HTTP 200 with `database=UP` and `redis=UP`. This does not close
-the accounting gate or authorize a canary.
+After a bounded warm-up, liveness and readiness both passed `2/2` at HTTP 200
+with `database=UP` and `redis=UP`. This does not close the accounting gate or
+authorize a canary.

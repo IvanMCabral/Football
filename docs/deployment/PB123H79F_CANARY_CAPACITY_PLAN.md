@@ -135,15 +135,15 @@ Canary execution, bulk migration and cleanup remain unauthorized. A secure
 runtime injection of the already-created key is required before the stats gate
 can close; no new key should be created.
 
-## Secure runtime handoff recheck (2026-08-13)
+## Secure credential stats recheck (2026-08-13)
 
-The runtime was inspected by variable name only. `UPSTASH_EMAIL` and
-`UPSTASH_API_KEY` were both absent, so `GET /v2/redis/stats/{databaseId}` was
-not called. Exact usage, exact quota and calculable headroom remain unknown;
-the canary stays blocked on accounting access. The required minimum known
-headroom is `2,436,344` bytes.
+Both secure runtime variable names were present. The single documented
+`GET /v2/redis/stats/{databaseId}` returned HTTP `401 Unauthorized`; no secret
+or Authorization header was recorded. Exact usage, exact quota and calculable
+headroom remain unknown, so the canary stays blocked on accounting access. The
+required minimum known headroom is `2,436,344` bytes.
 
-Health is currently green in two bounded rounds (liveness `2/2`, readiness
-`2/2`, database and Redis `UP`), but health does not substitute for provider
-accounting. No canary, cleanup, migration, catalog write or provider change
-was authorized.
+After bounded warm-up, health is green in two consecutive rounds (liveness
+`2/2`, readiness `2/2`, database and Redis `UP`), but health does not
+substitute for provider accounting. No canary, cleanup, migration, catalog
+write or provider change was authorized.

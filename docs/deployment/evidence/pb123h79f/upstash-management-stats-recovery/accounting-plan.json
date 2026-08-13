@@ -1,8 +1,9 @@
 {
   "schema": "pb123h79f-management-stats-recovery-accounting-v1",
-  "observedAt": "2026-08-13T17:20:00Z",
+  "observedAt": "2026-08-13T18:15:00Z",
   "semanticPlanSha256": "298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a",
   "sourceSha": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+  "sourceUnchanged": true,
   "catalogState": "ABSENT",
   "currentStorageExactBytes": null,
   "quotaExactBytes": null,
@@ -11,7 +12,9 @@
   "transientAccounting": "OVERWRITE_TRANSIENT_UNKNOWN",
   "providerSpecificUncertainty": "UNKNOWN",
   "dbsize": 9555,
+  "statsHttpStatus": 401,
+  "statsAuthentication": "REJECTED",
   "health": {"liveness": "2/2 HTTP 200", "readiness": "2/2 HTTP 200", "database": "UP", "redis": "UP"},
   "capacityVerdict": "PROVIDER_ACCOUNTING_UNBOUNDED",
-  "accountingPlanSha256": "9b05f4910f0fc7bfb8306e7d906171372950e4a216b8844a437ff14ebb04dc74"
+  "accountingPlanSha256": "e621493f76d9a4d285116b71a7e4e68d0e5a4752166ce60115bbc9d699f5d835"
 }

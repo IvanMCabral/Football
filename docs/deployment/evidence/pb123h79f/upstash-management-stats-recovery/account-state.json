@@ -1,21 +1,21 @@
 {
   "schema": "pb123h79f-management-stats-recovery-account-v1",
-  "observedAt": "2026-08-13T18:00:00Z",
+  "observedAt": "2026-08-13T18:15:00Z",
   "databaseName": "Manager",
   "databaseIdSha256": "146284aa2fc364dddbeeb54b92f570b3980cb5dadadbd3b363ec88538402094e",
   "plan": "Free Tier",
   "region": "AWS sa-east-1",
-  "managementApiKeyState": "KEY_EXISTS_BUT_SECRET_NOT_AVAILABLE",
+  "managementApiKeyState": "SECURE_RUNTIME_CREDENTIALS_REJECTED_BY_PROVIDER",
   "keyCreated": false,
   "keyRotated": false,
   "keyDeleted": false,
-  "statsEndpointCalled": false,
+  "statsEndpointCalled": true,
   "keyNameObserved": "ManagerKey",
   "keySecretObserved": false,
   "credentialsRecorded": false,
   "secureRuntimeVariableNamesPresent": {
-    "UPSTASH_EMAIL": false,
-    "UPSTASH_API_KEY": false
+    "UPSTASH_EMAIL": true,
+    "UPSTASH_API_KEY": true
   },
   "dotEnvVariableNamesPresent": {
     "UPSTASH_EMAIL": false,

@@ -107,15 +107,16 @@ User interaction remains required: provide the already-created Management API
 key through a secure runtime channel (never chat, Markdown, JSON or Git). No
 new key should be created, rotated or deleted.
 
-## Secure runtime handoff recheck (2026-08-13)
+## Secure credential stats recheck (2026-08-13)
 
-The execution environment was checked without reading or printing values. The
-required `UPSTASH_EMAIL` and `UPSTASH_API_KEY` variables were both absent, and
-the repository `.env` contains neither name. Therefore the Basic-authenticated
-stats request could not be attempted safely. This is an accounting access
-blocker, not evidence that the provider quota is available or exceeded.
+Both secure runtime variable names were present and were used only for the
+single documented GET request. The provider returned HTTP `401 Unauthorized`;
+no credential material, Authorization header or response secret was recorded.
+Consequently `current_storage`, exact quota and available headroom remain
+unknown. The accounting gate is blocked by provider authentication, not by a
+capacity conclusion.
 
-The required read-only health recheck nevertheless passed: liveness `2/2`
-HTTP 200 and readiness `2/2` HTTP 200, both reporting `database=UP` and
+After a bounded warm-up, the required read-only health gate passed: liveness
+`2/2` HTTP 200 and readiness `2/2` HTTP 200, both reporting `database=UP` and
 `redis=UP`. No Redis, PostgreSQL, catalog, deployment, billing or credential
 mutation was performed.
