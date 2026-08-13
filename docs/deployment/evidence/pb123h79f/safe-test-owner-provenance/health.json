@@ -1,0 +1,15 @@
+{
+  "schema": "pb123h79f-health-read-only-v1",
+  "observedAt": "2026-08-13T12:13:00-03:00",
+  "endpoint": "manager-staging-api.onrender.com",
+  "liveness": [
+    {"sample":1,"http":200,"ms":350,"status":"UP"},
+    {"sample":2,"http":200,"ms":273,"status":"UP"}
+  ],
+  "readiness": [
+    {"sample":1,"http":200,"ms":786,"status":"UP","database":"UP","redis":"UP"},
+    {"sample":2,"http":200,"ms":789,"status":"UP","database":"UP","redis":"UP"}
+  ],
+  "healthSideEffects": "readiness performs the existing ephemeral diagnostic Redis probe",
+  "mutations": {"migrationWrites":0,"migrationDeletes":0,"postgresWrites":0}
+}

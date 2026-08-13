@@ -26,6 +26,16 @@ Observed SHA: `a9f5b51040d44f83cb38f8c2f5fbd468365dcebc`
 `BULK MIGRATION AUTHORIZED`: `NO`
 `CLEANUP AUTHORIZED`: `NO`
 
+## H7.9F current gate status (2026-08-13)
+
+Fresh Neon provenance recovered four controlled PB123G owners. One owner was
+read exactly and remained `LEGACY`, owner-matching, with no career/index child
+families. The current world has no committed catalog identity, so semantic
+admission failed closed; no executable plan hash was produced. Upstash byte
+accounting remains coarse and is a separate capacity blocker. The only
+permitted state is read-only evidence; canary, bulk migration and cleanup all
+remain unauthorized.
+
 ## Reconciled status (2026-08-13)
 
 This plan remains non-authorizing. The current Render deployment is

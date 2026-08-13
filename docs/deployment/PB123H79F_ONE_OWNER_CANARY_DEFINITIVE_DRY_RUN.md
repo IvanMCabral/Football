@@ -112,3 +112,28 @@ Redis keys. The reconciled verdict is therefore
 
 No world payload, catalog, reference graph or semantic representation was
 read; no migration or cleanup authorization exists.
+
+## H7.9F safe-owner provenance recovery (2026-08-13)
+
+The exact Neon `manager-staging` / `production` / `neondb` authority was
+verified read-only. The retained 144-owner set was reused without a global
+Redis scan. Fresh canonical owner queries proved four controlled PB123G audit
+owners by independent username, email and timestamp signals; the remaining
+140 current owners remain protected. Evidence is in
+`evidence/pb123h79f/safe-test-owner-provenance/owner-provenance.json`.
+
+One proven owner was inspected with exact Redis reads only. Its legacy world
+matches the owner, is 2,483,461 serialized bytes (2,483,493 Redis physical
+bytes), has no TTL, and has no career root/index or active child families. The
+payload contains 3 leagues, 70 teams and 1,680 players. The retained catalog
+fingerprints were absent. Because the current legacy payload has no committed
+catalog identity and the independent reconstruction proof records material
+semantic differences, the migration planner was not admitted and no
+PREPARED/COMMITTED state was created.
+
+Fresh health after warm-up was 2/2 liveness and 2/2 readiness with database and
+Redis UP. Upstash remained at `253 MB / 256 MB` and `DBSIZE=9555`; provider
+byte accounting is still coarse. Durable Redis writes/deletes and PostgreSQL
+writes remained zero.
+
+Current result: `PB1.2.3H7.9F ONE-OWNER CANARY BLOCKED_SEMANTIC`.

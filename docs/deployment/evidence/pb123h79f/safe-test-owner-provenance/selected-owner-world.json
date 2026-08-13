@@ -1,0 +1,41 @@
+{
+  "schema": "pb123h79f-selected-owner-world-read-v1",
+  "observedAt": "2026-08-13T12:10:00-03:00",
+  "selectedOwnerHash": "6d963e62a2a6095b976ca78156a7ef0a",
+  "redis": {
+    "ownerKeyPattern": "world:{selected-owner}",
+    "worldExists": true,
+    "worldType": "string",
+    "worldSerializedBytes": 2483461,
+    "worldMemoryUsage": 2483493,
+    "worldPttl": -1,
+    "worldSha256": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+    "careerRootExists": false,
+    "careerOwnerIndexExists": false,
+    "cleanupTombstoneExists": false,
+    "ownerScopedRuntimeKeys": 0,
+    "ownerScopedStateKeys": 0,
+    "ownerScopedCommandKeys": 0
+  },
+  "legacyPayload": {
+    "state": "LEGACY",
+    "storageVersion": null,
+    "payloadOwnerMatchesSelectedOwner": true,
+    "leagues": 3,
+    "worldTeams": 70,
+    "worldPlayers": 1680,
+    "allWorldTeams": 70,
+    "allWorldPlayers": 1680,
+    "createdAt": "2026-08-04T21:02:23.488042786Z",
+    "lastUpdated": "2026-08-04T21:02:28.081912064Z",
+    "careerReferences": 0,
+    "lineupReferences": 0,
+    "activeMatchReferences": 0
+  },
+  "catalogChecks": [
+    {"keyHash":"8be21bff","exists":false,"type":"none","pttl":-2,"memoryUsage":null},
+    {"keyHash":"2b73c783","exists":false,"type":"none","pttl":-2,"memoryUsage":null}
+  ],
+  "readOnlyCommands": ["EXISTS","TYPE","STRLEN","GET","PTTL","MEMORY USAGE","DBSIZE","owner-scoped SCAN patterns"],
+  "payloadNotPersisted": true
+}

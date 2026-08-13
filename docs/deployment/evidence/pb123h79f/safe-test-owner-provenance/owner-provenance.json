@@ -1,0 +1,43 @@
+{
+  "schema": "pb123h79f-safe-test-owner-provenance-v1",
+  "observedAt": "2026-08-13T12:10:00-03:00",
+  "mode": "read-only",
+  "canonicalPostgres": {
+    "provider": "Neon",
+    "project": "manager-staging",
+    "branch": "production",
+    "database": "neondb",
+    "schema": "public",
+    "endpoint": "ep-blue-wind-acaugpzx",
+    "publicTables": 26,
+    "currentUsers": 373,
+    "currentGames": 0,
+    "currentTeams": 70,
+    "flyway": "1"
+  },
+  "retainedRedisOwnerSet": {
+    "ownerCount": 144,
+    "ownerSetSha256": "6ab0903d031b9b03a5daea0f82abe6fdb38254ab26cf32a8b01c3b0351e69402",
+    "source": "exact-id-reconstruction-raw.json",
+    "globalScanRepeated": false
+  },
+  "classification": {
+    "provenTestOwners": 4,
+    "protectedHumanOrUnknown": 140,
+    "ambiguous": 0,
+    "currentOwnerCollisions": 144,
+    "foreignCandidates": 0,
+    "contradictoryMappings": 0,
+    "unknownPrefixes": 0
+  },
+  "provenOwners": [
+    {"ownerHash":"6d963e62a2a6095b976ca78156a7ef0a","createdAt":"2026-08-04T21:02:07.203823Z","role":"USER","games":0,"managedTeams":0,"signals":["audit_<12 hex> username","audit.pb123g.<token>@example.com email convention","timestamp matches PB123G execution date 2026-08-04","exact UUID is in retained 144-owner Redis set"]},
+    {"ownerHash":"6f8d938a8c1e6bdf6f1af33f58271233","createdAt":"2026-08-04T21:02:40.091876Z","role":"USER","games":0,"managedTeams":0,"signals":["audit_<12 hex> username","audit.pb123g.<token>@example.com email convention","tight PB123G creation burst","exact UUID is in retained 144-owner Redis set"]},
+    {"ownerHash":"37482c23251b834b54cd8d99894aa57b","createdAt":"2026-08-04T21:03:03.790036Z","role":"USER","games":0,"managedTeams":0,"signals":["audit_<12 hex> username","audit.pb123g.<token>@example.com email convention","tight PB123G creation burst","exact UUID is in retained 144-owner Redis set"]},
+    {"ownerHash":"37fb7ad28a39a39846ac3d7eed62af4a","createdAt":"2026-08-04T21:05:29.491249Z","role":"USER","games":0,"managedTeams":0,"signals":["audit_<12 hex> username","audit.pb123g.<token>@example.com email convention","timestamp matches PB123G execution date 2026-08-04","exact UUID is in retained 144-owner Redis set"]}
+  ],
+  "protectedPolicy": "All other current owners remain protected. Age, inactivity, zero games, staging, or synthetic-looking names were not used alone as proof.",
+  "postgresMutations": 0,
+  "redisWrites": 0,
+  "redisDeletes": 0
+}

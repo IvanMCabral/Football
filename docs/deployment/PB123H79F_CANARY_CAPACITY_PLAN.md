@@ -50,3 +50,17 @@ users, while the 21 proven audit owners have no current owner-scoped Redis
 keys. No candidate-specific representation measurements can be produced
 safely, so `canaryPlanSha256` remains `NOT_PRODUCED` and the verdict is
 `BLOCKED_OWNER`.
+
+## H7.9F provenance recovery update (2026-08-13)
+
+The owner gate is no longer blocked on provenance discovery: four current
+owners were positively tied to the PB123G audit by controlled identity
+conventions and the 2026-08-04 audit timestamp. The first owner-specific read
+found a legacy world of 2,483,493 Redis physical bytes, with no career root or
+catalog key. The semantic planner therefore remains unadmitted and the plan
+hash remains `NOT_PRODUCED`. Provider accounting is independently
+`PROVIDER_ACCOUNTING_TOO_COARSE` (`253 MB / 256 MB`, `DBSIZE=9555`).
+
+The canary is not authorized and no migration or cleanup was executed. See
+`evidence/pb123h79f/safe-test-owner-provenance/` and
+`PB123H79F_SAFE_TEST_OWNER_PROVENANCE.md`.
