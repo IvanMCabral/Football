@@ -86,3 +86,23 @@ Required human action, if exact provider accounting is still desired:
 
 The prior semantic plan, selected owner provenance and migration evidence were
 not reopened.
+
+## Definitive recovery recheck (2026-08-13)
+
+The Developer API page now shows an existing key named `ManagerKey` with a
+future expiry date. The secret is not displayed or recoverable from the
+console, and no local runtime environment contains an Upstash Management API
+key. Classification: `KEY_EXISTS_BUT_SECRET_NOT_AVAILABLE`.
+
+The documented stats request was therefore not attempted; no credential was
+printed, persisted or transmitted. `current_storage` remains unavailable and
+the accounting classification remains `PROVIDER_ACCOUNTING_UNBOUNDED`.
+
+Fresh read-only checks confirmed `PING=PONG`, `DBSIZE=9555`, and the planned
+catalog key remains absent. Health recovered without a restart or deployment:
+liveness `2/2` HTTP 200 and readiness `2/2` HTTP 200 with `database=UP` and
+`redis=UP`. This is classified as `TRANSIENT_DATABASE_RECOVERY`.
+
+User interaction remains required: provide the already-created Management API
+key through a secure runtime channel (never chat, Markdown, JSON or Git). No
+new key should be created, rotated or deleted.

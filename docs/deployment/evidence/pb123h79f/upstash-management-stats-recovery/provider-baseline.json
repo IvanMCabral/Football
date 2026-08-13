@@ -1,6 +1,6 @@
 {
   "schema": "pb123h79f-management-stats-recovery-provider-v1",
-  "observedAt": "2026-08-13T17:08:35Z",
+  "observedAt": "2026-08-13T17:20:00Z",
   "databaseName": "Manager",
   "storageDisplay": "253 MB / 256 MB",
   "ping": "PONG",

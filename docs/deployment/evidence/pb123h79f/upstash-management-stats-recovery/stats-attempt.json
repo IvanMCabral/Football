@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-management-stats-attempt-v1",
+  "observedAt": "2026-08-13T17:20:00Z",
+  "endpoint": "GET /v2/redis/stats/{databaseId}",
+  "endpointCalled": false,
+  "reason": "Existing key is listed but its secret is unavailable to the runtime",
+  "currentStorageReturned": false,
+  "currentStorage": null,
+  "unit": null,
+  "quotaExactReturned": false,
+  "quotaExactBytes": null,
+  "credentialsPrinted": false,
+  "credentialsStored": false
+}

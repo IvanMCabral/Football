@@ -74,3 +74,15 @@ Exact current storage remains unavailable until an already-existing key is
 provided. No key was created. Two fresh health rounds returned liveness 200/200
 but readiness 503/503 with `database=DOWN` and `redis=UP`; this is recorded in
 `evidence/pb123h79f/upstash-management-stats-recovery/health.json`.
+
+## Definitive recovery recheck (2026-08-13)
+
+The console now lists an existing `ManagerKey`, but does not reveal its secret.
+No API key is available to the local runtime, so the Management API stats call
+remains unexecuted and `current_storage` remains unknown. No credential was
+created, rotated, deleted, logged or stored.
+
+Read-only Redis checks remain `PING=PONG`, `DBSIZE=9555`, with the planned
+catalog key absent. The service recovered naturally: liveness `2/2` and
+readiness `2/2` are HTTP 200 with `database=UP` and `redis=UP`. The prior
+readiness failure is classified as `TRANSIENT_DATABASE_RECOVERY`.

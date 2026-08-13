@@ -119,3 +119,18 @@ Fresh bounded health rounds are now recorded as liveness `2/2` HTTP 200 and
 readiness `0/2` HTTP 503 (`database=DOWN`, `redis=UP`). The one-owner canary,
 bulk migration and cleanup remain unauthorized. See
 `PB123H79F_UPSTASH_MANAGEMENT_STATS_RECOVERY.md`.
+
+## Definitive stats and health recheck (2026-08-13)
+
+The Developer API console now lists an existing key, but its secret is not
+recoverable and is not available to the runtime. The documented stats endpoint
+was not called, so exact `current_storage`, exact quota and available headroom
+remain unknown. Capacity remains `PROVIDER_ACCOUNTING_UNBOUNDED`.
+
+Fresh read-only checks confirm `PING=PONG`, `DBSIZE=9555` and catalog absence.
+Liveness and readiness are both `2/2` HTTP 200 with `database=UP` and
+`redis=UP`; recovery is classified as `TRANSIENT_DATABASE_RECOVERY`.
+
+Canary execution, bulk migration and cleanup remain unauthorized. A secure
+runtime injection of the already-created key is required before the stats gate
+can close; no new key should be created.
