@@ -26,6 +26,26 @@ Observed SHA: `a9f5b51040d44f83cb38f8c2f5fbd468365dcebc`
 `BULK MIGRATION AUTHORIZED`: `NO`
 `CLEANUP AUTHORIZED`: `NO`
 
+## Accounting gate (2026-08-13)
+
+The semantic plan remains valid with SHA
+`298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a` and the
+selected owner/source inputs are unchanged. A fresh read-only Upstash check
+confirmed `253 MB / 256 MB`, `PING=PONG`, `DBSIZE=9555`, owner memory
+`2,483,493` bytes, `PTTL=-1`, and an absent planned catalog key.
+
+The provider dashboard exposes no exact byte value. The official stats schema
+mentions `current_storage`, but that authenticated response was not available
+through the connected session. Display semantics, exact quota bytes and
+overwrite transient accounting remain unknown. The known minimum required
+headroom is `2,436,344` bytes; total required headroom and available headroom
+are unbounded because provider-specific uncertainty cannot be bounded.
+
+The definitive accounting result is
+`PB1.2.3H7.9F ONE-OWNER CANARY BLOCKED_ACCOUNTING`. Two fresh health GETs
+timed out with HTTP `000`, so no current health pass is asserted. No Redis,
+PostgreSQL, provider or billing mutation was performed.
+
 ## H7.9F current gate status (2026-08-13)
 
 Fresh Neon provenance recovered four controlled PB123G owners. One owner was

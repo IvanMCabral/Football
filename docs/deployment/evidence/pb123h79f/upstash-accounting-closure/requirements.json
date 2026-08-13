@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-accounting-requirements-v1",
+  "semanticPlanSha256": "298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a",
+  "candidateConservativePeakBytes": 2338040,
+  "providerSafetyReserveBytes": 32768,
+  "localAccountingUncertaintyBytes": 65536,
+  "minimumKnownRequiredHeadroomBytes": 2436344,
+  "providerSpecificUncertaintyBytes": null,
+  "totalRequiredHeadroom": "UNKNOWN_TOTAL",
+  "minimumAvailableHeadroom": null,
+  "cushionAfterAllReserves": null,
+  "capacityVerdict": "PROVIDER_ACCOUNTING_STILL_UNBOUNDED",
+  "executionAuthorized": false
+}

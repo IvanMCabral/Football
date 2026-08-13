@@ -1,0 +1,11 @@
+{
+  "schema": "pb123h79f-health-observation-v1",
+  "observedAt": "2026-08-13T16:55:18Z",
+  "checks": [
+    {"path": "/api/v1/health/liveness", "httpStatus": 0, "result": "TIMEOUT", "timeoutSeconds": 20},
+    {"path": "/api/v1/health/readiness", "httpStatus": 0, "result": "TIMEOUT", "timeoutSeconds": 20}
+  ],
+  "database": "NOT_ESTABLISHED",
+  "redis": "NOT_ESTABLISHED",
+  "claim2of2": false
+}

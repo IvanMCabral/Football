@@ -79,3 +79,30 @@ Capacity status: `READY_NOT_AUTHORIZABLE_ACCOUNTING`.
 Semantic status: `SEMANTIC_PLAN_PASS`.
 Execution remains explicitly unauthorized; see
 `evidence/pb123h79f/selected-owner-semantic-dry-run/`.
+
+## Upstash accounting closure (2026-08-13)
+
+Fresh authenticated read-only provider evidence is recorded in
+`PB123H79F_UPSTASH_ACCOUNTING_CLOSURE.md` and
+`evidence/pb123h79f/upstash-accounting-closure/`.
+
+The dashboard still exposes `253 MB / 256 MB`, `DBSIZE=9555`, `PING=PONG` and
+the selected owner key remains `2,483,493` bytes with `PTTL=-1`. The rendered
+progress width (`98.7082%`) is not treated as an exact byte measurement. The
+official stats schema documents a byte-valued `current_storage` field, but no
+authenticated response containing that value was available in the connected
+dashboard session. Display rounding, byte unit, exact quota conversion and
+overwrite transient accounting are therefore `UNKNOWN`.
+
+Known required headroom is `2,436,344` bytes (`2,338,040` candidate overlap +
+`32,768` provider reserve + `65,536` local uncertainty). Provider-specific
+uncertainty and total required headroom remain `UNKNOWN_TOTAL`; minimum
+available headroom and cushion are `UNKNOWN`.
+
+**Capacity verdict:** `PROVIDER_ACCOUNTING_STILL_UNBOUNDED`.
+**Canary execution:** `NO`.
+**Bulk migration:** `NO`.
+**Cleanup:** `NO`.
+
+Fresh health GETs also timed out with HTTP `000` for both liveness and
+readiness; no current health pass is claimed.
