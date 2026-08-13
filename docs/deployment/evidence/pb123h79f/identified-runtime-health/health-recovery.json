@@ -1,0 +1,104 @@
+{
+  "gate": "PB1.2.3H7.9F",
+  "result": "PB1.2.3H7.9F IDENTIFIED RUNTIME HEALTH RECOVERED",
+  "local": {
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "headBeforeDocsCommit": "bcbabfaf57c6d2225c5bb9e4bb561dd204607c5c",
+    "upstream": "origin/feat/v25d99.20.3.1-runtime-fixes",
+    "ahead": 0,
+    "behind": 0,
+    "latestProductiveRuntimeSha": "836c98a69ce9d12f67ed603f1f1ea58b8462a82a",
+    "diffCheck": "clean"
+  },
+  "render": {
+    "service": "manager-staging-api",
+    "serviceId": "srv-d9nvldtaeets73coqiog",
+    "liveSha": "223fd8913cf3b753a75da48a677ea0e629dd52de",
+    "runtimeClassification": "RUNTIME_EQUIVALENT",
+    "deploymentStatus": "LIVE",
+    "plan": "Free",
+    "region": "oregon",
+    "instanceCount": 1,
+    "autoscaling": "OFF",
+    "singleInstance": true,
+    "processState": "RUNNING",
+    "startupDurationSeconds": 121.696,
+    "logs": {
+      "jvm": "Java 21",
+      "profile": "prod",
+      "flyway": "schema 1 up to date",
+      "port": 10000,
+      "oom": false,
+      "crashLoop": false,
+      "restartEvidence": false,
+      "redisFailure": false,
+      "databaseFailure": false,
+      "reactiveStarvation": false
+    }
+  },
+  "wakeUp": {
+    "firstProbe": {"httpStatus": 200, "elapsedMs": 857, "body": {"status": "UP"}},
+    "first200ElapsedMs": 857,
+    "classification": "COLD_START_COMPATIBLE_RECOVERY"
+  },
+  "liveness": {
+    "n": 5,
+    "http200": 5,
+    "samplesMs": [292, 778, 273, 264, 321],
+    "p50Ms": 292,
+    "p95Ms": 778,
+    "maxMs": 778,
+    "status": "UP"
+  },
+  "readiness": {
+    "n": 5,
+    "http200": 5,
+    "samplesMs": [14137, 1011, 988, 778, 815],
+    "p50Ms": 988,
+    "p95Ms": 14137,
+    "maxMs": 14137,
+    "status": "UP",
+    "database": "UP",
+    "redis": "UP"
+  },
+  "upstash": {
+    "authenticated": true,
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "AWS sa-east-1",
+    "tls": "Enabled",
+    "storage": "253 MB / 256 MB",
+    "quota": "256 MB",
+    "percentage": "~98.8%",
+    "commands": "150K / 500K per month",
+    "bandwidth": "0 B / 50 GB",
+    "ping": "NOT_EXECUTED",
+    "dbsize": "NOT_EXECUTED",
+    "quotaClassification": "NEAR_QUOTA",
+    "accountingClassification": "PROVIDER_ACCOUNTING_COARSE"
+  },
+  "neon": {"inspected": false, "select1": "NOT_EXECUTED"},
+  "network": {
+    "curl": {"httpStatus": 200, "elapsedMs": 812},
+    "secondClient": {"name": "PowerShell Invoke-WebRequest", "httpStatus": 200, "elapsedMs": 850},
+    "classification": "SERVICE_RESPONSIVE"
+  },
+  "boundaries": {
+    "recoveryAction": "NONE",
+    "candidateInspected": false,
+    "worldRead": false,
+    "plannerRun": false,
+    "canaryPlan": false,
+    "codeChanges": 0,
+    "frontendChanges": 0,
+    "gameplayChanges": 0,
+    "redisWrites": 0,
+    "redisDeletes": 0,
+    "postgresWrites": 0,
+    "renderMutations": 0,
+    "infrastructureChanges": 0,
+    "billingChanges": 0,
+    "redeploy": 0,
+    "restart": 0
+  }
+}
