@@ -106,3 +106,16 @@ available headroom and cushion are `UNKNOWN`.
 
 Fresh health GETs also timed out with HTTP `000` for both liveness and
 readiness; no current health pass is claimed.
+
+## Management stats recovery (2026-08-13)
+
+The authenticated Account Settings → Developer API surface showed
+`NO_API_KEY`; only the non-mutating **Create API key** action was available and
+it was not selected. Consequently the documented stats endpoint could not be
+called, `current_storage` remains unknown and the capacity classification stays
+`PROVIDER_ACCOUNTING_UNBOUNDED`.
+
+Fresh bounded health rounds are now recorded as liveness `2/2` HTTP 200 and
+readiness `0/2` HTTP 503 (`database=DOWN`, `redis=UP`). The one-owner canary,
+bulk migration and cleanup remain unauthorized. See
+`PB123H79F_UPSTASH_MANAGEMENT_STATS_RECOVERY.md`.

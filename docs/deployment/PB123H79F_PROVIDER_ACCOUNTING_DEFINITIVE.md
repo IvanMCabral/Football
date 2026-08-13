@@ -56,3 +56,21 @@ confirms the Free maximum data size of 256 MB and explains that total storage
 is calculated across replicas/regions, but does not establish dashboard
 rounding or same-key transient-overlap semantics. No provider settings,
 credentials, data, or billing state were changed.
+
+## Management Stats Recovery (2026-08-13)
+
+The authenticated console was inspected at Account Settings → Developer API.
+It showed only **Create API key** and no existing usable key. The create action
+was not selected. The management API state is therefore `NO_API_KEY` and the
+documented `GET /v2/redis/stats/{id}` request was not sent.
+
+The official contract documents HTTP Basic authentication and a byte-valued
+`current_storage` response field:
+
+* <https://upstash.com/docs/devops/developer-api/authentication>
+* <https://upstash.com/docs/devops/developer-api/redis/get_database_stats>
+
+Exact current storage remains unavailable until an already-existing key is
+provided. No key was created. Two fresh health rounds returned liveness 200/200
+but readiness 503/503 with `database=DOWN` and `redis=UP`; this is recorded in
+`evidence/pb123h79f/upstash-management-stats-recovery/health.json`.

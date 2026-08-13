@@ -1,0 +1,16 @@
+{
+  "schema": "pb123h79f-management-stats-recovery-provider-v1",
+  "observedAt": "2026-08-13T17:08:35Z",
+  "databaseName": "Manager",
+  "storageDisplay": "253 MB / 256 MB",
+  "ping": "PONG",
+  "dbsize": 9555,
+  "currentStorageExactBytes": null,
+  "quotaExactBytes": null,
+  "capacityClassification": "PROVIDER_ACCOUNTING_UNBOUNDED",
+  "redisWrites": 0,
+  "redisDeletes": 0,
+  "postgresMutations": 0,
+  "providerChanges": 0,
+  "billingChanges": 0
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-management-stats-recovery-account-v1",
+  "observedAt": "2026-08-13T17:08:35Z",
+  "databaseName": "Manager",
+  "databaseIdSha256": "146284aa2fc364dddbeeb54b92f570b3980cb5dadadbd3b363ec88538402094e",
+  "plan": "Free Tier",
+  "region": "AWS sa-east-1",
+  "managementApiKeyState": "NO_API_KEY",
+  "keyCreated": false,
+  "keyRotated": false,
+  "keyDeleted": false,
+  "statsEndpointCalled": false,
+  "credentialsRecorded": false
+}
