@@ -1,0 +1,80 @@
+{
+  "gate": "PB1.2.3H7.9F",
+  "result": "PB1.2.3H7.9F RENDER ACCOUNT RECOVERED — SERVICE FOUND",
+  "local": {
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "headBeforeDocsCommit": "223fd8913cf3b753a75da48a677ea0e629dd52de",
+    "upstream": "origin/feat/v25d99.20.3.1-runtime-fixes",
+    "ahead": 0,
+    "behind": 0,
+    "latestProductiveRuntimeSha": "836c98a69ce9d12f67ed603f1f1ea58b8462a82a",
+    "diffCheck": "clean"
+  },
+  "renderAccount": {
+    "authenticated": true,
+    "displayIdentity": "Ivan Cabral",
+    "emailRecorded": false,
+    "workspacesAccessible": 1,
+    "workspace": "Ivan's workspace",
+    "workspaceMembersVisible": 1,
+    "workspacePlan": "hobby",
+    "teamsAccessible": 0,
+    "projectsAccessible": 1,
+    "servicesAccessible": 1,
+    "accountSwitchRequired": false,
+    "userInteractionRequired": false
+  },
+  "service": {
+    "name": "manager-staging-api",
+    "serviceId": "srv-d9nvldtaeets73coqiog",
+    "workspace": "Ivan's workspace",
+    "project": "My project",
+    "repository": "IvanMCabral / Football",
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "runtime": "Docker",
+    "publicHostname": "manager-staging-api.onrender.com",
+    "liveSha": "223fd8913cf3b753a75da48a677ea0e629dd52de",
+    "latestProductiveRuntimeSha": "836c98a69ce9d12f67ed603f1f1ea58b8462a82a",
+    "runtimeClassification": "RUNTIME_EQUIVALENT",
+    "deploymentStatus": "LIVE",
+    "deploymentTimestamp": "2026-08-12T22:26:47-03:00",
+    "plan": "Free",
+    "region": "oregon",
+    "instanceCount": 1,
+    "autoscaling": "OFF",
+    "singleInstance": true,
+    "continuityProof": ["stable service ID", "repository", "branch", "public hostname"]
+  },
+  "football": {
+    "serviceId": "srv-d9nu6gijnfac73bpbhj0",
+    "classification": "UNRELATED_SERVICE"
+  },
+  "publicEndpoint": {
+    "hostname": "manager-staging-api.onrender.com",
+    "correlation": "provider-service-page",
+    "liveness": {"httpStatus": 0, "result": "timeout", "timeoutSeconds": 30},
+    "readiness": {"httpStatus": 0, "result": "timeout", "timeoutSeconds": 30}
+  },
+  "upstash": {
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "AWS sa-east-1",
+    "storage": "253 MB / 256 MB",
+    "accounting": "PROVIDER_ACCOUNTING_COARSE",
+    "commands": "NOT_EXECUTED",
+    "dbsize": "NOT_EXECUTED"
+  },
+  "boundaries": {
+    "candidateInspected": false,
+    "worldRead": false,
+    "plannerRun": false,
+    "canaryDryRun": false,
+    "renderMutations": 0,
+    "redeploy": 0,
+    "restart": 0,
+    "redisWrites": 0,
+    "redisDeletes": 0,
+    "postgresWrites": 0,
+    "billingChanges": 0
+  }
+}
