@@ -1,0 +1,62 @@
+{
+  "schema": "pb123h79f-one-owner-canary-dry-run-v1",
+  "mode": "READ_ONLY_ZERO_WRITE",
+  "result": "PB1.2.3H7.9F ONE-OWNER CANARY BLOCKED_RUNTIME",
+  "runtime": {
+    "service": "manager-staging-api",
+    "serviceId": "srv-d9nvldtaeets73coqiog",
+    "expectedLiveSha": "223fd8913cf3b753a75da48a677ea0e629dd52de",
+    "observedLiveSha": "a9f5b51040d44f83cb38f8c2f5fbd468365dcebc",
+    "classification": "CANARY_BLOCKED_RUNTIME_CHANGED",
+    "deployment": "Live / Deployed",
+    "instances": 1,
+    "autoscaling": "OFF",
+    "singleInstance": true
+  },
+  "health": {
+    "liveness": {"success": 2, "total": 2, "statuses": [200,200], "elapsedMs": [388,284]},
+    "readiness": {"success": 2, "total": 2, "statuses": [200,200], "database": "UP", "redis": "UP", "elapsedMs": [1294,788]}
+  },
+  "upstash": {
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "AWS sa-east-1",
+    "storageDisplayed": "253 MB / 256 MB",
+    "quotaDisplayed": "256 MB",
+    "percentageDisplayed": "~98.8%",
+    "commandsDisplayed": "150K / 500K per month",
+    "bandwidthDisplayed": "0 B / 50 GB",
+    "ping": "PONG",
+    "dbsize": 9555,
+    "accountingClassification": "PROVIDER_ACCOUNTING_TOO_COARSE",
+    "providerUsedLowerBound": "UNKNOWN",
+    "providerUsedUpperBound": "UNKNOWN"
+  },
+  "candidate": {
+    "classification": "NOT_SELECTED_RUNTIME_STOP",
+    "owner": "NOT_INSPECTED",
+    "worldState": "NOT_INSPECTED",
+    "sourceChecksum": "NOT_MEASURED",
+    "referenceSafe": "NOT_RUN"
+  },
+  "zeroWrite": {
+    "redisDurableMigrationWrites": 0,
+    "redisDurableMigrationDeletes": 0,
+    "redisHealthProbeEphemeralOperations": "readiness endpoint performs ephemeral SET/GET/DELETE",
+    "providerLiteralZeroWriteProof": false,
+    "postgresqlWrites": 0,
+    "renderMutations": 0,
+    "migrationTransitions": 0,
+    "preparedWrites": 0,
+    "committedWrites": 0,
+    "catalogWrites": 0,
+    "consoleCommandsUsed": ["PING", "DBSIZE"],
+    "productHealthProbeCommands": ["SET", "GET", "DELETE"]
+  },
+  "authorization": {
+    "canaryExecution": false,
+    "bulkMigration": false,
+    "cleanup": false
+  },
+  "planSha256": null
+}

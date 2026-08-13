@@ -1,26 +1,27 @@
-# PB1.2.3H7.9F canary execution plan
+# PB1.2.3H7.9F — Canary execution plan (not authorized)
 
-## Plan status
+This is a placeholder for the exact plan artifact required by the dry-run
+contract.  It deliberately contains no owner ID, source payload, catalog key,
+or plan hash because the mandatory Render runtime identity check failed.
 
-No executable plan was generated. The gate stopped before owner selection and
-there is no plan SHA-256. This document is a safety contract for a future,
-separately authorized run; it is not authorization and contains no owner ID,
-source payload or write command.
+## Current stop condition
 
-## Required future stop conditions
+`CANARY_BLOCKED_RUNTIME_CHANGED`
 
-The future canary must stop if any of these changes or fails: Render SHA,
-instance count, autoscaling, liveness/readiness, database or Redis health,
-source checksum, LEGACY state, reference resolution, catalog validation,
-capacity reserve, provider accounting precision, or any 5xx/CAS conflict.
+Required SHA: `223fd8913cf3b753a75da48a677ea0e629dd52de`
+Observed SHA: `a9f5b51040d44f83cb38f8c2f5fbd468365dcebc`
 
-## Authorization boundary
+## Future execution constraints
 
-- canary execution authorized: **NO**;
-- bulk migration authorized: **NO**;
-- cleanup authorized: **NO**;
-- automatic owner 2: **FORBIDDEN**.
+- one owner only;
+- read-only plan must be recreated from a fresh source checksum;
+- no execution if runtime SHA, instance contract, health, provider accounting,
+  source checksum, catalog state or references change;
+- PREPARED and COMMITTED are never to be created by a dry-run;
+- no owner two, loop, bulk migration or cleanup;
+- execution requires a separate explicit authorization.
 
-Only an explicit later authorization may permit one owner write, after a fresh
-provider preflight produces a complete plan and hash.
-
+`canaryPlanSha256`: `NOT_PRODUCED`
+`CANARY EXECUTION AUTHORIZED`: `NO`
+`BULK MIGRATION AUTHORIZED`: `NO`
+`CLEANUP AUTHORIZED`: `NO`
