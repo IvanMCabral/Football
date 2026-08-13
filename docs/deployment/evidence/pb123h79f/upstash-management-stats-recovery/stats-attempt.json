@@ -1,10 +1,10 @@
 {
   "schema": "pb123h79f-management-stats-attempt-v1",
-  "observedAt": "2026-08-13T18:15:00Z",
+  "observedAt": "2026-08-13T20:30:00Z",
   "endpoint": "GET /v2/redis/stats/{databaseId}",
   "endpointCalled": true,
   "httpStatus": 401,
-  "reason": "Provider rejected the Basic-authenticated GET; response was sanitized",
+  "reason": "Provider rejected the Basic-authenticated GET; authenticated browser cross-origin request was blocked by client",
   "currentStorageReturned": false,
   "currentStorage": null,
   "unit": null,
@@ -13,5 +13,8 @@
   "credentialsPrinted": false,
   "credentialsStored": false,
   "secureRuntimeVariablesPresent": true,
-  "dotEnvVariableNamesPresent": false
+  "dotEnvVariableNamesPresent": false,
+  "browserSessionStatsAttempt": "ERR_BLOCKED_BY_CLIENT",
+  "authClassification": "UNKNOWN_AUTH_FAILURE",
+  "userInteractionRequired": true
 }

@@ -1,6 +1,6 @@
 {
   "schema": "pb123h79f-management-stats-recovery-provider-v1",
-  "observedAt": "2026-08-13T18:15:00Z",
+  "observedAt": "2026-08-13T20:30:00Z",
   "databaseName": "Manager",
   "storageDisplay": "253 MB / 256 MB",
   "ping": "PONG",
@@ -10,6 +10,8 @@
   "capacityClassification": "PROVIDER_ACCOUNTING_UNBOUNDED",
   "statsHttpStatus": 401,
   "statsAuthentication": "REJECTED",
+  "browserSessionAuthenticated": true,
+  "browserSessionStatsPath": "BLOCKED_BY_CLIENT",
   "redisWrites": 0,
   "redisDeletes": 0,
   "postgresMutations": 0,

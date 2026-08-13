@@ -120,3 +120,26 @@ After a bounded warm-up, the required read-only health gate passed: liveness
 `2/2` HTTP 200 and readiness `2/2` HTTP 200, both reporting `database=UP` and
 `redis=UP`. No Redis, PostgreSQL, catalog, deployment, billing or credential
 mutation was performed.
+
+## Authenticated Chrome recovery attempt (2026-08-13)
+
+The existing authenticated native Upstash Chrome session verified the
+Personal account context, database `Manager`, Free Tier, AWS `sa-east-1`, and
+the Developer API page. Two existing key metadata rows were visible
+(`Manager2` and `ManagerKey`); their secrets were not displayed or read. No
+key was created, rotated or deleted.
+
+The documented Basic-authenticated `GET /v2/redis/stats/{databaseId}` was
+attempted with the secure runtime pair and returned HTTP `401 Unauthorized`.
+The browser session itself could not call the cross-origin API endpoint
+(`ERR_BLOCKED_BY_CLIENT`), so it cannot substitute for Developer API Basic
+authentication. No response body, cookie, token or Authorization header was
+persisted.
+
+This proves an authentication failure for the supplied pair but does not
+distinguish the email/key account mismatch from an invalid or expired key.
+Because the console can replace keys but the existing secrets are unrecoverable,
+user interaction is required before another accounting attempt. Exact usage,
+quota and headroom remain unknown. The read-only health gate passed after a
+bounded retry: liveness `2/2` and readiness `2/2` HTTP 200 with database and
+Redis `UP`.

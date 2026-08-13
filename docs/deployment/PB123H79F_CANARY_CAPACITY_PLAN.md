@@ -147,3 +147,18 @@ After bounded warm-up, health is green in two consecutive rounds (liveness
 `2/2`, readiness `2/2`, database and Redis `UP`), but health does not
 substitute for provider accounting. No canary, cleanup, migration, catalog
 write or provider change was authorized.
+
+## Authenticated Chrome recovery attempt (2026-08-13)
+
+The existing authenticated native Upstash browser session confirmed the
+Personal account, Manager database, Free Tier and AWS `sa-east-1`. The
+Developer API page showed existing metadata rows `Manager2` and `ManagerKey`,
+but no secret was available to the browser or runtime. No credential mutation
+was performed.
+
+The documented stats GET returned HTTP `401 Unauthorized` with the secure
+runtime pair. The browser's cross-origin request path was blocked by the
+client, so no alternate session authentication exists for this endpoint.
+Exact usage, quota and headroom remain unknown; canary, migration and cleanup
+remain unauthorized. Health passed after bounded retry: liveness `2/2` and
+readiness `2/2` HTTP 200, database and Redis `UP`.

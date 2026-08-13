@@ -1,6 +1,6 @@
 {
   "schema": "pb123h79f-management-stats-recovery-account-v1",
-  "observedAt": "2026-08-13T18:15:00Z",
+  "observedAt": "2026-08-13T20:30:00Z",
   "databaseName": "Manager",
   "databaseIdSha256": "146284aa2fc364dddbeeb54b92f570b3980cb5dadadbd3b363ec88538402094e",
   "plan": "Free Tier",
@@ -13,6 +13,9 @@
   "keyNameObserved": "ManagerKey",
   "keySecretObserved": false,
   "credentialsRecorded": false,
+  "browserAuthenticated": true,
+  "databaseVerified": true,
+  "developerApiKeyMetadataNamesObserved": ["Manager2", "ManagerKey"],
   "secureRuntimeVariableNamesPresent": {
     "UPSTASH_EMAIL": true,
     "UPSTASH_API_KEY": true

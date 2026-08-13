@@ -99,3 +99,19 @@ capacity classification remains `PROVIDER_ACCOUNTING_UNBOUNDED`.
 After a bounded warm-up, liveness and readiness both passed `2/2` at HTTP 200
 with `database=UP` and `redis=UP`. This does not close the accounting gate or
 authorize a canary.
+
+## Authenticated Chrome recovery attempt (2026-08-13)
+
+The authenticated native Upstash session verified the Personal account,
+database `Manager`, Free Tier and AWS `sa-east-1`. The Developer API page
+listed two existing key metadata rows, `Manager2` and `ManagerKey`; neither
+secret was exposed or read, and no key mutation occurred.
+
+The single documented stats GET, using the secure runtime pair, returned HTTP
+`401 Unauthorized`. A browser-session request to the cross-origin API was
+blocked by the client, so console authentication cannot replace Basic API-key
+authentication. Exact storage and quota remain unknown; accounting remains
+`PROVIDER_ACCOUNTING_UNBOUNDED` and the one-owner canary is not authorized.
+
+After bounded retry, liveness and readiness both passed `2/2` at HTTP 200 with
+`database=UP` and `redis=UP`.
