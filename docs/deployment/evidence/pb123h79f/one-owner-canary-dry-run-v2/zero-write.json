@@ -1,0 +1,17 @@
+{
+  "schema": "pb123h79f-zero-migration-write-v2",
+  "migrationWrites": 0,
+  "migrationDeletes": 0,
+  "postgresqlWrites": 0,
+  "renderMutations": 0,
+  "accountCreations": 0,
+  "cleanupAuthorized": false,
+  "redisConsoleCommands": ["PING", "DBSIZE"],
+  "dbsizeObserved": 9555,
+  "storageDisplayObserved": "253 MB / 256 MB",
+  "candidateWorldChecksum": "NOT_READ",
+  "candidateWorldPttl": "NOT_READ",
+  "catalogState": "NOT_READ",
+  "healthEphemeralWrites": "readiness performs product SET/GET/DELETE probe",
+  "providerLevelBeforeAfterProof": "NOT_APPLICABLE_BECAUSE_OWNER_GATE_STOPPED_BEFORE_CANDIDATE_INSPECTION"
+}

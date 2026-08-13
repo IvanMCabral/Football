@@ -1,0 +1,7 @@
+{
+  "samples": [
+    {"sample":1,"liveness":200,"readiness":200,"database":"UP","redis":"UP","livenessMs":376,"readinessMs":768},
+    {"sample":2,"liveness":200,"readiness":200,"database":"UP","redis":"UP","livenessMs":211,"readinessMs":734}
+  ],
+  "readinessEphemeralProbe": true
+}

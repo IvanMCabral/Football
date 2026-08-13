@@ -1,0 +1,11 @@
+{
+  "schema": "pb123h79f-canary-plan-v2",
+  "status": "NOT_PRODUCED_OWNER_BLOCKED",
+  "canaryPlanSha256": null,
+  "selectedOwnerHash": null,
+  "semantic": "NOT_RUN",
+  "referenceSafe": "NOT_RUN",
+  "capacity": "NOT_RUN",
+  "executionAuthorized": false,
+  "stopConditions": ["no safe disposable current test owner", "provider byte bounds unknown"]
+}

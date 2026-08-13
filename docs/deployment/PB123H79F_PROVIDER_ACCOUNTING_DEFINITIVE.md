@@ -43,3 +43,16 @@ local Redis `MEMORY USAGE` estimate is not interchangeable with Upstash durable
 storage accounting.
 
 No credentials, tokens, payloads, keys, or personal data are included here.
+
+## Rechecked on 2026-08-13
+
+The authenticated Details and Usage surfaces still expose only `253 MB / 256
+MB`; no precise byte field, metric, or documented account-level conversion was
+available. Read-only CLI checks returned `PING=PONG` and `DBSIZE=9555`.
+
+The classification remains `PROVIDER_ACCOUNTING_TOO_COARSE`: both lower and
+upper provider byte bounds are unknown. The official Upstash pricing page
+confirms the Free maximum data size of 256 MB and explains that total storage
+is calculated across replicas/regions, but does not establish dashboard
+rounding or same-key transient-overlap semantics. No provider settings,
+credentials, data, or billing state were changed.

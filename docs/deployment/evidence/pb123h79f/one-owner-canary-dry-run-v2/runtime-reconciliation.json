@@ -1,0 +1,13 @@
+{
+  "schema": "pb123h79f-runtime-equivalence-v2",
+  "observedAt": "2026-08-13",
+  "latestProductiveRuntimeSha": "836c98a69ce9d12f67ed603f1f1ea58b8462a82a",
+  "renderLiveSha": "ccb2723f9e5718d5e15150463b35756336eef260",
+  "priorExpectedDocumentationSha": "223fd8913cf3b753a75da48a677ea0e629dd52de",
+  "commitsInspected": 9,
+  "runtimeAffectingDescendants": [],
+  "testOnlyDescendants": ["4166aa6697272ddf68dcd7f4a41951d61fd8b889"],
+  "documentationOrEvidenceDescendants": ["0c7118bb81806ae5f327eb3ceadca57589af955a","b8fe8fe8c66a617da2825e6fd87a06b91ce961ce","928ce7c86de2cb97e4429ddac025c5c327959945","1910b26ed6af80764e4c8da78ba3c46294a319e6","223fd8913cf3b753a75da48a677ea0e629dd52de","bcbabfaf57c6d2225c5bb9e4bb561dd204607c5c","a9f5b51040d44f83cb38f8c2f5fbd468365dcebc","ccb2723f9e5718d5e15150463b35756336eef260"],
+  "classification": "RUNTIME_EQUIVALENT",
+  "packagedRuntimeChanged": false
+}

@@ -25,3 +25,13 @@ Observed SHA: `a9f5b51040d44f83cb38f8c2f5fbd468365dcebc`
 `CANARY EXECUTION AUTHORIZED`: `NO`
 `BULK MIGRATION AUTHORIZED`: `NO`
 `CLEANUP AUTHORIZED`: `NO`
+
+## Reconciled status (2026-08-13)
+
+This plan remains non-authorizing. The current Render deployment is
+runtime-equivalent to the latest productive authority and the service is
+single-instance with green health, but there is no safe disposable owner for a
+one-owner canary. No owner world, catalog or reference graph was read, and no
+canonical execution plan or hash was produced. The exact stop condition is
+`PB1.2.3H7.9F ONE-OWNER CANARY BLOCKED_OWNER`; provider accounting is separately
+`PROVIDER_ACCOUNTING_TOO_COARSE`.

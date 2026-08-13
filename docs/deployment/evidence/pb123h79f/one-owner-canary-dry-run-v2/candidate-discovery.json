@@ -1,0 +1,14 @@
+{
+  "schema": "pb123h79f-candidate-discovery-v2",
+  "eligibleCandidates": 0,
+  "selectedOwnerHash": null,
+  "provenAuditOwners": 21,
+  "provenAuditOwnersWithCurrentOwnerScopedRedisKeys": 0,
+  "exactRedisOwners": 144,
+  "currentOwnerCollisions": 144,
+  "foreignCandidates": 0,
+  "unknownPrefixes": 0,
+  "candidateWorldRead": false,
+  "classification": "BLOCKED_OWNER",
+  "reason": "No disposable current test owner with an exact LEGACY world key is available; all exact owners collide with current PostgreSQL users."
+}

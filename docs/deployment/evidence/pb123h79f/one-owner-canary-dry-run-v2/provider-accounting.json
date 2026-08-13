@@ -1,0 +1,24 @@
+{
+  "schema": "pb123h79f-provider-accounting-v2",
+  "observedAt": "2026-08-13",
+  "database": "Manager",
+  "plan": "Free Tier",
+  "region": "AWS sa-east-1",
+  "storageDisplay": "253 MB / 256 MB",
+  "quotaDisplay": "256 MB",
+  "commandsDisplay": "150K / 500K per month",
+  "bandwidthDisplay": "0 B / 50 GB",
+  "tls": "enabled",
+  "ping": "PONG",
+  "dbsize": 9555,
+  "exactBytesRecovered": false,
+  "providerUsedLowerBound": "UNKNOWN",
+  "providerUsedUpperBound": "UNKNOWN",
+  "classification": "PROVIDER_ACCOUNTING_TOO_COARSE",
+  "officialSemantics": {
+    "freeMaxData": "256 MB",
+    "totalStorageIncludesReplicasOrRegions": true,
+    "displayRoundingProven": false,
+    "transientOverwriteAccountingProven": false
+  }
+}

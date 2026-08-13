@@ -92,3 +92,23 @@ The next admissible run must first reconcile the service back to the expected
 SHA (or issue a new gate with an explicitly updated expected SHA), then repeat
 the owner-scoped, read-only planning sequence.  No provider change is implied
 by this report.
+
+## H7.9F runtime-equivalence reconciliation (2026-08-13)
+
+The prior exact-SHA stop is superseded by the runtime-authority check in
+`PB123H79F_RUNTIME_EQUIVALENCE_FOR_CANARY.md`. The Render live commit
+`ccb2723f9e5718d5e15150463b35756336eef260` contains the productive runtime
+authority `836c98a69ce9d12f67ed603f1f1ea58b8462a82a`; every descendant after
+that authority was inspected and is tests, tooling, documentation or evidence
+only. The current runtime classification is `RUNTIME_EQUIVALENT`.
+
+Health remained green (pre and post 2/2 liveness/readiness, database and Redis
+UP). Upstash remained at `253 MB / 256 MB`, `DBSIZE=9555`, with exact byte
+accounting unavailable. Canonical owner evidence still yielded zero eligible
+disposable test owners: all 144 exact Redis owners collide with current
+PostgreSQL users and the 21 proven audit owners have no current owner-scoped
+Redis keys. The reconciled verdict is therefore
+`PB1.2.3H7.9F ONE-OWNER CANARY BLOCKED_OWNER`.
+
+No world payload, catalog, reference graph or semantic representation was
+read; no migration or cleanup authorization exists.
