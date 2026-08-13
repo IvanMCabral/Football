@@ -1,0 +1,77 @@
+{
+  "gate": "PB1.2.3H7.9F",
+  "result": "PB1.2.3H7.9F BLOCKED_SERVICE_NOT_FOUND",
+  "local": {
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "headBeforeDocsCommit": "1910b26ed6af80764e4c8da78ba3c46294a319e6",
+    "upstream": "origin/feat/v25d99.20.3.1-runtime-fixes",
+    "ahead": 0,
+    "behind": 0,
+    "latestProductiveRuntimeSha": "836c98a69ce9d12f67ed603f1f1ea58b8462a82a",
+    "diffCheck": "clean"
+  },
+  "render": {
+    "authenticated": true,
+    "accessibleWorkspaces": 1,
+    "accessibleProjects": 1,
+    "accessibleServices": 1,
+    "workspace": "Ivan's workspace",
+    "project": "My project",
+    "expectedService": "manager-staging-api",
+    "exactServiceFound": false,
+    "currentService": "Football",
+    "currentServiceId": "srv-d9nu6gijnfac73bpbhj0",
+    "currentServiceRuntime": "Node",
+    "currentServiceStatus": "Failed deploy",
+    "currentServiceRegion": "oregon",
+    "serviceContinuityProof": "none",
+    "currentClassification": "NOT_VERIFIABLE",
+    "footballClassification": "UNRELATED_SERVICE",
+    "liveSha": null,
+    "runtimeClassification": "NOT_VERIFIABLE",
+    "deploymentTimestamp": null,
+    "instanceCount": null,
+    "autoscaling": null,
+    "publicEndpoint": {
+      "dns": "resolved",
+      "tcpConnectMs": 68,
+      "tlsHandshakeMs": 93,
+      "httpStatus": 0,
+      "classification": "ENDPOINT_UNRESPONSIVE",
+      "timeoutSeconds": 12
+    }
+  },
+  "historical": {
+    "service": "manager-staging-api",
+    "workspaceProject": "historically recorded; current provider identity unavailable",
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "liveSha": "b6c413f3f8e0a6037b2f0362c6cc0a7893bf3af4",
+    "plan": "Free",
+    "instances": 1,
+    "autoscaling": "not recorded"
+  },
+  "upstash": {
+    "authenticated": true,
+    "database": "Manager",
+    "plan": "Free Tier",
+    "region": "AWS sa-east-1",
+    "storage": "253 MB / 256 MB",
+    "exactBytesExposed": false,
+    "ping": "NOT_EXECUTED",
+    "dbsize": "NOT_EXECUTED",
+    "mutations": 0
+  },
+  "boundary": {
+    "candidateInspected": false,
+    "worldRead": false,
+    "plannerRun": false,
+    "canaryPlanProduced": false,
+    "redisWrites": 0,
+    "redisDeletes": 0,
+    "postgresWrites": 0,
+    "renderMutations": 0,
+    "redeploy": 0,
+    "restart": 0,
+    "billingChanges": 0
+  }
+}
