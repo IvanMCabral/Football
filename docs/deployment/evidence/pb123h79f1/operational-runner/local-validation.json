@@ -1,0 +1,29 @@
+{
+  "artifact": "PB123H79F1 operational runner local validation",
+  "scope": "design-and-tests-only",
+  "publicExecutionAuthorized": false,
+  "productionMutation": {
+    "redisWrites": 0,
+    "postgresWrites": 0,
+    "catalogWrites": 0,
+    "providerMutations": 0,
+    "deployments": 0
+  },
+  "focusedTests": {
+    "runner": { "tests": 10, "failures": 0, "errors": 0, "skipped": 0 },
+    "springContext": { "tests": 2, "failures": 0, "errors": 0, "skipped": 0 },
+    "supportingMigrationSuite": { "tests": 29, "failures": 0, "errors": 0, "skipped": 0 },
+    "negativeControlsSpringContext": { "tests": 34, "failures": 0, "errors": 0, "skipped": 0 },
+    "total": { "tests": 75, "failures": 0, "errors": 0, "skipped": 0 }
+  },
+  "runnerContract": {
+    "defaultMode": "VALIDATE_ONLY",
+    "maxOrchestratorInvocations": 1,
+    "automaticRetries": false,
+    "bulkOwners": false,
+    "publicEndpoint": false,
+    "directRedisMutation": false
+  },
+  "secretsPersisted": false,
+  "rawOwnerIdentifiersPersisted": false
+}
