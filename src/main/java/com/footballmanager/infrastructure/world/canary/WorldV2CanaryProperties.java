@@ -19,8 +19,6 @@ public class WorldV2CanaryProperties {
     private String mode = "VALIDATE_ONLY";
     private String confirm;
     private String databaseId;
-    private String upstashEmail;
-    private String upstashApiKey;
 
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
@@ -48,8 +46,4 @@ public class WorldV2CanaryProperties {
     public void setConfirm(String confirm) { this.confirm = confirm; }
     public String getDatabaseId() { return databaseId; }
     public void setDatabaseId(String databaseId) { this.databaseId = databaseId; }
-    public String getUpstashEmail() { return upstashEmail; }
-    public void setUpstashEmail(String upstashEmail) { this.upstashEmail = upstashEmail; }
-    public String getUpstashApiKey() { return upstashApiKey; }
-    public void setUpstashApiKey(String upstashApiKey) { this.upstashApiKey = upstashApiKey; }
 }
