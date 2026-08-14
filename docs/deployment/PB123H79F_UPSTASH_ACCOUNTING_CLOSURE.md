@@ -123,3 +123,26 @@ The canonical accounting observation is in
 `docs/deployment/evidence/pb123h79f/upstash-accounting-closure/`. The prior
 semantic dry-run remains authoritative for ownership, references, aliases,
 fingerprint and repeatability; it was not reopened.
+
+## Numeric quota forensic closure (2026-08-14)
+
+The earlier dashboard-only `BLOCKED_ACCOUNTING` result is historical. The
+current provider-owned console bundle defines the Free-plan limit as
+`REDIS_PLAN_METRICS.free.max_data_size=0x10000000` (268,435,456 bytes), with
+asset SHA-256
+`2169717202ada35bcbf78e68cfacbc947acb279b59f3f2dcf69b1b859ba4fd28`.
+This is class B provider frontend numeric-contract evidence. Upstash's official
+API schemas document `db_disk_threshold` and `current_storage` as byte-valued
+fields; the quota was not obtained as a field from the successful stats
+response.
+
+The retained successful stats GET measured 264,967,931 bytes. The dashboard
+and CLI were rechecked on 2026-08-14 (`253 MB / 256 MB`, `DBSIZE=9555`,
+catalog absent), and public health passed liveness/readiness 2/2 with database
+and Redis `UP`. Headroom is 3,467,525 bytes and the cushion after the certified
+2,436,344-byte requirement is 1,031,181 bytes. The rendered 98.7082% agrees
+with binary-byte arithmetic; decimal 256,000,000 bytes does not.
+
+**Current verdict:** `PB1.2.3H7.9F ONE-OWNER CANARY READY FOR EXECUTION AUTHORIZATION`.
+The canary is not authorized, and no migration, cleanup, Redis write/delete,
+PostgreSQL mutation, catalog write, provider or billing change occurred.

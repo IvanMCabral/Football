@@ -65,6 +65,27 @@ The canary is not authorized and no migration or cleanup was executed. See
 `evidence/pb123h79f/safe-test-owner-provenance/` and
 `PB123H79F_SAFE_TEST_OWNER_PROVENANCE.md`.
 
+## Numeric quota forensic closure (2026-08-14)
+
+The provider quota gate is now satisfied by class-B provider frontend evidence:
+the loaded Upstash console asset `1izufz7lt4vhf.js` defines
+`REDIS_PLAN_METRICS.free.max_data_size=0x10000000` (268,435,456 bytes), asset
+SHA-256
+`2169717202ada35bcbf78e68cfacbc947acb279b59f3f2dcf69b1b859ba4fd28`.
+The official API schemas document the related `db_disk_threshold` and
+`current_storage` fields in bytes, but the quota was not returned by the
+successful stats response itself.
+
+Retained exact usage is 264,967,931 bytes. Therefore headroom is 3,467,525
+bytes and the cushion after the 2,436,344-byte certified minimum is 1,031,181
+bytes. Binary arithmetic reproduces the dashboard's 98.7082% progress; the
+decimal 256,000,000-byte interpretation does not. No additional unbounded
+provider transient bound is evidenced beyond the conservative overlap model.
+
+Current verdict: `PROVIDER_CAPACITY_PASS` and
+`PB1.2.3H7.9F ONE-OWNER CANARY READY FOR EXECUTION AUTHORIZATION`. Execution,
+bulk migration and cleanup remain explicitly unauthorized.
+
 ## Selected-owner capacity update (2026-08-13)
 
 The selected-owner semantic plan is now available. Exact in-memory
@@ -176,3 +197,24 @@ The Manager database remains healthy (`PING=PONG`, `DBSIZE=9555`, catalog
 absent), and two consecutive liveness/readiness health rounds are HTTP 200
 with database and Redis `UP`. Accounting remains unbounded; no canary,
 migration or cleanup is authorized.
+
+## Numeric quota forensic closure (2026-08-14)
+
+The provider quota gate is now satisfied by class-B provider frontend evidence:
+the loaded Upstash console asset `1izufz7lt4vhf.js` defines
+`REDIS_PLAN_METRICS.free.max_data_size=0x10000000` (268,435,456 bytes), asset
+SHA-256
+`2169717202ada35bcbf78e68cfacbc947acb279b59f3f2dcf69b1b859ba4fd28`.
+The official API schemas document the related `db_disk_threshold` and
+`current_storage` fields in bytes, but the quota was not returned by the
+successful stats response itself.
+
+Retained exact usage is 264,967,931 bytes. Therefore headroom is 3,467,525
+bytes and the cushion after the 2,436,344-byte certified minimum is 1,031,181
+bytes. Binary arithmetic reproduces the dashboard's 98.7082% progress; the
+decimal 256,000,000-byte interpretation does not. No additional unbounded
+provider transient bound is evidenced beyond the conservative overlap model.
+
+Current verdict: `PROVIDER_CAPACITY_PASS` and
+`PB1.2.3H7.9F ONE-OWNER CANARY READY FOR EXECUTION AUTHORIZATION`. Execution,
+bulk migration and cleanup remain explicitly unauthorized.

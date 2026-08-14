@@ -167,3 +167,36 @@ liveness/readiness HTTP 200 and database/Redis `UP`.
 
 The accounting gate therefore remains `PROVIDER_ACCOUNTING_UNBOUNDED` and the
 one-owner canary remains unauthorized.
+
+## Provider quota numeric forensic closure (2026-08-14)
+
+The rounded dashboard label was resolved with provider-owned frontend evidence.
+The loaded console asset `1izufz7lt4vhf.js` defines
+`REDIS_PLAN_METRICS.free.max_data_size=0x10000000`, i.e. **268,435,456 bytes**.
+Its SHA-256 is
+`2169717202ada35bcbf78e68cfacbc947acb279b59f3f2dcf69b1b859ba4fd28`.
+This promotes the quota as evidence class B (`PROVIDER_FRONTEND_NUMERIC_CONTRACT`),
+not as an API-returned quota. The official database-list schema documents
+`db_disk_threshold` in bytes, while the stats schema documents
+`current_storage` in bytes.
+
+The retained successful stats GET reported `current_storage=264,967,931` bytes.
+The latest secure-runtime retry was HTTP 401, so it is recorded separately and
+does not overwrite the successful observation. Current read-only rechecks of
+the dashboard and CLI returned `253 MB / 256 MB`, `DBSIZE=9555`, and catalog
+`EXISTS=0`; public health returned two consecutive liveness/readiness rounds at
+HTTP 200 with database and Redis `UP`.
+
+Arithmetic is explicit: `268,435,456 - 264,967,931 = 3,467,525` bytes of
+headroom; subtracting the certified minimum `2,436,344` leaves a
+`1,031,181`-byte cushion. The binary percentage (`98.7082462758%`) matches the
+rendered `98.7082%`; the decimal 256,000,000-byte interpretation would be
+`103.5030980469%` and is rejected. No official source proves an additional
+unbounded transient copy beyond the conservative overlap model.
+
+**Final accounting classification:** `PROVIDER_CAPACITY_PASS`.
+
+The permitted final verdict is
+`PB1.2.3H7.9F ONE-OWNER CANARY READY FOR EXECUTION AUTHORIZATION`. This does
+not authorize execution: canary, bulk migration and cleanup remain `NO`, and
+all mutation counters remain zero.

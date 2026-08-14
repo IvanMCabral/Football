@@ -1,9 +1,9 @@
 {
   "schema": "pb123h79f-management-stats-recovery-health-v1",
-  "observedAt": "2026-08-13T21:00:00Z",
+  "observedAt": "2026-08-14T18:22:02Z",
   "rounds": [
-    {"round": 1, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP"},
-    {"round": 2, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP"}
+    {"round": 1, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP", "livenessMs": 266, "readinessMs": 846},
+    {"round": 2, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP", "livenessMs": 242, "readinessMs": 836}
   ],
   "livenessPass": true,
   "readinessPass": true,

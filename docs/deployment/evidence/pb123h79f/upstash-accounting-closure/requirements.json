@@ -6,9 +6,15 @@
   "localAccountingUncertaintyBytes": 65536,
   "minimumKnownRequiredHeadroomBytes": 2436344,
   "providerSpecificUncertaintyBytes": null,
-  "totalRequiredHeadroom": "UNKNOWN_TOTAL",
-  "minimumAvailableHeadroom": null,
+  "totalRequiredHeadroom": 2436344,
+  "minimumAvailableHeadroom": 3467525,
+  "cushionAfterAllReserves": 1031181,
   "cushionAfterAllReserves": null,
-  "capacityVerdict": "PROVIDER_ACCOUNTING_STILL_UNBOUNDED",
+  "capacityVerdict": "PROVIDER_CAPACITY_PASS",
+  "quotaExactBytes": 268435456,
+  "quotaEvidenceClassification": "PROVIDER_FRONTEND_NUMERIC_CONTRACT",
+  "usageExactBytes": 264967931,
+  "transientOverwriteClassification": "OVERWRITE_TRANSIENT_UNKNOWN",
+  "additionalProviderTransientBound": "NO_ADDITIONAL_PROVIDER_TRANSIENT_BOUND_PROVEN",
   "executionAuthorized": false
 }

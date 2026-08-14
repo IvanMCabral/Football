@@ -130,3 +130,47 @@ The returned `total_monthly_storage` is a usage metric, not a quota.
 Read-only validation remains `PING=PONG`, `DBSIZE=9555`, catalog absent,
 liveness/readiness `2/2` HTTP 200, and database/Redis `UP`. The canary,
 migration and cleanup remain unauthorized.
+
+## Numeric quota forensic closure (2026-08-14)
+
+The provider quota is now established through the loaded Upstash console
+application rather than by converting the rounded label. The provider-owned
+static asset `1izufz7lt4vhf.js` contains
+`REDIS_PLAN_METRICS.free.max_data_size=0x10000000`, explicitly a byte-valued
+limit. The asset SHA-256 is
+`2169717202ada35bcbf78e68cfacbc947acb279b59f3f2dcf69b1b859ba4fd28`.
+This is evidence class **B — PROVIDER_FRONTEND_NUMERIC_CONTRACT**, not a claim
+that the Developer API returned a quota field.
+
+The official API schema independently names `db_disk_threshold` as the current
+database disk limit in bytes, and the stats schema names `current_storage` as
+current storage in bytes. The authenticated successful stats response retained
+from the prior read-only gate reported `current_storage=264,967,931` bytes;
+the latest runtime-pair retry returned HTTP 401 and did not replace that
+successful observation. The dashboard and Redis CLI were rechecked on
+2026-08-14: `253 MB / 256 MB`, `DBSIZE=9555`, and the canonical catalog key was
+absent.
+
+| Accounting value | Bytes |
+|---|---:|
+| Used (`current_storage`) | 264,967,931 |
+| Free-plan quota (`0x10000000`) | 268,435,456 |
+| Available headroom | 3,467,525 |
+| Minimum known requirement | 2,436,344 |
+| Final cushion | **1,031,181** |
+
+The independent percentage check is corroborating UI evidence only: binary
+quota usage is `98.7082462758%`, matching the rendered `98.7082%`; treating
+`256 MB` as 256,000,000 bytes would produce `103.5030980469%` and is therefore
+inconsistent. Upstash's capacity guidance states that writes may be rejected
+when the max data size is reached while reads and deletes remain available; no
+official source reviewed specifies an additional unbounded same-key overwrite
+copy. The conservative overlap and reserves are therefore retained, with
+`OVERWRITE_TRANSIENT_UNKNOWN` but
+`NO_ADDITIONAL_PROVIDER_TRANSIENT_BOUND_PROVEN`.
+
+**Capacity verdict:** `PROVIDER_CAPACITY_PASS`.
+
+The canary is ready for a separate execution authorization, but execution,
+bulk migration and cleanup remain `NO`. No Redis, PostgreSQL, provider,
+billing, catalog or application mutation was performed.
