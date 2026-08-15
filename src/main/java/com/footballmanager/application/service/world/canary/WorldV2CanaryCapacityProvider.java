@@ -7,23 +7,11 @@ public interface WorldV2CanaryCapacityProvider {
 
     Mono<CapacitySample> sample();
 
-    record CapacitySample(long currentStorageBytes, long quotaBytes,
-                          long requiredHeadroomBytes, long retainedCushionBytes) {
+    record CapacitySample(long currentStorageBytes) {
         public CapacitySample {
-            if (currentStorageBytes < 0 || quotaBytes <= 0
-                    || requiredHeadroomBytes < 0 || retainedCushionBytes < 0) {
+            if (currentStorageBytes < 0) {
                 throw new IllegalArgumentException("invalid provider capacity sample");
             }
-        }
-
-        public long admissionThresholdBytes() {
-            return Math.subtractExact(Math.subtractExact(quotaBytes, requiredHeadroomBytes),
-                    retainedCushionBytes);
-        }
-
-        public boolean admitted(long configuredThresholdBytes) {
-            return currentStorageBytes <= configuredThresholdBytes
-                    && currentStorageBytes <= admissionThresholdBytes();
         }
     }
 

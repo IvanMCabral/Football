@@ -33,9 +33,7 @@ public final class UpstashManagementCapacityProvider implements WorldV2CanaryCap
 
     @Override
     public Mono<CapacitySample> sample() {
-        if (blank(email) || blank(apiKey) || blank(properties.getDatabaseId())
-                || properties.getQuotaBytes() == null || properties.getRequiredHeadroomBytes() == null
-                || properties.getRetainedCushionBytes() == null) {
+        if (blank(email) || blank(apiKey) || blank(properties.getDatabaseId())) {
             return Mono.error(new ProviderCapacityException(FailureKind.AUTHENTICATION,
                     "provider credentials or database identity are unavailable", null));
         }
@@ -66,8 +64,7 @@ public final class UpstashManagementCapacityProvider implements WorldV2CanaryCap
             throw new ProviderCapacityException(FailureKind.MALFORMED,
                     "provider accounting response is missing current_storage", null);
         }
-        return new CapacitySample(value.longValue(), properties.getQuotaBytes(),
-                properties.getRequiredHeadroomBytes(), properties.getRetainedCushionBytes());
+        return new CapacitySample(value.longValue());
     }
 
     private static boolean blank(String value) { return value == null || value.isBlank(); }

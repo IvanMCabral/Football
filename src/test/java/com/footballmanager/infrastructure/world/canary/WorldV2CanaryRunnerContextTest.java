@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.ApplicationContext;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -30,14 +31,9 @@ import static org.mockito.Mockito.mock;
 @TestPropertySource(properties = {
         "world.v2.canary.enabled=true",
         "world.v2.canary.owner-id=11111111-1111-1111-1111-111111111111",
-        "world.v2.canary.expected-owner-hash=bafde89c041e1756082b933aaf16cad8e65dec48de748479352f657e89dd6da5",
-        "world.v2.canary.expected-source-sha=source-sha",
-        "world.v2.canary.expected-semantic-plan-sha=plan-sha",
-        "world.v2.canary.expected-canonical-fingerprint=fingerprint",
-        "world.v2.canary.max-current-storage-bytes=890000",
-        "world.v2.canary.quota-bytes=1000000",
-        "world.v2.canary.required-headroom-bytes=100000",
-        "world.v2.canary.retained-cushion-bytes=10000",
+        "world.v2.canary.expected-source-sha=2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+        "world.v2.canary.expected-semantic-plan-sha=298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a",
+        "world.v2.canary.expected-canonical-fingerprint=1e654bec389796d232aba91685ac87d9ef1de08bcf3f5a7da563fdedbfb27000",
         "world.v2.canary.mode=VALIDATE_ONLY"
 })
 class WorldV2CanaryRunnerContextTest {
@@ -73,16 +69,35 @@ class WorldV2CanaryRunnerContextTest {
     @Import({WorldV2CanaryConfiguration.class, WorldV2CanaryRunner.class})
     static class TestBeans {
         @Bean
+        @Primary
+        WorldV2CanaryCertifiedAuthority certifiedAuthority() {
+            WorldV2CanaryCertifiedAuthority certified = WorldV2CanaryCertifiedAuthority.h79f();
+            WorldV2CanaryCertifiedAuthority authority = mock(WorldV2CanaryCertifiedAuthority.class);
+            org.mockito.Mockito.when(authority.ownerHash()).thenReturn(
+                    WorldV2CanaryRunner.sha256("11111111-1111-1111-1111-111111111111"));
+            org.mockito.Mockito.when(authority.sourceSha()).thenReturn(WorldV2CanaryCertifiedAuthority.SOURCE_SHA);
+            org.mockito.Mockito.when(authority.semanticPlanSha())
+                    .thenReturn(WorldV2CanaryCertifiedAuthority.SEMANTIC_PLAN_SHA);
+            org.mockito.Mockito.when(authority.canonicalFingerprint())
+                    .thenReturn(WorldV2CanaryCertifiedAuthority.CANONICAL_FINGERPRINT);
+            org.mockito.Mockito.when(authority.effectiveCapacity(org.mockito.ArgumentMatchers.any()))
+                    .thenAnswer(invocation -> certified.effectiveCapacity(invocation.getArgument(0)));
+            org.mockito.Mockito.when(authority.operatorEchoesMatch(org.mockito.ArgumentMatchers.any()))
+                    .thenAnswer(invocation -> certified.operatorEchoesMatch(invocation.getArgument(0)));
+            return authority;
+        }
+
+        @Bean
         WorldV2CanarySourceProbe sourceProbe() {
             return ignored -> Mono.just(new WorldV2CanarySourceProbe.SourceSnapshot(
-                    WorldStorageMigrationExecutor.StoredState.LEGACY, "source-sha", true, true, 0,
-                    true, false, "fingerprint"));
+                    WorldStorageMigrationExecutor.StoredState.LEGACY,
+                    WorldV2CanaryCertifiedAuthority.SOURCE_SHA, true, true, 0,
+                    true, false, WorldV2CanaryCertifiedAuthority.CANONICAL_FINGERPRINT));
         }
 
         @Bean
         WorldV2CanaryCapacityProvider capacityProvider() {
-            return () -> Mono.just(new WorldV2CanaryCapacityProvider.CapacitySample(
-                    890_000, 1_000_000, 100_000, 10_000));
+            return () -> Mono.just(new WorldV2CanaryCapacityProvider.CapacitySample(890_000));
         }
 
         @Bean
