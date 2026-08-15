@@ -90,7 +90,12 @@ public final class WorldV2CanaryRunner implements ApplicationRunner, ExitCodeGen
                         "owner identifier is invalid", null, null));
             }
 
-            String ownerHash = sha256(properties.getOwnerId());
+            String canonicalOwner = ownerId.toString();
+            if (!canonicalOwner.equalsIgnoreCase(properties.getOwnerId())) {
+                return Mono.just(failed(Status.VALIDATION_FAILED_OWNER_HASH,
+                        "owner identifier is not in canonical UUID form", null, null));
+            }
+            String ownerHash = canonicalOwnerSha256(ownerId);
             if (!MessageDigest.isEqual(ownerHash.getBytes(StandardCharsets.US_ASCII),
                     authority.ownerHash().getBytes(StandardCharsets.US_ASCII))) {
                 return Mono.just(failed(Status.VALIDATION_FAILED_OWNER_HASH,
@@ -257,6 +262,10 @@ public final class WorldV2CanaryRunner implements ApplicationRunner, ExitCodeGen
         } catch (Exception error) {
             throw new IllegalStateException("SHA-256 unavailable", error);
         }
+    }
+
+    static String canonicalOwnerSha256(UUID ownerId) {
+        return sha256(Objects.requireNonNull(ownerId, "ownerId").toString());
     }
 
     public RunResult lastResult() { return lastResult; }

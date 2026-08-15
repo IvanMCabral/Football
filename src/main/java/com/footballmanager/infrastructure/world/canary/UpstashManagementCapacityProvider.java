@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.footballmanager.application.service.world.canary.WorldV2CanaryCapacityProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -54,15 +55,20 @@ public final class UpstashManagementCapacityProvider implements WorldV2CanaryCap
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response -> response.createException().flatMap(Mono::error))
                 .bodyToMono(JsonNode.class)
+                .onErrorMap(DecodingException.class, error -> new ProviderCapacityException(
+                        FailureKind.MALFORMED, "provider accounting response is malformed", error))
                 .switchIfEmpty(Mono.just(com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode()));
     }
 
     private CapacitySample toSample(JsonNode json) {
+        return parseCurrentStorage(json);
+    }
+
+    static CapacitySample parseCurrentStorage(JsonNode json) {
         JsonNode value = json.path("current_storage");
-        if (!value.isNumber()) value = json.path("total_monthly_storage");
-        if (!value.isNumber() || value.longValue() < 0) {
+        if (!value.isIntegralNumber() || !value.canConvertToLong() || value.longValue() < 0) {
             throw new ProviderCapacityException(FailureKind.MALFORMED,
-                    "provider accounting response is missing current_storage", null);
+                    "provider accounting response has invalid current_storage", null);
         }
         return new CapacitySample(value.longValue());
     }

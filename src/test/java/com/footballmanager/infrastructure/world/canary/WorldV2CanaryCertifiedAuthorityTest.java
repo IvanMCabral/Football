@@ -10,6 +10,30 @@ class WorldV2CanaryCertifiedAuthorityTest {
     private final WorldV2CanaryCertifiedAuthority authority = WorldV2CanaryCertifiedAuthority.h79f();
 
     @Test
+    void productionAuthorityHasExactCertifiedValues() {
+        assertThat(authority.ownerHash())
+                .isEqualTo(WorldV2CanaryCertifiedAuthority.CERTIFIED_OWNER_SHA256)
+                .hasSize(64)
+                .matches("[0-9a-f]{64}");
+        assertThat(WorldV2CanaryCertifiedAuthority.HISTORICAL_SELECTED_OWNER_MD5)
+                .hasSize(32)
+                .matches("[0-9a-f]{32}");
+        assertThat(authority.sourceSha()).isEqualTo(WorldV2CanaryCertifiedAuthority.SOURCE_SHA);
+        assertThat(authority.semanticPlanSha()).isEqualTo(WorldV2CanaryCertifiedAuthority.SEMANTIC_PLAN_SHA);
+        assertThat(authority.canonicalFingerprint())
+                .isEqualTo(WorldV2CanaryCertifiedAuthority.CANONICAL_FINGERPRINT);
+
+        var effective = authority.effectiveCapacity(new WorldV2CanaryProperties());
+        assertThat(effective.quotaBytes()).isEqualTo(WorldV2CanaryCertifiedAuthority.MAX_PROVIDER_QUOTA_BYTES);
+        assertThat(effective.requiredHeadroomBytes())
+                .isEqualTo(WorldV2CanaryCertifiedAuthority.MIN_REQUIRED_HEADROOM_BYTES);
+        assertThat(effective.retainedCushionBytes())
+                .isEqualTo(WorldV2CanaryCertifiedAuthority.MIN_RETAINED_CUSHION_BYTES);
+        assertThat(effective.maxCurrentStorageBytes())
+                .isEqualTo(WorldV2CanaryCertifiedAuthority.MAX_ADMITTED_CURRENT_STORAGE_BYTES);
+    }
+
+    @Test
     void certifiedDefaultsProduceExactThreshold() {
         var effective = authority.effectiveCapacity(new WorldV2CanaryProperties());
         assertThat(effective.quotaBytes()).isEqualTo(268_435_456L);

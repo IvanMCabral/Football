@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.ApplicationContext;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Primary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -44,14 +43,17 @@ class WorldV2CanaryRunnerContextTest {
     @Autowired
     private WorldV2CanaryRunner runner;
 
+    @Autowired
+    private WorldV2CanaryCertifiedAuthority authority;
+
     @Test
-    void dedicatedProfileWiresRealOrchestratorAndRunner() {
-        // The hash is asserted by the unit suite; this context test focuses on
-        // profile/property wiring and the concrete product orchestrator bean.
+    void dedicatedProfileWiresProductionAuthorityAndRunner() {
         assertThat(applicationContext.getBean(WorldStorageMigrationOrchestrator.class)).isNotNull();
         assertThat(runner).isNotNull();
+        assertThat(applicationContext.getBean(WorldV2CanaryCertifiedAuthority.class)).isSameAs(authority);
+        assertThat(authority.ownerHash()).isEqualTo(WorldV2CanaryCertifiedAuthority.CERTIFIED_OWNER_SHA256);
         assertThat(runner.execute().block().status())
-                .isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_PASS);
+                .isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_FAILED_OWNER_HASH);
     }
 
     @Test
@@ -68,25 +70,6 @@ class WorldV2CanaryRunnerContextTest {
     @Profile("world-v2-canary")
     @Import({WorldV2CanaryConfiguration.class, WorldV2CanaryRunner.class})
     static class TestBeans {
-        @Bean
-        @Primary
-        WorldV2CanaryCertifiedAuthority certifiedAuthority() {
-            WorldV2CanaryCertifiedAuthority certified = WorldV2CanaryCertifiedAuthority.h79f();
-            WorldV2CanaryCertifiedAuthority authority = mock(WorldV2CanaryCertifiedAuthority.class);
-            org.mockito.Mockito.when(authority.ownerHash()).thenReturn(
-                    WorldV2CanaryRunner.sha256("11111111-1111-1111-1111-111111111111"));
-            org.mockito.Mockito.when(authority.sourceSha()).thenReturn(WorldV2CanaryCertifiedAuthority.SOURCE_SHA);
-            org.mockito.Mockito.when(authority.semanticPlanSha())
-                    .thenReturn(WorldV2CanaryCertifiedAuthority.SEMANTIC_PLAN_SHA);
-            org.mockito.Mockito.when(authority.canonicalFingerprint())
-                    .thenReturn(WorldV2CanaryCertifiedAuthority.CANONICAL_FINGERPRINT);
-            org.mockito.Mockito.when(authority.effectiveCapacity(org.mockito.ArgumentMatchers.any()))
-                    .thenAnswer(invocation -> certified.effectiveCapacity(invocation.getArgument(0)));
-            org.mockito.Mockito.when(authority.operatorEchoesMatch(org.mockito.ArgumentMatchers.any()))
-                    .thenAnswer(invocation -> certified.operatorEchoesMatch(invocation.getArgument(0)));
-            return authority;
-        }
-
         @Bean
         WorldV2CanarySourceProbe sourceProbe() {
             return ignored -> Mono.just(new WorldV2CanarySourceProbe.SourceSnapshot(

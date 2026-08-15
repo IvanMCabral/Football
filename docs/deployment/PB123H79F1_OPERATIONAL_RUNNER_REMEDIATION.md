@@ -1,34 +1,46 @@
-# PB1.2.3H7.9F.1 — Operational runner P1 remediation
+# PB1.2.3H7.9F.1 — Operational runner final targeted remediation
 
 ## Result
 
-Local implementation closes P1-01 through P1-04 and the three targeted P2
-findings from the independent rejection. Authority and capacity are no longer
-self-signed by runtime configuration, mutation arming is exact, and a runner
-instance can make one attempt only.
+`PB1.2.3H7.9F.1 OPERATIONAL RUNNER FINAL REMEDIATION READY FOR RE-REVIEW`
+
+This local remediation addresses only F1, F2, and F3 from the second independent
+review. It does not authorize deployment, public validation, canary execution,
+cleanup, or provider mutation.
 
 ## Closure table
 
-| Finding | Status | Evidence |
+| Finding | Local status | Evidence |
 |---|---|---|
-| P1-01 certified authority weakenable | Closed | Immutable production authority; runtime echo attacks fail closed |
-| P1-02 capacity safety weakenable | Closed | Certified min/max calculation and boundary matrix |
-| P1-03 execute matching not exact | Closed | Raw exact mode/confirmation parameter matrix |
-| P1-04 no structural one-shot | Closed | Atomic guard, repeated-call and multi-subscription tests |
-| P2-01 capacity TOCTOU | Closed | Sequential source → capacity → orchestrator test |
-| P2-02 unreachable accepted state | Closed | Already-migrated outcome rejected with exit 1 |
-| P2-03 normal-context coverage | Closed | Full normal application context plus activation matrix |
+| F1 — incompatible owner digest | Closed | Same selected `PROVEN_TEST_OWNER` recertified from historical MD5 provenance to canonical full SHA-256 |
+| F2 — alternate provider metric | Closed | Admission parser now requires integral, non-negative `current_storage`; `total_monthly_storage` has no authority |
+| F3 — concurrent one-shot regression | Closed | Two fully armed calls race behind a latch; one migrates and the other receives `RUNNER_ALREADY_INVOKED` |
+
+## Preserved contracts
+
+- Source SHA, semantic-plan SHA, canonical fingerprint, and capacity constants are unchanged.
+- Runtime owner input is strictly parsed as a UUID, canonicalized with `UUID.toString()`, and hashed with SHA-256.
+- `EXECUTE` and its confirmation remain raw exact comparisons.
+- Source proof still precedes the fresh provider sample, which immediately precedes orchestration.
+- Product CAS, reference authority, catalog checks, normal-runtime isolation, and maximum one orchestrator call are unchanged.
+- The runner performs no direct Redis mutation and exposes no public endpoint.
+
+## Historical correction
+
+The historical 32-character fingerprint `6d963e62a2a6095b976ca78156a7ef0a`
+is `MD5(UTF-8 canonical UUID string)`. It remains provenance only and is not an
+authorization digest. The same selected owner is now certified under canonical
+full SHA-256. No owner selection changed and no raw owner identifier was
+persisted.
 
 ## Residual classification
 
 - P0: 0.
 - P1 in remediation scope: 0.
 - P2 in remediation scope: 0.
-- P3: 0.
+- P3 in remediation scope: 0.
 
-The normal application and product migration semantics are unchanged. The
-existing product CAS remains authoritative for a source change after the
-runner's preflight. This local result is ready for independent re-review, not an
-independent approval.
+This is a remediation claim ready for independent re-review, not independent
+approval.
 
 `PUBLIC CANARY EXECUTION AUTHORIZED = NO`.

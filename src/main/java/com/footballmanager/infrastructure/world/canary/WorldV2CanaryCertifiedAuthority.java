@@ -5,7 +5,10 @@ import java.util.Objects;
 /** Immutable authority for the single H7.9F certified canary. */
 public final class WorldV2CanaryCertifiedAuthority {
 
-    public static final String OWNER_HASH = "6d963e62a2a6095b976ca78156a7ef0a";
+    /** Historical selection fingerprint retained for provenance only; never used for authorization. */
+    public static final String HISTORICAL_SELECTED_OWNER_MD5 = "6d963e62a2a6095b976ca78156a7ef0a";
+    public static final String CERTIFIED_OWNER_SHA256 =
+            "7fcae17b55af464cc929f242689bb456d9cc06718cf47d2e9642966041cd71e8";
     public static final String SOURCE_SHA = "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f";
     public static final String SEMANTIC_PLAN_SHA =
             "298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a";
@@ -44,7 +47,7 @@ public final class WorldV2CanaryCertifiedAuthority {
     }
 
     public static WorldV2CanaryCertifiedAuthority h79f() {
-        return new WorldV2CanaryCertifiedAuthority(OWNER_HASH, SOURCE_SHA, SEMANTIC_PLAN_SHA,
+        return new WorldV2CanaryCertifiedAuthority(CERTIFIED_OWNER_SHA256, SOURCE_SHA, SEMANTIC_PLAN_SHA,
                 CANONICAL_FINGERPRINT, MAX_PROVIDER_QUOTA_BYTES, MIN_REQUIRED_HEADROOM_BYTES,
                 MIN_RETAINED_CUSHION_BYTES, MAX_ADMITTED_CURRENT_STORAGE_BYTES);
     }

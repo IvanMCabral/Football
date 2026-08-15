@@ -1,0 +1,20 @@
+{
+  "schema": "pb123h79f1-owner-authority-recertification-v1",
+  "recordedAt": "2026-08-15T18:14:49Z",
+  "historicalFingerprint": "6d963e62a2a6095b976ca78156a7ef0a",
+  "historicalAlgorithm": "MD5(UTF-8 canonical UUID string)",
+  "canonicalInput": "strict UUID parse -> UUID.toString lowercase -> UTF-8",
+  "certifiedOwnerSha256": "7fcae17b55af464cc929f242689bb456d9cc06718cf47d2e9642966041cd71e8",
+  "productionAuthoritySha256": "7fcae17b55af464cc929f242689bb456d9cc06718cf47d2e9642966041cd71e8",
+  "provenanceClassification": "PROVEN_TEST_OWNER",
+  "sameOwnerProven": true,
+  "historicalFingerprintMatches": true,
+  "independentSha256ImplementationsMatch": true,
+  "bindingPass": true,
+  "rawOwnerPersisted": false,
+  "ownerSelectionChanged": false,
+  "redisWrites": 0,
+  "postgresqlWrites": 0,
+  "providerChanges": 0,
+  "publicRunnerInvocations": 0
+}

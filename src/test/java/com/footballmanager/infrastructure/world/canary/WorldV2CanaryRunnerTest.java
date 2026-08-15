@@ -18,6 +18,11 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,13 +30,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class WorldV2CanaryRunnerTest {
 
     private static final UUID OWNER = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final WorldV2CanaryCertifiedAuthority AUTHORITY = testAuthority();
+    private static final WorldV2CanaryCertifiedAuthority SYNTHETIC_AUTHORITY = syntheticAuthority();
     private static final long THRESHOLD = WorldV2CanaryCertifiedAuthority.MAX_ADMITTED_CURRENT_STORAGE_BYTES;
 
     @Test
@@ -123,6 +129,51 @@ class WorldV2CanaryRunnerTest {
         verify(orchestrator).migrate(any(), any());
     }
 
+    @Test
+    void concurrentArmedAttemptsAllowExactlyOneOperationalFlow() throws Exception {
+        AtomicInteger sourceCalls = new AtomicInteger();
+        AtomicInteger capacityCalls = new AtomicInteger();
+        WorldV2CanarySourceProbe source = ignored -> Mono.fromSupplier(() -> {
+            sourceCalls.incrementAndGet();
+            return validSource();
+        });
+        WorldV2CanaryCapacityProvider capacity = () -> Mono.fromSupplier(() -> {
+            capacityCalls.incrementAndGet();
+            return sample(THRESHOLD);
+        });
+        WorldStorageMigrationOrchestrator orchestrator = migratedOrchestrator();
+        WorldV2CanaryRunner runner = runner(orchestrator, source, capacity, "EXECUTE",
+                WorldV2CanaryRunner.EXECUTE_CONFIRMATION);
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService workers = Executors.newFixedThreadPool(2);
+        try {
+            java.util.concurrent.Callable<WorldV2CanaryRunner.RunResult> attempt = () -> {
+                ready.countDown();
+                if (!start.await(5, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("concurrent test barrier timed out");
+                }
+                return runner.execute().block();
+            };
+            Future<WorldV2CanaryRunner.RunResult> first = workers.submit(attempt);
+            Future<WorldV2CanaryRunner.RunResult> second = workers.submit(attempt);
+            assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+
+            assertThat(List.of(first.get(10, TimeUnit.SECONDS).status(),
+                    second.get(10, TimeUnit.SECONDS).status()))
+                    .containsExactlyInAnyOrder(WorldV2CanaryRunner.Status.MIGRATED,
+                            WorldV2CanaryRunner.Status.RUNNER_ALREADY_INVOKED);
+            assertThat(sourceCalls).hasValue(1);
+            assertThat(capacityCalls).hasValue(1);
+            verify(orchestrator, times(1)).migrate(any(), any());
+        } finally {
+            start.countDown();
+            workers.shutdownNow();
+            assertThat(workers.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
+        }
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" ", "*,", "*", "11111111-1111-1111-1111-111111111111,",
@@ -136,11 +187,23 @@ class WorldV2CanaryRunnerTest {
         WorldStorageMigrationOrchestrator orchestrator = mock(WorldStorageMigrationOrchestrator.class);
         WorldV2CanaryProperties properties = properties("VALIDATE_ONLY", null);
         properties.setOwnerId(rawOwner);
-        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, AUTHORITY, source, capacity,
+        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, SYNTHETIC_AUTHORITY, source, capacity,
                 orchestrator).execute().block();
         assertThat(result.status()).isIn(WorldV2CanaryRunner.Status.VALIDATION_FAILED_STATE,
                 WorldV2CanaryRunner.Status.VALIDATION_FAILED_OWNER_HASH);
         verifyNoCalls(source, capacity, orchestrator);
+    }
+
+    @Test
+    void uppercaseUuidTextUsesCanonicalOwnerDigest() {
+        WorldV2CanaryProperties properties = properties("VALIDATE_ONLY", null);
+        properties.setOwnerId(OWNER.toString().toUpperCase(java.util.Locale.ROOT));
+
+        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, SYNTHETIC_AUTHORITY,
+                source(), capacity(THRESHOLD), mock(WorldStorageMigrationOrchestrator.class)).execute().block();
+
+        assertThat(result.status()).isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_PASS);
+        assertThat(result.ownerHash()).isEqualTo(SYNTHETIC_AUTHORITY.ownerHash());
     }
 
     @Test
@@ -152,8 +215,23 @@ class WorldV2CanaryRunnerTest {
         WorldV2CanarySourceProbe source = mock(WorldV2CanarySourceProbe.class);
         WorldV2CanaryCapacityProvider capacity = mock(WorldV2CanaryCapacityProvider.class);
         WorldStorageMigrationOrchestrator orchestrator = mock(WorldStorageMigrationOrchestrator.class);
-        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, AUTHORITY, source, capacity,
+        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, SYNTHETIC_AUTHORITY, source, capacity,
                 orchestrator).execute().block();
+        assertThat(result.status()).isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_FAILED_STATE);
+        verifyNoCalls(source, capacity, orchestrator);
+    }
+
+    @Test
+    void historicalMd5FingerprintCannotActAsSha256Authority() {
+        WorldV2CanaryProperties properties = properties("VALIDATE_ONLY", null);
+        properties.setExpectedOwnerHash(WorldV2CanaryCertifiedAuthority.HISTORICAL_SELECTED_OWNER_MD5);
+        WorldV2CanarySourceProbe source = mock(WorldV2CanarySourceProbe.class);
+        WorldV2CanaryCapacityProvider capacity = mock(WorldV2CanaryCapacityProvider.class);
+        WorldStorageMigrationOrchestrator orchestrator = mock(WorldStorageMigrationOrchestrator.class);
+
+        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, SYNTHETIC_AUTHORITY,
+                source, capacity, orchestrator).execute().block();
+
         assertThat(result.status()).isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_FAILED_STATE);
         verifyNoCalls(source, capacity, orchestrator);
     }
@@ -162,7 +240,7 @@ class WorldV2CanaryRunnerTest {
     void alternateSourceAndFingerprintCannotSelfAuthorizeWithRuntimeEchoes() {
         WorldV2CanaryProperties sourceProperties = properties("VALIDATE_ONLY", null);
         sourceProperties.setExpectedSourceSha("source-b");
-        WorldV2CanaryRunner.RunResult sourceResult = new WorldV2CanaryRunner(sourceProperties, AUTHORITY,
+        WorldV2CanaryRunner.RunResult sourceResult = new WorldV2CanaryRunner(sourceProperties, SYNTHETIC_AUTHORITY,
                 ignored -> Mono.just(new WorldV2CanarySourceProbe.SourceSnapshot(
                         WorldStorageMigrationExecutor.StoredState.LEGACY, "source-b", true, true, 0,
                         true, false, WorldV2CanaryCertifiedAuthority.CANONICAL_FINGERPRINT)),
@@ -172,7 +250,7 @@ class WorldV2CanaryRunnerTest {
         WorldV2CanaryProperties fingerprintProperties = properties("VALIDATE_ONLY", null);
         fingerprintProperties.setExpectedCanonicalFingerprint("fingerprint-b");
         WorldV2CanaryRunner.RunResult fingerprintResult = new WorldV2CanaryRunner(fingerprintProperties,
-                AUTHORITY, source(), capacity(THRESHOLD), mock(WorldStorageMigrationOrchestrator.class))
+                SYNTHETIC_AUTHORITY, source(), capacity(THRESHOLD), mock(WorldStorageMigrationOrchestrator.class))
                 .execute().block();
         assertThat(fingerprintResult.status()).isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_FAILED_STATE);
     }
@@ -182,7 +260,7 @@ class WorldV2CanaryRunnerTest {
         WorldV2CanaryProperties properties = properties("VALIDATE_ONLY", null);
         properties.setExpectedSemanticPlanSha("plan-b");
         WorldV2CanarySourceProbe source = mock(WorldV2CanarySourceProbe.class);
-        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, AUTHORITY, source,
+        WorldV2CanaryRunner.RunResult result = new WorldV2CanaryRunner(properties, SYNTHETIC_AUTHORITY, source,
                 mock(WorldV2CanaryCapacityProvider.class), mock(WorldStorageMigrationOrchestrator.class))
                 .execute().block();
         assertThat(result.status()).isEqualTo(WorldV2CanaryRunner.Status.VALIDATION_FAILED_STATE);
@@ -295,7 +373,7 @@ class WorldV2CanaryRunnerTest {
             String logs = appender.list.stream().map(ILoggingEvent::getFormattedMessage)
                     .reduce("", (left, right) -> left + right);
             assertThat(logs).doesNotContain(OWNER.toString(), "UPSTASH_API_KEY", "Authorization", "Basic ");
-            assertThat(logs).contains(AUTHORITY.ownerHash());
+            assertThat(logs).contains(SYNTHETIC_AUTHORITY.ownerHash());
         } finally {
             logger.detachAppender(appender);
             appender.stop();
@@ -331,7 +409,7 @@ class WorldV2CanaryRunnerTest {
                                               WorldV2CanarySourceProbe source,
                                               WorldV2CanaryCapacityProvider capacity,
                                               String mode, String confirmation) {
-        return new WorldV2CanaryRunner(properties(mode, confirmation), AUTHORITY, source, capacity, orchestrator);
+        return new WorldV2CanaryRunner(properties(mode, confirmation), SYNTHETIC_AUTHORITY, source, capacity, orchestrator);
     }
 
     private static WorldV2CanaryProperties properties(String mode, String confirmation) {
@@ -373,10 +451,10 @@ class WorldV2CanaryRunnerTest {
                 WorldStorageMigrationOrchestrator.Status.MIGRATED, "ok", 10);
     }
 
-    private static WorldV2CanaryCertifiedAuthority testAuthority() {
+    private static WorldV2CanaryCertifiedAuthority syntheticAuthority() {
         WorldV2CanaryCertifiedAuthority certified = WorldV2CanaryCertifiedAuthority.h79f();
         WorldV2CanaryCertifiedAuthority authority = mock(WorldV2CanaryCertifiedAuthority.class);
-        when(authority.ownerHash()).thenReturn(WorldV2CanaryRunner.sha256(OWNER.toString()));
+        when(authority.ownerHash()).thenReturn(WorldV2CanaryRunner.canonicalOwnerSha256(OWNER));
         when(authority.sourceSha()).thenReturn(WorldV2CanaryCertifiedAuthority.SOURCE_SHA);
         when(authority.semanticPlanSha()).thenReturn(WorldV2CanaryCertifiedAuthority.SEMANTIC_PLAN_SHA);
         when(authority.canonicalFingerprint()).thenReturn(WorldV2CanaryCertifiedAuthority.CANONICAL_FINGERPRINT);
