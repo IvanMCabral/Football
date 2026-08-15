@@ -1,45 +1,61 @@
-# PB1.2.3H7.9F.1 — Operational runner test report
+# PB1.2.3H7.9F.1 — Operational runner remediation test report
 
-## Focused runner matrix
+## Review lineage
 
-`WorldV2CanaryRunnerTest` covers the required fail-closed matrix: disabled and
-read-only behavior, execute arming, owner mismatch, source/state/reference and
-catalog changes, provider authentication failure, over-capacity and boundary
-admission, below-threshold admission, exactly-one migration, partial outcome,
-exception/no-retry behavior, multiple-owner input rejection, and sanitized
-result fields.
+The independent review remains historically `PB1.2.3H7.9F.1 OPERATIONAL
+RUNNER REJECTED` with four P1 findings. This report records the subsequent local
+remediation; it does not self-promote the runner to independent approval.
 
-`WorldV2CanaryRunnerContextTest` proves the dedicated profile/property wiring to
-the concrete `WorldStorageMigrationOrchestrator` and verifies that the normal
-profile does not register the runner.
+## Fresh results
 
-## Local results
-
-| Test class | Tests | Failures | Errors | Skipped |
+| Group | Tests | Failures | Errors | Skipped |
 |---|---:|---:|---:|---:|
-| `WorldV2CanaryRunnerTest` | 10 | 0 | 0 | 0 |
-| `WorldV2CanaryRunnerContextTest` | 2 | 0 | 0 | 0 |
-| World migration/reference supporting suite | 29 | 0 | 0 | 0 |
-| `WorldStorageV2NegativeControlsTest` (Spring context) | 34 | 0 | 0 | 0 |
-| **Total executed across focused runs** | **75** | **0** | **0** | **0** |
+| Runner, immutable authority, canary context, activation matrix | 58 | 0 | 0 | 0 |
+| Real normal application context | 1 | 0 | 0 | 0 |
+| Migration/reference/physical capacity supporting suites | 55 | 0 | 0 | 0 |
+| `WorldStorageV2NegativeControlsTest` | 34 | 0 | 0 | 0 |
+| **Total** | **148** | **0** | **0** | **0** |
 
-The supporting suite includes persisted-model discovery, reference inventory,
-migration limits/planning, physical capacity, and representation tests. Test
-compile completed successfully. The negative-controls context suite also
-passed against the isolated test profile; no public provider was used.
+`mvn -q -DskipTests test-compile` completed successfully. All contexts used the
+isolated `test` runtime. No public provider or production credential was used.
 
-## Safety assertions
+## Required matrix
 
-- normal profile: runner absent and no invocation;
-- validation-only: zero orchestrator invocations;
-- execute: at most one invocation;
-- automatic retries: none;
-- bulk owners: structurally unsupported;
-- public endpoint: none;
-- direct Redis mutation: none;
-- public execution: not performed.
+The focused suite independently covers disabled/inert activation, read-only
+default, exact execute and confirmation, case/whitespace attacks, immutable
+owner/source/plan/fingerprint authority, capacity floors/ceilings and exact
+boundary, malformed multi-owner input, source-before-capacity ordering, zero
+orchestration on rejection, one call on success/partial/error, no retry,
+second-call rejection, cold-publisher re-subscription rejection, exit mapping,
+raw-owner log exclusion, and provider-secret log exclusion.
 
-## Evidence classification
+The real normal application context proves the runner, authority, source probe,
+and Management API provider are absent. The activation matrix proves all four
+negative profile/property combinations inert. The supporting integration suite
+retains source-to-write CAS evidence, including stale source checksum rejection
+without commit.
 
-The JSON evidence beside this report is local test evidence only. It contains
-no credentials, raw owner IDs, provider responses, or public runtime claims.
+## Adversarial self-attack
+
+| Attack | Result |
+|---|---|
+| A — owner B plus matching runtime hash | Failed before source; immutable owner authority retained |
+| B — source B plus matching runtime echo | Failed before source/runtime acceptance |
+| C — fingerprint B plus matching runtime echo | Failed before source/runtime acceptance |
+| D — required headroom `0` | Effective floor remains `2436344` |
+| E — cushion `0` | Effective floor remains `262144` |
+| F — quota above certified | Effective ceiling remains `268435456` |
+| G — threshold above certified | Effective ceiling remains `265736968` |
+| H — mode `execute` | Not armed; zero orchestration |
+| I — mode ` EXECUTE` | Not armed; zero orchestration |
+| J — two calls | Second is `RUNNER_ALREADY_INVOKED` |
+| K — two subscriptions | Second is `RUNNER_ALREADY_INVOKED`; one orchestration maximum |
+| L — source changes after probe | Existing product CAS rejects stale checksum without commit |
+
+## Production activity
+
+Render deploys, public runner invocations, public Redis writes/deletes, public
+PostgreSQL writes, catalog writes, cleanup, credential changes, billing changes,
+and gameplay changes: all zero.
+
+`PUBLIC CANARY EXECUTION AUTHORIZED = NO`.

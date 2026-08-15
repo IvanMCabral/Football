@@ -2,50 +2,50 @@
 
 ## Components
 
-| Layer | Component | Responsibility |
-|---|---|---|
-| Application | `WorldV2CanaryCapacityProvider` | Fresh capacity sample and admission semantics |
-| Application | `WorldV2CanarySourceProbe` | Read-only source/career/catalog proof |
-| Infrastructure | `WorldV2CanaryRunner` | Single-owner validation, arming, one orchestrator call, result/exit mapping |
-| Infrastructure | `ProductWorldV2CanarySourceProbe` | Normal product read ports plus read-only catalog inspection |
-| Infrastructure | `UpstashManagementCapacityProvider` | GET-only Upstash Management API adapter |
-| Infrastructure | `WorldV2CanaryApplication` | Dedicated process boundary and deterministic exit status |
+| Component | Responsibility |
+|---|---|
+| `WorldV2CanaryCertifiedAuthority` | Immutable H7.9F identity and capacity authority |
+| `WorldV2CanaryRunner` | Exact one-owner validation, one-shot arming, ordered preflight, result/exit mapping |
+| `WorldV2CanarySourceProbe` | Read-only product source proof |
+| `WorldV2CanaryCapacityProvider` | Fresh current-storage sample only |
+| `ProductWorldV2CanarySourceProbe` | Product-port implementation of source/reference/catalog inspection |
+| `UpstashManagementCapacityProvider` | GET-only Management API adapter with runtime-only credentials |
+| `WorldStorageMigrationOrchestrator` | Existing migration and write-time CAS boundary |
+| `WorldV2CanaryApplication` | Dedicated process boundary |
 
-All runner beans require the `world-v2-canary` profile and the explicit enable
-property. The regular server profile has no runner bean and makes no provider
-call.
+## Implemented remediation
 
-## Execution contract
+- P1-01: authority moved from replaceable properties into an immutable value
+  object. Runtime echoes are optional confirmations and mismatch fails before
+  probes.
+- P1-02: capacity safety is calculated from immutable ceilings/floors. Provider
+  data can no longer self-report quota or safety margins.
+- P1-03: `EXECUTE` and its confirmation use raw exact equality.
+- P1-04: `AtomicBoolean.compareAndSet(false, true)` executes inside the cold
+  publisher boundary, so calls and re-subscriptions share one attempt.
+- P2-01: concurrent `zipWith` was replaced by sequential source validation,
+  fresh capacity sampling, and immediate orchestration.
+- P2-02: `ALREADY_MIGRATED_VALID` is not a runner success; if unexpectedly
+  returned, it becomes `ORCHESTRATOR_FAILED` with non-zero exit.
+- P2-03: a real normal Spring Boot application context proves the entire canary
+  operational path absent, complemented by the four-case activation matrix.
 
-1. Validate activation material and parse exactly one owner UUID.
-2. Compare the SHA-256 owner hash.
-3. Inspect source, ownership, references, and catalog.
-4. Fetch fresh provider accounting and apply the capacity contract.
-5. Return `VALIDATION_PASS` in the default read-only mode.
-6. In armed `EXECUTE`, call `WorldStorageMigrationOrchestrator.migrate` once.
+## One-shot and result semantics
 
-The result preserves typed failure states for owner, source, state, references,
-catalog, capacity, provider authentication, arming, partial orchestration, and
-unexpected orchestration failures. No outer retry exists. Accepted exit code 0
-states are validation pass, migrated, and already-migrated-valid; all other
-states return non-zero.
+The first invocation consumes the runner before configuration validation. The
+guard is never reset after validation, provider, capacity, partial, or
+orchestrator failure. The maximum orchestrator invocation count per runner
+instance is one. Accepted results are only read-only validation pass or migrated.
 
-## Provider handling
+## Runtime versus retained proof
 
-The adapter authenticates with runtime-only Basic credentials, first confirms
-the configured database is visible, then reads the stats endpoint. Only
-sanitized storage accounting is retained. Provider authentication failures are
-mapped to `VALIDATION_FAILED_PROVIDER_AUTH`; malformed/unavailable accounting is
-fail-closed. No provider mutation is possible through this adapter.
-
-## Verification boundary
-
-The implementation was verified with focused unit tests and a Spring context
-test using fake local source/capacity ports and the concrete product
-orchestrator. No public Redis, PostgreSQL, Render, Upstash, Firebase, or
-production credentials were used by the tests.
+Runtime revalidates owner hash, LEGACY state, source SHA, reference absence,
+career absence, catalog compatibility, fingerprint, and fresh current storage.
+The semantic plan SHA remains the immutable certified plan authority; the probe
+does not fabricate a runtime plan digest. The existing migration executor CAS
+continues to reject source changes between preflight and commit.
 
 ## Operational status
 
-Implementation is ready for independent review. Public execution remains
-explicitly unauthorized until a separate operational authorization is granted.
+This is local remediation for independent re-review. Public canary execution is
+not authorized and no production/provider operation was performed.

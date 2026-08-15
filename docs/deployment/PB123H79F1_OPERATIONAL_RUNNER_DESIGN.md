@@ -1,68 +1,63 @@
 # PB1.2.3H7.9F.1 — World V2 one-shot runner design
 
-## Scope
+## Scope and activation
 
-This document describes the non-public operational path introduced for the
-single-owner World V2 canary. It is an administrative process boundary only;
-it is not an HTTP endpoint, scheduled task, actuator operation, public route,
-or normal application startup behavior.
+This is a non-public process boundary for the previously certified, single-owner
+World V2 canary. It is not an HTTP endpoint, scheduler, actuator operation,
+generic migration tool, or normal application behavior. The operational beans
+exist only with profile `world-v2-canary` and
+`world.v2.canary.enabled=true`; the dedicated entry point also enforces both
+conditions. A normal `FootballManagerApplication` context contains no runner,
+source probe, Management API capacity provider, or certified-authority bean.
 
-## Activation contract
+## Immutable certified authority
 
-The process is active only when both conditions are true:
+`WorldV2CanaryCertifiedAuthority` is immutable production code. Environment and
+configuration cannot replace its owner hash, source SHA, semantic-plan SHA,
+canonical fingerprint, quota ceiling, headroom floor, cushion floor, or storage
+ceiling. The raw owner UUID remains runtime-only and is admitted only when its
+SHA-256 equals the certified owner hash. Optional operator echo properties may
+confirm authority but cannot define or replace it.
 
-- profile `world-v2-canary` is active;
-- `world.v2.canary.enabled=true` is set explicitly.
+The semantic plan SHA is retained certified authority. Runtime proves the source
+SHA, owner binding, source state, reference absence, catalog compatibility, and
+catalog fingerprint; it does not claim to derive a new plan digest.
 
-The dedicated entry point refuses to start without those conditions. The
-normal `FootballManagerApplication` entry point is unchanged.
+## Capacity contract
 
-Required runtime material is supplied through environment/properties and is
-validated before any source/provider call: one raw owner UUID, its expected
-SHA-256 hash, source checksum, semantic-plan checksum, canonical fingerprint,
-and a maximum admitted provider storage value. The raw owner is never logged.
+The provider adapter supplies only fresh `current_storage`. Safety constants are
+not accepted from that provider response. Runtime configuration can tighten but
+never weaken the certified contract:
 
-## Read-only default and arming
+- quota is capped at `268435456` bytes;
+- required headroom is at least `2436344` bytes;
+- retained cushion is at least `262144` bytes;
+- admitted current storage is at most `265736968` bytes and at most the
+  threshold derived from the effective quota, headroom, and cushion.
 
-The default mode is `VALIDATE_ONLY`. It performs the complete source and fresh
-capacity admission checks and invokes the orchestrator zero times. Mutation is
-available only in `EXECUTE` mode plus the exact confirmation value
-`PB123H79F_ONE_OWNER_EXECUTE`; the confirmation is an operational guard, not a
-credential. There is no fallback, owner discovery, bulk mode, pagination, loop,
-or retry.
+Invalid or impossible arithmetic fails closed.
 
-## Preconditions
+## Execution boundary
 
-The runner requires `LEGACY` state, the certified source checksum, exact owner
-binding, no career/references, a compatible canonical fingerprint, and a fresh
-Upstash Management API storage sample. The capacity contract checks quota,
-required headroom, retained cushion, and the configured maximum threshold before
-the product `WorldStorageMigrationOrchestrator` is called.
+The default is read-only `VALIDATE_ONLY`. Mutation requires raw exact mode
+`EXECUTE` and raw exact confirmation `PB123H79F_ONE_OWNER_EXECUTE`; neither is
+trimmed, case-folded, or otherwise normalized. An atomic boundary guard consumes
+the runner on its first subscription, regardless of success or failure. Every
+later call or subscription returns `RUNNER_ALREADY_INVOKED` before source,
+capacity, or orchestration.
 
-## Security boundaries
+The reactive order is strictly source proof, fresh capacity sample, and then
+immediate orchestration. The product migration CAS remains the write-time guard
+against a source change after the preflight. There is no retry, loop, bulk mode,
+or accepted already-migrated state in this runner.
 
-The provider adapter is infrastructure-only and uses runtime `UPSTASH_EMAIL`
-and `UPSTASH_API_KEY` for HTTP Basic authentication. Credentials and raw
-payloads are never logged or persisted. No Redis command is issued by the
-runner itself. Process exit handling is isolated in the dedicated application
-boundary; domain/application code does not call `System.exit`.
+## Exit and security contract
 
-## Certified inputs retained from H7.9F
+Exit code zero is limited to `VALIDATION_PASS` and `MIGRATED`. Every rejection,
+provider error, capacity error, repeated invocation, partial result, source
+change, or orchestration failure is non-zero. Logs contain only sanitized
+results and the owner hash; raw owner and provider credentials are excluded.
+Provider access remains GET-only.
 
-- owner hash: `6d963e62a2a6095b976ca78156a7ef0a`
-- source SHA: `2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f`
-- semantic plan SHA: `298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a`
-- canonical fingerprint: `1e654bec389796d232aba91685ac87d9ef1de08bcf3f5a7da563fdedbfb27000`
-- quota: `268435456` bytes
-- required headroom: `2436344` bytes
-- retained cushion: `262144` bytes
-- maximum admitted storage: `265736968` bytes
-
-These values are authority inputs, not a current-storage snapshot. Current
-storage is sampled immediately before orchestration.
-
-## Explicit non-goals
-
-This change does not execute the public canary, deploy Render, mutate public
-Redis/PostgreSQL, create a catalog, alter gameplay, or change migration
-semantics.
+No deploy, public canary, provider mutation, public Redis/PostgreSQL mutation,
+cleanup, billing operation, or gameplay change is part of this design.
