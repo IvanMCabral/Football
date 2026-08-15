@@ -1,0 +1,19 @@
+{
+  "profile": "world-v2-canary",
+  "enabled": true,
+  "mode": "VALIDATE_ONLY",
+  "executeConfirmationPresent": false,
+  "runnerInstancesStarted": 1,
+  "runnerResult": "ORCHESTRATOR_FAILED",
+  "exitCode": 1,
+  "sanitizedReason": "canary precondition flow failed",
+  "ownerHash": "7fcae17b55af464cc929f242689bb456d9cc06718cf47d2e9642966041cd71e8",
+  "sourceShaFromRunner": null,
+  "semanticPlanSha": "298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a",
+  "currentStorageFromRunner": -1,
+  "quotaBytes": 268435456,
+  "orchestratorInvocations": 0,
+  "capacityProviderCalls": 0,
+  "rootCauseClassification": "DEDICATED_PROCESS_POSTGRES_AUTHORITY_UNAVAILABLE",
+  "retryAttempted": false
+}

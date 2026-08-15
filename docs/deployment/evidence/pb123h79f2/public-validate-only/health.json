@@ -1,0 +1,18 @@
+{
+  "pre": [
+    {"sample": 1, "endpoint": "liveness", "http": 200, "elapsedMs": 1497, "status": "UP"},
+    {"sample": 1, "endpoint": "readiness", "http": 200, "elapsedMs": 14302, "status": "UP", "database": "UP", "redis": "UP"},
+    {"sample": 2, "endpoint": "liveness", "http": 200, "elapsedMs": 413, "status": "UP"},
+    {"sample": 2, "endpoint": "readiness", "http": 200, "elapsedMs": 997, "status": "UP", "database": "UP", "redis": "UP"},
+    {"sample": 3, "endpoint": "liveness", "http": 200, "elapsedMs": 397, "status": "UP"},
+    {"sample": 3, "endpoint": "readiness", "http": 200, "elapsedMs": 1072, "status": "UP", "database": "UP", "redis": "UP"}
+  ],
+  "post": [
+    {"sample": 1, "endpoint": "liveness", "http": 200, "elapsedMs": 360, "status": "UP"},
+    {"sample": 1, "endpoint": "readiness", "http": 200, "elapsedMs": 2190, "status": "UP", "database": "UP", "redis": "UP"},
+    {"sample": 2, "endpoint": "liveness", "http": 200, "elapsedMs": 398, "status": "UP"},
+    {"sample": 2, "endpoint": "readiness", "http": 200, "elapsedMs": 897, "status": "UP", "database": "UP", "redis": "UP"},
+    {"sample": 3, "endpoint": "liveness", "http": 200, "elapsedMs": 729, "status": "UP"},
+    {"sample": 3, "endpoint": "readiness", "http": 200, "elapsedMs": 971, "status": "UP", "database": "UP", "redis": "UP"}
+  ]
+}

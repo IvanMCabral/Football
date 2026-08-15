@@ -1,0 +1,17 @@
+{
+  "service": "manager-staging-api",
+  "serviceId": "srv-d9nvldtaeets73coqiog",
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "approvedSha": "24560a2b69fd94fce273ebb6aa7fe41b9e81c7ed",
+  "deployedSha": "24560a2b69fd94fce273ebb6aa7fe41b9e81c7ed",
+  "deploymentStatus": "Live",
+  "deploymentTrigger": "Auto-Deploy",
+  "deploymentDuration": "3m26s",
+  "deploymentTimestamp": "2026-08-15T16:07:49-03:00",
+  "plan": "Free",
+  "region": "oregon",
+  "instanceCount": 1,
+  "autoscaling": "OFF",
+  "normalProfile": "prod",
+  "normalStartupCanaryMarkerMatches": 0
+}

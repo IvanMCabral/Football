@@ -1,0 +1,19 @@
+{
+  "managementApi": {
+    "databaseListHttp": 200,
+    "statsHttp": 200,
+    "credentialsPersisted": false,
+    "credentialsPrinted": false
+  },
+  "quotaBytes": 268435456,
+  "maxAdmittedCurrentStorageBytes": 265736968,
+  "requiredHeadroomBytes": 2436344,
+  "retainedCushionBytes": 262144,
+  "t0CurrentStorageBytes": 264967931,
+  "t0HeadroomBytes": 3467525,
+  "t0CushionBytes": 769037,
+  "t0Admitted": true,
+  "t1CurrentStorageBytes": 264967931,
+  "deltaBytes": 0,
+  "providerMarginClassification": "NARROW_POSITIVE"
+}

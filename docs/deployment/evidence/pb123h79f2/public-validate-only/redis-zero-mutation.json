@@ -1,0 +1,28 @@
+{
+  "selectedOwnerSha256": "7fcae17b55af464cc929f242689bb456d9cc06718cf47d2e9642966041cd71e8",
+  "before": {
+    "dbsize": 9555,
+    "ownerType": "string",
+    "ownerPttl": -1,
+    "ownerMemoryBytes": 2483493,
+    "ownerSourceSha": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+    "ownerState": "LEGACY",
+    "catalogExists": 0,
+    "catalogType": "none",
+    "catalogPttl": -2
+  },
+  "after": {
+    "dbsize": 9555,
+    "ownerType": "string",
+    "ownerPttl": -1,
+    "ownerSourceSha": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+    "ownerState": "LEGACY",
+    "catalogExists": 0
+  },
+  "preparedObserved": false,
+  "committedObserved": false,
+  "durableMigrationWrites": 0,
+  "redisDeletes": 0,
+  "rawOwnerPersisted": false,
+  "rawPayloadPersisted": false
+}
