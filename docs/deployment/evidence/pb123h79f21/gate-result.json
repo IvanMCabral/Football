@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-08-15",
+  "verdict": "PB1.2.3H7.9F.2.1 BLOCKED_PRODUCTION_CONTEXT",
+  "reason": "No safe provider-native production-context process is available on the current Free Render service",
+  "validateOnlyInvocations": 0,
+  "sourceProbeCalls": 0,
+  "capacityProviderCalls": 0,
+  "migrationOrchestratorCalls": 0,
+  "preparedObserved": false,
+  "committedObserved": false,
+  "redisWrites": 0,
+  "postgresqlWrites": 0,
+  "catalogWrites": 0,
+  "infrastructureResourcesCreated": 0,
+  "infrastructureSettingsModified": 0,
+  "publicExecuteAuthorized": false,
+  "owner2Authorized": false,
+  "bulkMigrationAuthorized": false,
+  "cleanupAuthorized": false
+}

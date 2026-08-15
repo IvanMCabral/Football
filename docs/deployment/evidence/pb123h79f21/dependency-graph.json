@@ -1,0 +1,29 @@
+{
+  "capturedAt": "2026-08-15",
+  "sourceProbe": "ProductWorldV2CanarySourceProbe",
+  "dependencies": [
+    {
+      "name": "PostgreSQL/Neon canonical catalog",
+      "required": true,
+      "path": "CanonicalWorldCatalogSource -> DurableCanonicalWorldCatalogSource -> LoadBaseDataService.loadCanonical"
+    },
+    {
+      "name": "Redis/Upstash runtime",
+      "required": true,
+      "path": "WorldStorageMigrationExecutor.inspect + CareerRepository.findById + exact owner read"
+    },
+    {
+      "name": "Upstash Management API",
+      "required": true,
+      "path": "WorldV2CanaryRunner -> UpstashManagementCapacityProvider.sample"
+    },
+    {
+      "name": "WorldStorageMigrationOrchestrator",
+      "requiredForValidateOnly": false,
+      "expectedCalls": 0
+    }
+  ],
+  "previousFailureClassification": "DEDICATED_PROCESS_POSTGRES_AUTHORITY_UNAVAILABLE",
+  "previousFailureRootCauseVerified": true,
+  "hiddenDependencyIssueProven": false
+}

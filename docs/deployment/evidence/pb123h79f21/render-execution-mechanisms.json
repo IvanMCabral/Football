@@ -1,0 +1,29 @@
+{
+  "capturedAt": "2026-08-15",
+  "service": "manager-staging-api",
+  "serviceId": "srv-d9nvldtaeets73coqiog",
+  "plan": "Free",
+  "runtime": "Docker",
+  "branch": "feat/v25d99.20.3.1-runtime-fixes",
+  "approvedRuntimeSha": "24560a2b69fd94fce273ebb6aa7fe41b9e81c7ed",
+  "liveRuntimeSha": "24560a2b69fd94fce273ebb6aa7fe41b9e81c7ed",
+  "instances": 1,
+  "autoscaling": "OFF",
+  "dockerfilePath": "./Dockerfile",
+  "dockerBuildContext": ".",
+  "dockerCommandOverride": null,
+  "oneOffJob": {
+    "classification": "SUPPORTED_BUT_UNAVAILABLE_ON_CURRENT_PLAN",
+    "providerUiStatement": "One-off jobs are not supported for free instance types"
+  },
+  "shell": {
+    "classification": "SUPPORTED_BUT_UNAVAILABLE_ON_CURRENT_PLAN",
+    "providerUiStatement": "Shell is not supported for free instance types"
+  },
+  "temporaryDedicatedProcess": "REQUIRES_INFRASTRUCTURE_CHANGE",
+  "secureInjectedEnvironment": "REQUIRES_INFRASTRUCTURE_CHANGE",
+  "localManualSecretCopy": "UNSUPPORTED",
+  "selectedMethod": null,
+  "infrastructureMutations": 0,
+  "secretValuesCaptured": 0
+}
