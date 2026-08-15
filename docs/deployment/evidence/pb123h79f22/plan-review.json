@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-08-15",
+  "service": "manager-staging-api",
+  "serviceId": "srv-d9nvldtaeets73coqiog",
+  "currentPlan": "Free",
+  "minimumQualifyingPlan": "Starter",
+  "starterMonthlyPriceUsd": 7,
+  "oneOffJobsOnFree": false,
+  "oneOffJobsOnStarter": true,
+  "documentedJobEnvironmentOverride": "NOT_VERIFIED",
+  "documentedCreateJobFields": ["startCommand", "planId"],
+  "paymentCardRequiredBeforeUpgrade": true,
+  "prorationDisplayed": false,
+  "reversionToFreeConfirmed": false,
+  "planChanged": false,
+  "billingChanged": false,
+  "evidencePushDeferred": true,
+  "pushDeferralReason": "retained service evidence records Auto-Deploy; this gate prohibits redeploying documentation evidence",
+  "secretValuesCaptured": false
+}

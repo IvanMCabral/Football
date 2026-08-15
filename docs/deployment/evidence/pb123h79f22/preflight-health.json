@@ -1,0 +1,12 @@
+{
+  "capturedAt": "2026-08-15",
+  "service": "manager-staging-api",
+  "samples": [
+    { "sample": 1, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP" },
+    { "sample": 2, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP" },
+    { "sample": 3, "liveness": 200, "readiness": 200, "database": "UP", "redis": "UP" }
+  ],
+  "jobLaunched": false,
+  "redisMutations": 0,
+  "postgresqlMutations": 0
+}
