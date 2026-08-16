@@ -123,12 +123,13 @@ public class WorldQueryService {
     }
 
     /**
-     * A newly registered manager has no owner snapshot yet.  Reading the
-     * complete Redis world just to render the league picker is needlessly
-     * expensive; use the durable canonical catalog until a user snapshot
-     * exists.  Existing owners retain the overlay-aware world-view path.
+     * Builds the read model used by catalog/query endpoints without creating
+     * an owner snapshot for a newly registered manager.  Query projections
+     * must not turn a harmless catalog read into a large Redis write; the
+     * snapshot is created only by a command that actually needs owner state.
+     * Existing owners retain the overlay-aware world-view path.
      */
-    private Mono<WorldView> worldViewForQuery(UUID userId) {
+    public Mono<WorldView> worldViewForQuery(UUID userId) {
         return worldSnapshotRepository.existsByUserId(userId)
                 .flatMap(exists -> exists
                         ? buildWorldViewUseCase.build(userId)

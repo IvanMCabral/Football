@@ -65,10 +65,16 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
                 // canonical SQL catalog so the first query does not perform
                 // owner-scoped Redis reconciliation for every team.
                 .switchIfEmpty(Mono.defer(() -> loadBaseDataService.loadCanonical(userId)
-                        .flatMap(base -> createAndSaveSnapshot(userId, base))));
+                        .flatMap(base -> createAndSaveSnapshot(userId, base, true))));
     }
 
     private Mono<WorldSnapshot> createAndSaveSnapshot(UUID userId, LoadBaseDataService.BaseDataResult base) {
+        return createAndSaveSnapshot(userId, base, false);
+    }
+
+    private Mono<WorldSnapshot> createAndSaveSnapshot(UUID userId,
+                                                       LoadBaseDataService.BaseDataResult base,
+                                                       boolean canonicalBootstrap) {
         WorldSnapshot newSnapshot = new WorldSnapshot();
         newSnapshot.setUserId(userId);
         newSnapshot.setLeagues(base.leagues());
@@ -85,7 +91,11 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
         }
         newSnapshot.setWorldPlayers(playersMap);
 
-        return WorldSnapshotRepository.saveInitial(newSnapshot);
+        Mono<WorldSnapshot> save = WorldSnapshotRepository.saveInitial(newSnapshot);
+        return canonicalBootstrap
+                ? save.contextWrite(context -> context.put(
+                        WorldSnapshotRepository.CANONICAL_BOOTSTRAP_CONTEXT_KEY, true))
+                : save;
     }
 
     private Mono<WorldSnapshot> updateRealLeagueIds(WorldSnapshot snapshot, UUID userId) {

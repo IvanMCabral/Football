@@ -3,7 +3,7 @@ package com.footballmanager.application.service.query;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.view.WorldView;
-import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
+import com.footballmanager.application.service.world.WorldQueryService;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
@@ -18,8 +18,8 @@ class TeamOVRQueryServiceTest {
 
     @Test
     void buildsLeagueOvrProjectionFromOneWorldViewRead() {
-        BuildWorldViewUseCase worldViewUseCase = mock(BuildWorldViewUseCase.class);
-        TeamOVRQueryService service = new TeamOVRQueryService(worldViewUseCase);
+        WorldQueryService worldQueryService = mock(WorldQueryService.class);
+        TeamOVRQueryService service = new TeamOVRQueryService(worldQueryService);
         UUID leagueId = UUID.randomUUID();
         WorldTeam team = mock(WorldTeam.class);
         WorldPlayer player = mock(WorldPlayer.class);
@@ -31,7 +31,7 @@ class TeamOVRQueryServiceTest {
         when(team.getBaseBudget()).thenReturn(java.math.BigDecimal.ONE);
         when(player.getWorldTeamId()).thenReturn("team-1");
         when(player.calculateOverall()).thenReturn(80);
-        when(worldViewUseCase.build(UUID.fromString("00000000-0000-0000-0000-000000000001")))
+        when(worldQueryService.worldViewForQuery(UUID.fromString("00000000-0000-0000-0000-000000000001")))
                 .thenReturn(Mono.just(new WorldView(UUID.randomUUID(), List.of(), List.of(team),
                         List.of(player), Map.of())));
 
@@ -40,6 +40,6 @@ class TeamOVRQueryServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).ovr()).isEqualTo(80);
-        verify(worldViewUseCase, times(1)).build(any());
+        verify(worldQueryService, times(1)).worldViewForQuery(any());
     }
 }

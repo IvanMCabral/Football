@@ -6,7 +6,7 @@ import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.view.WorldView;
-import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
+import com.footballmanager.application.service.world.WorldQueryService;
 import com.footballmanager.domain.service.SessionTeamRankingPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamOVRQueryService {
 
-    private final BuildWorldViewUseCase buildWorldViewUseCase;
+    private final WorldQueryService worldQueryService;
 
     // ========== Shared Sorting Logic (used by CareerSave and Preview) ==========
 
@@ -78,7 +78,7 @@ public class TeamOVRQueryService {
      * Construye lista de TeamOvrView para una lista de equipos
      */
     public Mono<List<TeamOvrView>> buildTeamsWithOVR(UUID userId, List<WorldTeam> teams) {
-        return buildWorldViewUseCase.build(userId)
+        return worldQueryService.worldViewForQuery(userId)
                 .map(worldView -> buildTeamsWithOVRFromView(worldView, teams));
     }
 
@@ -89,7 +89,7 @@ public class TeamOVRQueryService {
      * deserialization and canonical merge cost during career setup.
      */
     public Mono<List<TeamOvrView>> buildTeamsWithOVR(UUID userId, UUID leagueId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldQueryService.worldViewForQuery(userId)
                 .map(worldView -> buildTeamsWithOVRFromView(
                         worldView, worldView.getTeamsByLeague(leagueId)));
     }
