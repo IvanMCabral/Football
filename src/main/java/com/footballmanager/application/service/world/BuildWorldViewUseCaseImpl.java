@@ -32,11 +32,24 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
     @Override
     public Mono<WorldView> build(UUID userId) {
         return getOrCreateSnapshot(userId)
-                .flatMap(snapshot -> updateRealLeagueIds(snapshot, userId))
+                .flatMap(snapshot -> updateRealLeagueIdsIfRequired(snapshot, userId))
                 .map(this::buildWorldView)
                 .onErrorResume(e -> {
                     return Mono.error(e);
                 });
+    }
+
+    /**
+     * A freshly assembled snapshot already carries the canonical league id on
+     * every team.  Re-running the legacy per-team Redis reconciliation on every
+     * read turned a simple world query into hundreds of remote round trips.  We
+     * retain the repair path for incomplete/legacy snapshots, but keep the
+     * normal read path local and bounded.
+     */
+    private Mono<WorldSnapshot> updateRealLeagueIdsIfRequired(WorldSnapshot snapshot, UUID userId) {
+        boolean requiresRepair = snapshot.getAllWorldTeams().stream()
+                .anyMatch(team -> team.getRealLeagueId() == null);
+        return requiresRepair ? updateRealLeagueIds(snapshot, userId) : Mono.just(snapshot);
     }
 
     private Mono<WorldSnapshot> getOrCreateSnapshot(UUID userId) {
