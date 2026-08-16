@@ -198,7 +198,7 @@ public class GlobalExceptionHandler {
                 ? (internal.contains("stale") ? "CAREER_STALE_GENERATION" : "CAREER_OPERATION_CONFLICT")
                 : "LINEUP_STATE_ERROR");
         body.put("message", lifecycleConflict
-                ? "La operaciÃ³n de carrera ya no estÃ¡ vigente."
+                ? "La operación de carrera ya no está vigente."
                 : messageResolver.clientMessage(ex, INVALID_STATE_MESSAGE));
         body.put("status", status.value());
         body.put("requestId", requestId(exchange));

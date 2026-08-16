@@ -106,6 +106,23 @@ class GlobalExceptionHandlerProductionTest {
     }
 
     @Test
+    void rendersLifecycleConflictMessageWithoutEncodingCorruption() {
+        var response = handler.handleIllegalState(
+                new IllegalStateException("career lifecycle generation is stale"),
+                exchangeWithRequestId("req-stale"))
+            .block();
+
+        assertThat(response).isNotNull();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.get("code")).isEqualTo("CAREER_STALE_GENERATION");
+        assertThat(body.get("message")).isEqualTo("La operación de carrera ya no está vigente.");
+        assertThat(body.get("message").toString()).doesNotContain("Ã", "Â", "�");
+        assertThat(body.get("requestId")).isEqualTo("req-stale");
+    }
+
+    @Test
     void sanitizesForbiddenMessagesInProductionBodies() {
         MockServerWebExchange exchange = exchangeWithRequestId("req-forbidden");
 
