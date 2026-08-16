@@ -82,6 +82,18 @@ public class TeamOVRQueryService {
                 .map(worldView -> buildTeamsWithOVRFromView(worldView, teams));
     }
 
+    /**
+     * Builds the league catalog and OVR projection from one world-view read.
+     * The previous controller path built the same large world view once to
+     * select league teams and a second time to calculate OVR, doubling Redis
+     * deserialization and canonical merge cost during career setup.
+     */
+    public Mono<List<TeamOvrView>> buildTeamsWithOVR(UUID userId, UUID leagueId) {
+        return buildWorldViewUseCase.build(userId)
+                .map(worldView -> buildTeamsWithOVRFromView(
+                        worldView, worldView.getTeamsByLeague(leagueId)));
+    }
+
     private List<TeamOvrView> buildTeamsWithOVRFromView(WorldView worldView, List<WorldTeam> teams) {
         List<TeamOvrView> teamsWithOVR = new ArrayList<>();
 

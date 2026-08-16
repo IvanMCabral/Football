@@ -82,8 +82,7 @@ public class WorldQueryController {
             @RequestParam UUID userId,
             Authentication authentication) {
         controllerHelper.requireSelfUserId(authentication, userId);
-        return getTeamsByLeagueUseCase.execute(userId, leagueId)
-                .flatMap(teams -> teamOVRQueryService.buildTeamsWithOVR(userId, teams))
+        return teamOVRQueryService.buildTeamsWithOVR(userId, leagueId)
                 .map(teams -> teams.stream().map(WorldQueryController::toDto).toList())
                 .map(ResponseEntity::ok);
     }
