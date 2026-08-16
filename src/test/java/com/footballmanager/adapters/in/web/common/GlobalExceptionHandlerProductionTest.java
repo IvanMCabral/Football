@@ -183,6 +183,16 @@ class GlobalExceptionHandlerProductionTest {
         assertThat(retryableBody.code()).isEqualTo("CAREER_CLEANUP_RETRYABLE");
         assertThat(retryableBody.status()).isEqualTo(503);
 
+        CareerDataCleanupResult timeout = new CareerDataCleanupResult(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                "owner-hash", 0, 0, Map.of(), true, "career-root", "CLEANUP_TIMEOUT",
+                CareerDataCleanupResult.Status.FAILED, 1);
+        ErrorResponseBody timeoutBody = handler.handleCareerCleanup(
+                new CareerDataCleanupException(timeout, new IllegalStateException("internal")),
+                exchangeWithRequestId("req-timeout")).block().getBody();
+        assertThat(timeoutBody.code()).isEqualTo("CAREER_CLEANUP_TIMEOUT");
+        assertThat(timeoutBody.message()).isEqualTo("La limpieza excedió el tiempo permitido. Podés reintentar más tarde.");
+        assertThat(timeoutBody.toString()).doesNotContain("Ã", "Â", "�");
+
         ErrorResponseBody limitBody = handler.handleCareerIndexLimit(
                 new CareerIndexLimitException(), exchangeWithRequestId("req-limit")).block().getBody();
         assertThat(limitBody.code()).isEqualTo("CAREER_INDEX_LIMIT_REACHED");

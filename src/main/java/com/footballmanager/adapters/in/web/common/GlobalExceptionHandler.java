@@ -149,7 +149,7 @@ public class GlobalExceptionHandler {
         } else if ("CLEANUP_TIMEOUT".equals(ex.result().failureReason())) {
             httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
             code = "CAREER_CLEANUP_TIMEOUT";
-            message = "La limpieza excediÃ³ el tiempo permitido. PodÃ©s reintentar mÃ¡s tarde.";
+            message = "La limpieza excedió el tiempo permitido. Podés reintentar más tarde.";
         } else {
             httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
             code = "CAREER_CLEANUP_FAILED";
