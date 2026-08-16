@@ -54,14 +54,18 @@ public class BuildWorldViewUseCaseImpl implements BuildWorldViewUseCase {
 
     private Mono<WorldSnapshot> getOrCreateSnapshot(UUID userId) {
         return WorldSnapshotRepository.findByUserId(userId)
-                .defaultIfEmpty(new WorldSnapshot())
                 .flatMap(snapshot -> {
                     if (snapshot.getWorldTeams() == null || snapshot.getWorldTeams().isEmpty()) {
                         return loadBaseDataService.load(userId)
                                 .flatMap(base -> createAndSaveSnapshot(userId, base));
                     }
                     return Mono.just(snapshot);
-                });
+                })
+                // A new manager has no owner snapshot yet.  Build it from the
+                // canonical SQL catalog so the first query does not perform
+                // owner-scoped Redis reconciliation for every team.
+                .switchIfEmpty(Mono.defer(() -> loadBaseDataService.loadCanonical(userId)
+                        .flatMap(base -> createAndSaveSnapshot(userId, base))));
     }
 
     private Mono<WorldSnapshot> createAndSaveSnapshot(UUID userId, LoadBaseDataService.BaseDataResult base) {
