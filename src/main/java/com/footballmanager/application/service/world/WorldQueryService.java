@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.view.WorldView;
 import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -26,12 +27,14 @@ import java.util.UUID;
 public class WorldQueryService {
 
     private final BuildWorldViewUseCase buildWorldViewUseCase;
+    private final WorldSnapshotRepository worldSnapshotRepository;
+    private final LoadBaseDataService loadBaseDataService;
 
     /**
      * Obtiene todas las ligas
      */
     public Mono<List<WorldLeague>> getLeagues(UUID userId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(WorldView::leagues);
     }
 
@@ -39,7 +42,7 @@ public class WorldQueryService {
      * Obtiene todos los equipos de una liga
      */
     public Mono<List<WorldTeam>> getTeamsByLeague(UUID userId, UUID leagueId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(worldView -> worldView.getTeamsByLeague(leagueId));
     }
 
@@ -47,7 +50,7 @@ public class WorldQueryService {
      * Obtiene todos los WorldTeams
      */
     public Mono<List<WorldTeam>> getAllTeams(UUID userId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(WorldView::teams);
     }
 
@@ -56,7 +59,7 @@ public class WorldQueryService {
      * Util para mostrar equipos en "Manage Players and Teams".
      */
     public Mono<List<WorldTeam>> getAllTeamsForEditor(UUID userId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(worldView -> {
                     List<WorldTeam> allTeams = worldView.teams();
                     return allTeams;
@@ -67,7 +70,7 @@ public class WorldQueryService {
      * Obtiene un WorldTeam especifico
      */
     public Mono<WorldTeam> getTeam(UUID userId, String worldTeamId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(worldView -> worldView.getTeamById(worldTeamId))
                 .filter(team -> team != null)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException(
@@ -78,7 +81,7 @@ public class WorldQueryService {
      * Obtiene todos los jugadores
      */
     public Mono<List<WorldPlayer>> getAllPlayers(UUID userId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(WorldView::players);
     }
 
@@ -86,7 +89,7 @@ public class WorldQueryService {
      * Obtiene un jugador especifico
      */
     public Mono<WorldPlayer> getPlayer(UUID userId, String worldPlayerId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(worldView -> worldView.players().stream()
                         .filter(p -> p.getWorldPlayerId().equals(worldPlayerId))
                         .findFirst()
@@ -100,7 +103,7 @@ public class WorldQueryService {
      * Obtiene todos los jugadores de un equipo
      */
     public Mono<List<WorldPlayer>> getPlayersByTeam(UUID userId, String worldTeamId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(worldView -> worldView.getPlayersByTeam(worldTeamId));
     }
 
@@ -108,7 +111,7 @@ public class WorldQueryService {
      * Obtiene jugadores libres (sin equipo)
      */
     public Mono<List<WorldPlayer>> getFreePlayers(UUID userId) {
-        return buildWorldViewUseCase.build(userId)
+        return worldViewForQuery(userId)
                 .map(worldView -> {
                     if (worldView.players() == null) {
                         return Collections.<WorldPlayer>emptyList();
@@ -116,6 +119,24 @@ public class WorldQueryService {
                     return worldView.players().stream()
                             .filter(p -> p.getWorldTeamId() == null || p.getWorldTeamId().isEmpty())
                             .toList();
-                });
+        });
+    }
+
+    /**
+     * A newly registered manager has no owner snapshot yet.  Reading the
+     * complete Redis world just to render the league picker is needlessly
+     * expensive; use the durable canonical catalog until a user snapshot
+     * exists.  Existing owners retain the overlay-aware world-view path.
+     */
+    private Mono<WorldView> worldViewForQuery(UUID userId) {
+        return worldSnapshotRepository.existsByUserId(userId)
+                .flatMap(exists -> exists
+                        ? buildWorldViewUseCase.build(userId)
+                        : loadBaseDataService.loadCanonical(userId).map(base -> new WorldView(
+                                userId,
+                                base.leagues(),
+                                base.teams(),
+                                base.players(),
+                                new java.util.HashMap<>())));
     }
 }

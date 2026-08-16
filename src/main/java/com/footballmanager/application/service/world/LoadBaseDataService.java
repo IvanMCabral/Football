@@ -6,9 +6,11 @@ import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -25,6 +27,17 @@ public class LoadBaseDataService {
     private final LeagueTeamSyncService leagueTeamSyncService;
     private final LeagueLoaderService leagueLoaderService;
     private final TeamPlayerLoaderService teamPlayerLoaderService;
+
+    /**
+     * The canonical catalog is shared by every new manager.  In production it
+     * is therefore safe to reuse for a short window instead of loading the
+     * complete roster from PostgreSQL for every catalog query.  Tests keep the
+     * default zero duration so they retain their isolation.
+     */
+    @Value("${app.world.canonical-cache-ttl:0s}")
+    private Duration canonicalCacheTtl = Duration.ZERO;
+
+    private volatile Mono<BaseDataResult> cachedCanonical;
 
     /**
      * Carga todos los datos base para un usuario.
@@ -75,6 +88,19 @@ public class LoadBaseDataService {
      * never reads or initializes an owner's Redis relation cache.
      */
     public Mono<BaseDataResult> loadCanonical(UUID ownerId) {
+        if (canonicalCacheTtl.isZero() || canonicalCacheTtl.isNegative()) {
+            return loadCanonicalFromSources(ownerId);
+        }
+        Mono<BaseDataResult> cached = cachedCanonical;
+        if (cached != null) {
+            return cached;
+        }
+        Mono<BaseDataResult> loaded = loadCanonicalFromSources(ownerId).cache(canonicalCacheTtl);
+        cachedCanonical = loaded;
+        return loaded;
+    }
+
+    private Mono<BaseDataResult> loadCanonicalFromSources(UUID ownerId) {
         return leagueTeamSyncService.loadCanonicalLeagueTeamsMap()
                 .flatMap(leagueTeamsMap -> Mono.zip(
                         leagueLoaderService.loadCanonicalLeagues(),
