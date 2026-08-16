@@ -5,6 +5,7 @@ import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.application.exception.CareerAlreadyExistsException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
 import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
@@ -84,6 +85,19 @@ public class GlobalExceptionHandler {
                 messageResolver.clientMessage(ex, "La solicitud de autenticacion no es valida."),
                 HttpStatus.UNPROCESSABLE_ENTITY.value(),
                 requestId(exchange))));
+    }
+
+    @ExceptionHandler(CareerAlreadyExistsException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleCareerAlreadyExists(
+            CareerAlreadyExistsException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody(
+                        "CAREER_ALREADY_EXISTS",
+                        "Ya existe una carrera activa para este manager.",
+                        HttpStatus.CONFLICT.value(),
+                        requestId(exchange))));
     }
 
     @ExceptionHandler(NotEnoughPlayersException.class)

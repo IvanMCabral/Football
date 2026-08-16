@@ -1,10 +1,10 @@
 package com.footballmanager.application.service.career;
 
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.application.exception.CareerAlreadyExistsException;
 import com.footballmanager.domain.model.repository.CareerRepository;
 import com.footballmanager.domain.ports.in.career.CreateCareerSnapshotUseCase;
 import com.footballmanager.domain.port.in.career.StartCareerUseCase;
-import com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository;
 import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,22 +34,22 @@ public class StartCareerUseCaseImpl implements StartCareerUseCase {
     private final CreateCareerSnapshotUseCase createCareerSnapshotUseCase;
     private final CareerRepository careerRepository;
     private final CareerLifecycleCoordinator lifecycleCoordinator;
-    private final CareerDataCleanupRepository careerDataCleanupRepository;
 
     @Override
     public Mono<CareerSave> start(UUID userId, String worldLeagueId, String worldTeamId,
                                   String difficulty, String gameSpeed, Integer teamsPerDivision) {
         UUID leagueId = UUID.fromString(worldLeagueId);
 
-        // Paso 0: Eliminar carrera anterior para evitar duplicación de datos
+        // Start is a bootstrap operation; reset is the explicit destructive
+        // operation. Never replace an active career on a duplicate click.
         return lifecycleCoordinator.serializeReset(userId,
                 careerRepository.findById(userId.toString())
-                .flatMap(existing -> careerDataCleanupRepository
-                        .deleteOwnedDataPreservingWorld(userId,
-                                existing.map(CareerSave::getCareerId).orElse(null)))
+                .flatMap(existing -> existing.isPresent()
+                        ? Mono.error(new CareerAlreadyExistsException())
+                        : Mono.empty())
                 .then()
                 // Paso 1: Construir WorldView
-                .then(buildWorldViewUseCase.build(userId))
+                .then(Mono.defer(() -> buildWorldViewUseCase.build(userId)))
                 .flatMap(worldView -> {
                     // Paso 2: Crear CareerSave desde WorldView
                     return createCareerSnapshotUseCase.create(
