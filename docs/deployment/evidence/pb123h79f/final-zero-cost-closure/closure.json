@@ -1,0 +1,71 @@
+{
+  "schema": "pb123h79f-final-zero-cost-closure-v1",
+  "date": "2026-08-16",
+  "verdict": "PB1.2.3H7.9F BLOCKED_FREE_PLATFORM_CAPABILITY",
+  "zeroCostConstraint": {
+    "incrementalUsd": 0,
+    "satisfied": true,
+    "billingChange": false
+  },
+  "authorities": {
+    "worldV2LocalSafety": "APPROVED",
+    "runnerH7_9F_1": "INDEPENDENTLY_APPROVED",
+    "runtimeCommit": "24560a2b69fd94fce273ebb6aa7fe41b9e81c7ed",
+    "ownerAuthoritySha256": "7fcae17b55af464cc929f242689bb456d9cc06718cf47d2e9642966041cd71e8",
+    "sourceSha256": "2fe7dff53f2c6f07d222337cdda0a6963841e229aef721d2e11a395ba3d4d68f",
+    "semanticPlanSha256": "298b32c98e0052269896f3f9caa9a89e1f70e3fa15019ee061d7247c751ebc7a",
+    "catalogFingerprint": "1e654bec389796d232aba91685ac87d9ef1de08bcf3f5a7da563fdedbfb27000"
+  },
+  "render": {
+    "workspace": "Ivan's workspace",
+    "service": "manager-staging-api",
+    "serviceId": "srv-d9nvldtaeets73coqiog",
+    "plan": "Free",
+    "runtime": "Docker web service",
+    "region": "Oregon (US West)",
+    "branch": "feat/v25d99.20.3.1-runtime-fixes",
+    "liveSha": "24560a2b69fd94fce273ebb6aa7fe41b9e81c7ed",
+    "status": "Live",
+    "instances": 1,
+    "autoscaling": "OFF",
+    "postgresContext": true,
+    "redisContext": true,
+    "exactApplication": true,
+    "normalProfile": "prod",
+    "dashboardAutoDeploy": "On Commit",
+    "repositoryAutoDeployDeclaration": "off"
+  },
+  "freeExecutionBoundary": {
+    "oneOffJobs": "UNAVAILABLE_ON_FREE",
+    "shell": "UNAVAILABLE_ON_FREE",
+    "paidPreDeploy": "UNAVAILABLE_AT_ZERO_COST",
+    "secureInheritedOneShot": "NOT_AVAILABLE",
+    "publicAdminEndpoint": "REJECTED",
+    "localOrCiCredentialCopy": "REJECTED"
+  },
+  "state": {
+    "publicMigration": false,
+    "prepared": false,
+    "committed": false,
+    "publicCatalog": false,
+    "cleanup": false,
+    "legacyWorldsAuthoritative": true,
+    "upstashQuotaRisk": "RETAINED_NO_CLEANUP_AUTHORIZED"
+  },
+  "providerMutationCounts": {
+    "render": 0,
+    "redis": 0,
+    "postgresql": 0,
+    "firebase": 0,
+    "billing": 0,
+    "gitPush": 0
+  },
+  "reopenConditions": [
+    "Render Free provides a safe inherited-environment One-Off boundary",
+    "Render Free provides a secure isolated free process boundary",
+    "Existing trusted free execution can inherit production credentials without manual copying",
+    "Another genuinely free provider offers an equivalent safe one-shot boundary"
+  ],
+  "historicalReportsPreserved": true,
+  "secretsPersisted": false
+}
