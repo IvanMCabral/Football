@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.domain;
 
+import com.footballmanager.application.exception.CareerAlreadyExistsException;
 import com.footballmanager.domain.model.aggregate.Game;
 import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.valueobject.GameId;
@@ -65,7 +66,13 @@ public class GameService {
                 return gameRepository.save(userId, game);
             })
             .thenReturn(game)
-            .onErrorResume(e -> Mono.error(e));
+            // POST /games is the legacy standalone-game surface.  It may be
+            // used to create more than one saved game while the modern
+            // /career/start contract correctly rejects a duplicate active
+            // career.  Keep that distinction explicit instead of weakening
+            // the modern lifecycle guard.
+            .onErrorResume(CareerAlreadyExistsException.class,
+                ignored -> gameRepository.save(userId, game).thenReturn(game));
     }
 
     /**
