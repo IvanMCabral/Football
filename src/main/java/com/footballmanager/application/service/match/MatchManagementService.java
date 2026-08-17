@@ -1,8 +1,8 @@
 package com.footballmanager.application.service.match;
 
-import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
 import com.footballmanager.application.service.simulation.detailed.LiveSession;
+import com.footballmanager.application.service.security.RoundOwnershipAuthority;
 import com.footballmanager.domain.model.entity.MatchCommand;
 import com.footballmanager.domain.model.entity.MatchFinishedResult;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
@@ -33,7 +33,7 @@ public class MatchManagementService {
     private final StopMatchUseCase stopMatchUseCase;
     private final ExecuteMatchCommandUseCase executeMatchCommandUseCase;
     private final MatchSessionRegistry sessionRegistry;
-    private final RoundEngineRegistry roundEngineRegistry;
+    private final RoundOwnershipAuthority roundOwnershipAuthority;
 
     /**
      * Inicia la simulación de un partido (legacy path).
@@ -127,16 +127,16 @@ public class MatchManagementService {
     public Mono<Void> resumeMatch(UUID userId, UUID matchId) {
         log.debug("resumeMatch requested userId={}, matchId={}", userId, matchId);
 
-        return resumeMatchUseCase.execute(userId, matchId)
-            .doOnSuccess(v -> {
-                var roundEngine = roundEngineRegistry.getByMatchId(matchId);
-                if (roundEngine != null) {
-                    roundEngine.resumeAll();
-                    log.debug("RoundEngine resumed for matchId={}", matchId);
-                } else {
-                    log.debug("No RoundEngine registered for matchId={}", matchId);
-                }
-            })
+        return roundOwnershipAuthority.findOwnedEngineByMatch(userId, matchId)
+            .flatMap(authorizedEngine -> resumeMatchUseCase.execute(userId, matchId)
+                // Keep the exact engine returned by the authority. A second
+                // registry lookup here could resume a replacement owned by a
+                // different manager.
+                .then(Mono.<Void>fromRunnable(authorizedEngine::resumeAll)))
+            // Legacy sessions may exist without a live RoundEngine. Preserve
+            // that session-only contract, but never fall back after a foreign
+            // engine was found (the authority error propagates).
+            .switchIfEmpty(Mono.defer(() -> resumeMatchUseCase.execute(userId, matchId)))
             .doOnError(e -> log.warn("Could not resume match matchId={}", matchId, e));
     }
 

@@ -2,6 +2,7 @@ package com.footballmanager.adapters.in.web.career.simulation;
 
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.service.match.MatchManagementService;
+import com.footballmanager.application.service.match.MatchSessionNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -12,6 +13,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MatchControllerTest {
 
@@ -58,5 +60,41 @@ class MatchControllerTest {
         controller.stopMatch(matchId.toString(), authentication).block();
 
         verify(matchManagementService).stopMatch(userId, matchId);
+    }
+
+    @Test
+    void missingSessionIsControlledAsNotFound() {
+        when(matchManagementService.pauseMatch(userId, matchId))
+            .thenReturn(Mono.error(new MatchSessionNotFoundException(matchId)));
+
+        var response = controller.pauseMatch(matchId.toString(), authentication).block();
+
+        org.junit.jupiter.api.Assertions.assertEquals(
+            org.springframework.http.HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void missingResumeAndStopSessionsAreControlledAsNotFound() {
+        when(matchManagementService.resumeMatch(userId, matchId))
+            .thenReturn(Mono.error(new MatchSessionNotFoundException(matchId)));
+        when(matchManagementService.stopMatch(userId, matchId))
+            .thenReturn(Mono.error(new MatchSessionNotFoundException(matchId)));
+
+        var resume = controller.resumeMatch(matchId.toString(), authentication).block();
+        var stop = controller.stopMatch(matchId.toString(), authentication).block();
+
+        org.junit.jupiter.api.Assertions.assertEquals(
+            org.springframework.http.HttpStatus.NOT_FOUND, resume.getStatusCode());
+        org.junit.jupiter.api.Assertions.assertEquals(
+            org.springframework.http.HttpStatus.NOT_FOUND, stop.getStatusCode());
+    }
+
+    @Test
+    void unexpectedFailureIsNotHiddenAsNotFound() {
+        when(matchManagementService.pauseMatch(userId, matchId))
+            .thenReturn(Mono.error(new IllegalStateException("driver unavailable")));
+
+        assertThrows(IllegalStateException.class,
+            () -> controller.pauseMatch(matchId.toString(), authentication).block());
     }
 }

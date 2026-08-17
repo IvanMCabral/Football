@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class RoundEngineRegistryOwnershipTest {
 
@@ -66,5 +67,27 @@ class RoundEngineRegistryOwnershipTest {
         assertSame(engineB, registry.get(roundB));
         assertNull(registry.get(roundA1));
         assertNull(registry.get(roundA2));
+    }
+
+    @Test
+    void replacingRoundRemovesAllMappingsOwnedByTheReplacedEngine() {
+        RoundEngineRegistry registry = new RoundEngineRegistry();
+        UUID roundId = UUID.randomUUID();
+        UUID oldMatchId = UUID.randomUUID();
+        UUID newMatchId = UUID.randomUUID();
+        RoundEngine engineA = new RoundEngine(roundId);
+        RoundEngine engineB = new RoundEngine(roundId);
+        engineA.registerMatch(oldMatchId, mock(com.footballmanager.application.engine.match.MatchEngine.class));
+        engineB.registerMatch(newMatchId, mock(com.footballmanager.application.engine.match.MatchEngine.class));
+
+        registry.register(roundId, engineA);
+        assertSame(engineA, registry.getByMatchId(oldMatchId));
+
+        registry.register(roundId, engineB);
+
+        assertNull(registry.getByMatchId(oldMatchId));
+        assertNull(registry.getRoundIdByMatchId(oldMatchId));
+        assertSame(engineB, registry.getByMatchId(newMatchId));
+        assertEquals(roundId, registry.getRoundIdByMatchId(newMatchId));
     }
 }

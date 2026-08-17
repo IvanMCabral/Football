@@ -33,8 +33,6 @@ public class PauseMatchUseCaseImpl implements PauseMatchUseCase {
                 session.pause();
                 return Mono.<Void>empty();
             })
-            .orElseGet(() -> {
-                return Mono.error(new IllegalStateException("Sesion no encontrada para partido: " + matchId));
-            });
+            .orElseGet(() -> Mono.error(new MatchSessionNotFoundException(matchId)));
     }
 }

@@ -3,6 +3,8 @@ package com.footballmanager.adapters.in.web.common;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.application.service.security.CareerOwnershipDeniedException;
+import com.footballmanager.application.service.security.RoundOwnershipDeniedException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
 import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
@@ -164,6 +166,23 @@ class GlobalExceptionHandlerProductionTest {
         assertThat(conflict.status()).isEqualTo(409);
         assertThat(conflict.requestId()).isEqualTo("req-409");
         assertThat(conflict.toString()).doesNotContain("internal-db", "LettuceConnectionException", "C:\\secret");
+    }
+
+    @Test
+    void ownershipFailuresAreControlledNotFoundResponses() {
+        ErrorResponseBody career = handler.handleOwnedResourceNotFound(
+                new CareerOwnershipDeniedException(), exchangeWithRequestId("req-career"))
+            .block().getBody();
+        ErrorResponseBody round = handler.handleOwnedResourceNotFound(
+                new RoundOwnershipDeniedException(), exchangeWithRequestId("req-round"))
+            .block().getBody();
+
+        assertThat(career).isNotNull();
+        assertThat(career.code()).isEqualTo("NOT_FOUND");
+        assertThat(career.status()).isEqualTo(404);
+        assertThat(round).isNotNull();
+        assertThat(round.code()).isEqualTo("NOT_FOUND");
+        assertThat(round.status()).isEqualTo(404);
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.footballmanager.application.engine.model.RoundState;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.MatchManagementService;
+import com.footballmanager.application.service.match.MatchSessionNotFoundException;
 import com.footballmanager.application.service.security.RoundOwnershipAuthority;
 import com.footballmanager.application.service.security.RoundOwnershipDeniedException;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
@@ -61,8 +62,8 @@ public class MatchEngineController {
                         ignored -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Round stream is not available"));
     }
 
-    /** Compatibility entry point for isolated stream tests. */
-    public Flux<RoundState> streamRoundState(String roundId) {
+    /** Package-scoped compatibility entry point for isolated stream tests. */
+    Flux<RoundState> streamRoundState(String roundId) {
         try {
             UUID id = UUID.fromString(roundId);
             RoundEngine roundEngine = roundEngineRegistry.get(id);
@@ -182,10 +183,8 @@ public class MatchEngineController {
             .doOnSuccess(v -> log.info("[MATCH-CONTROLLER] Pause successful for matchId: {}", matchId))
             .doOnError(e -> log.error("[MATCH-CONTROLLER] Pause failed for matchId {}: {}", matchId, e.getMessage()))
             .then(Mono.just(ResponseEntity.ok().build()))
-            .onErrorResume(e -> {
-                log.error("[MATCH-CONTROLLER] Error in pauseMatch: {}", e.getMessage());
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed"));
-            });
+            .onErrorResume(MatchSessionNotFoundException.class,
+                    e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     /**
@@ -206,10 +205,8 @@ public class MatchEngineController {
             .doOnSuccess(v -> log.info("[MATCH-CONTROLLER] Resume successful for matchId: {}", matchId))
             .doOnError(e -> log.error("[MATCH-CONTROLLER] Resume failed for matchId {}: {}", matchId, e.getMessage()))
             .then(Mono.just(ResponseEntity.ok().build()))
-            .onErrorResume(e -> {
-                log.error("[MATCH-CONTROLLER] Error in resumeMatch: {}", e.getMessage());
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed"));
-            });
+            .onErrorResume(MatchSessionNotFoundException.class,
+                    e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     /**
@@ -230,10 +227,8 @@ public class MatchEngineController {
             .doOnSuccess(v -> log.info("[MATCH-CONTROLLER] Stop successful for matchId: {}", matchId))
             .doOnError(e -> log.error("[MATCH-CONTROLLER] Stop failed for matchId {}: {}", matchId, e.getMessage()))
             .then(Mono.just(ResponseEntity.ok().build()))
-            .onErrorResume(e -> {
-                log.error("[MATCH-CONTROLLER] Error in stopMatch: {}", e.getMessage());
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed"));
-            });
+            .onErrorResume(MatchSessionNotFoundException.class,
+                    e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     /**
@@ -260,8 +255,8 @@ public class MatchEngineController {
         return getRoundIdForMatchProtected(matchId, authentication);
     }
 
-    /** Compatibility entry point for isolated lookup tests. */
-    public Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatch(String matchId) {
+    /** Package-scoped compatibility entry point for isolated lookup tests. */
+    Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatch(String matchId) {
         return getRoundIdForMatchUnprotected(matchId);
     }
 

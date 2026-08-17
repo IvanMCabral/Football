@@ -142,6 +142,7 @@ class GameControllerV25D79Test {
         // roundEngineRegistry.getByMatchId(matchId) -> roundEngine
         // roundEngine.getCurrentMatchSnapshot(matchId) -> snapshot
         when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(roundEngine);
+        when(roundEngine.belongsTo(eq(userId), eq(null))).thenReturn(true);
         when(roundEngine.getCurrentMatchSnapshot(eq(matchId))).thenReturn(snapshot);
 
         // Exercise
@@ -187,6 +188,7 @@ class GameControllerV25D79Test {
         );
 
         when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(roundEngine);
+        when(roundEngine.belongsTo(eq(userId), eq(null))).thenReturn(true);
         when(roundEngine.getCurrentMatchSnapshot(eq(matchId))).thenReturn(snapshot);
 
         StepVerifier.create(controller.getMatchState(matchId.toString(), auth))
@@ -219,7 +221,7 @@ class GameControllerV25D79Test {
         );
 
         when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(roundEngine);
-        when(roundEngine.getCurrentMatchSnapshot(eq(matchId))).thenReturn(snapshot);
+        when(roundEngine.belongsTo(eq(userId), eq(null))).thenReturn(false);
 
         StepVerifier.create(controller.getMatchState(matchId.toString(), auth))
             .assertNext(resp -> {
@@ -230,7 +232,7 @@ class GameControllerV25D79Test {
             .verifyComplete();
 
         verify(roundEngineRegistry).getByMatchId(eq(matchId));
-        verify(roundEngine).getCurrentMatchSnapshot(eq(matchId));
+        verify(roundEngine, org.mockito.Mockito.never()).getCurrentMatchSnapshot(eq(matchId));
     }
 
     @Test
@@ -248,7 +250,7 @@ class GameControllerV25D79Test {
         );
 
         when(roundEngineRegistry.getByMatchId(eq(matchId))).thenReturn(roundEngine);
-        when(roundEngine.getCurrentMatchSnapshot(eq(matchId))).thenReturn(snapshot);
+        when(roundEngine.belongsTo(eq(userId), eq(null))).thenReturn(false);
 
         StepVerifier.create(controller.getMatchState(matchId.toString(), auth))
             .assertNext(resp -> {
@@ -259,7 +261,7 @@ class GameControllerV25D79Test {
             .verifyComplete();
 
         verify(roundEngineRegistry).getByMatchId(eq(matchId));
-        verify(roundEngine).getCurrentMatchSnapshot(eq(matchId));
+        verify(roundEngine, org.mockito.Mockito.never()).getCurrentMatchSnapshot(eq(matchId));
     }
 
     @Test

@@ -34,8 +34,6 @@ public class StopMatchUseCaseImpl implements StopMatchUseCase {
                 sessionRegistry.removeSession(userId, matchId);
                 return Mono.<Void>empty();
             })
-            .orElseGet(() -> {
-                return Mono.error(new IllegalStateException("Sesion no encontrada para partido: " + matchId));
-            });
+            .orElseGet(() -> Mono.error(new MatchSessionNotFoundException(matchId)));
     }
 }

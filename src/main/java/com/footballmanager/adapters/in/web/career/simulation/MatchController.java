@@ -1,6 +1,7 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
 import com.footballmanager.application.service.match.MatchManagementService;
+import com.footballmanager.application.service.match.MatchSessionNotFoundException;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,8 @@ public class MatchController {
 
         return matchManagementService.pauseMatch(userId, matchIdUuid)
             .thenReturn(ResponseEntity.ok().build())
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed")));
+            .onErrorResume(MatchSessionNotFoundException.class,
+                    e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     /**
@@ -51,7 +53,8 @@ public class MatchController {
 
         return matchManagementService.resumeMatch(userId, matchIdUuid)
             .thenReturn(ResponseEntity.ok().build())
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed")));
+            .onErrorResume(MatchSessionNotFoundException.class,
+                    e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
     /**
@@ -67,6 +70,7 @@ public class MatchController {
 
         return matchManagementService.stopMatch(userId, matchIdUuid)
             .thenReturn(ResponseEntity.ok().build())
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request could not be processed")));
+            .onErrorResume(MatchSessionNotFoundException.class,
+                    e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 }

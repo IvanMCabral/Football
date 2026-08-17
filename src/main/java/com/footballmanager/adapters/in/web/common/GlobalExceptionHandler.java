@@ -6,6 +6,9 @@ import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
 import com.footballmanager.application.exception.CareerAlreadyExistsException;
+import com.footballmanager.application.service.match.MatchSessionNotFoundException;
+import com.footballmanager.application.service.security.CareerOwnershipDeniedException;
+import com.footballmanager.application.service.security.RoundOwnershipDeniedException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupException;
 import com.footballmanager.domain.ports.out.career.CareerDataCleanupResult;
 import com.footballmanager.domain.ports.out.career.CareerIndexLimitException;
@@ -97,6 +100,20 @@ public class GlobalExceptionHandler {
                         "CAREER_ALREADY_EXISTS",
                         "Ya existe una carrera activa para este manager.",
                         HttpStatus.CONFLICT.value(),
+                        requestId(exchange))));
+    }
+
+    @ExceptionHandler({CareerOwnershipDeniedException.class, RoundOwnershipDeniedException.class,
+            MatchSessionNotFoundException.class})
+    public Mono<ResponseEntity<ErrorResponseBody>> handleOwnedResourceNotFound(
+            RuntimeException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorResponseBody(
+                        "NOT_FOUND",
+                        NOT_FOUND_MESSAGE,
+                        HttpStatus.NOT_FOUND.value(),
                         requestId(exchange))));
     }
 

@@ -56,4 +56,25 @@ public final class RoundOwnershipAuthority {
                     : Mono.just(roundId);
         });
     }
+
+    /**
+     * Binds a legacy match command to the exact live engine instance that
+     * passed the owner check. An absent match is empty so callers that support
+     * the old session-only path can preserve that behavior; a present foreign
+     * engine fails closed.
+     */
+    public Mono<RoundEngine> findOwnedEngineByMatch(UUID ownerId, UUID matchId) {
+        if (ownerId == null || matchId == null) {
+            return Mono.error(new RoundOwnershipDeniedException());
+        }
+        return Mono.defer(() -> {
+            RoundEngine engine = registry.getByMatchId(matchId);
+            if (engine == null) {
+                return Mono.empty();
+            }
+            return engine.belongsTo(ownerId, null)
+                    ? Mono.just(engine)
+                    : Mono.error(new RoundOwnershipDeniedException());
+        });
+    }
 }

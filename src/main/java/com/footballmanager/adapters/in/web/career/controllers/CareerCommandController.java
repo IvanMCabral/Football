@@ -275,20 +275,19 @@ public class CareerCommandController {
             )));
         }
 
-        Mono<Boolean> ownership = roundOwnershipAuthority == null
-                ? Mono.just(true)
-                : roundOwnershipAuthority.requireOwned(userId, careerId, roundIdUuid).thenReturn(true);
-        return ownership.then(Mono.fromSupplier(() -> {
-            RoundEngine engine = roundEngineRegistry.get(roundIdUuid);
-            if (engine == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
-                    "success", false,
-                    "error", "round not found (no active engine for roundId)",
-                    "careerId", careerId,
-                    "roundId", roundId
-                ));
-            }
-
+        if (roundOwnershipAuthority == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
+                "success", false,
+                "error", "round not found",
+                "roundId", roundId
+            )));
+        }
+        // The authority returns the exact engine instance it validated. Keep
+        // that reference through the mutation; resolving the round ID again
+        // here would re-open a replacement race between authorization and
+        // pauseAll().
+        return roundOwnershipAuthority.requireOwned(userId, careerId, roundIdUuid)
+            .map(engine -> {
             // Capture state BEFORE pauseAll so we can report the transition.
             boolean wasPaused = engine.isPaused();
             boolean wasFinished = !engine.isRunning();
@@ -312,7 +311,7 @@ public class CareerCommandController {
             // matches payload gives modals a real source of truth.
             body.put("matches", engine.getMatchStates());
             return ResponseEntity.<Map<String, Object>>ok(body);
-        })).onErrorResume(RoundOwnershipDeniedException.class, ignored -> Mono.just(
+            }).onErrorResume(RoundOwnershipDeniedException.class, ignored -> Mono.just(
                 ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
                         "success", false,
                         "error", "round not found",
@@ -347,20 +346,17 @@ public class CareerCommandController {
             )));
         }
 
-        Mono<Boolean> ownership = roundOwnershipAuthority == null
-                ? Mono.just(true)
-                : roundOwnershipAuthority.requireOwned(userId, careerId, roundIdUuid).thenReturn(true);
-        return ownership.then(Mono.fromSupplier(() -> {
-            RoundEngine engine = roundEngineRegistry.get(roundIdUuid);
-            if (engine == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
-                    "success", false,
-                    "error", "round not found (no active engine for roundId)",
-                    "careerId", careerId,
-                    "roundId", roundId
-                ));
-            }
-
+        if (roundOwnershipAuthority == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
+                "success", false,
+                "error", "round not found",
+                "roundId", roundId
+            )));
+        }
+        // Reuse the exact instance returned by the authority. A second
+        // registry lookup could resolve a replacement owned by another user.
+        return roundOwnershipAuthority.requireOwned(userId, careerId, roundIdUuid)
+            .map(engine -> {
             boolean wasPaused = engine.isPaused();
             boolean wasFinished = !engine.isRunning();
 
@@ -376,7 +372,7 @@ public class CareerCommandController {
             body.put("userId", userId.toString());
             body.put("matches", engine.getMatchStates());
             return ResponseEntity.<Map<String, Object>>ok(body);
-        })).onErrorResume(RoundOwnershipDeniedException.class, ignored -> Mono.just(
+            }).onErrorResume(RoundOwnershipDeniedException.class, ignored -> Mono.just(
                 ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
                         "success", false,
                         "error", "round not found",

@@ -16,10 +16,16 @@ public class RoundEngineRegistry {
     private final Map<UUID, RoundEngine> engines = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> matchToRoundMap = new ConcurrentHashMap<>();
 
-    public void register(UUID roundId, RoundEngine engine) {
+    public synchronized void register(UUID roundId, RoundEngine engine) {
         RoundEngine existing = engines.get(roundId);
+        Set<UUID> replacedMatchIds = existing == null
+                ? Set.of()
+                : Set.copyOf(existing.getMatchIds());
         if (existing != null && existing.isRunning()) {
             existing.stop();
+        }
+        for (UUID matchId : replacedMatchIds) {
+            matchToRoundMap.remove(matchId, roundId);
         }
         engines.put(roundId, engine);
         for (UUID matchId : engine.getMatchIds()) {
@@ -31,7 +37,7 @@ public class RoundEngineRegistry {
         return engines.get(roundId);
     }
 
-    public RoundEngine getByMatchId(UUID matchId) {
+    public synchronized RoundEngine getByMatchId(UUID matchId) {
         UUID roundId = matchToRoundMap.get(matchId);
         if (roundId != null) {
             return engines.get(roundId);
@@ -39,12 +45,12 @@ public class RoundEngineRegistry {
         return null;
     }
 
-    public UUID getRoundIdByMatchId(UUID matchId) {
+    public synchronized UUID getRoundIdByMatchId(UUID matchId) {
         return matchToRoundMap.get(matchId);
     }
 
     /** Returns a match's round only after the owning engine proves the actor. */
-    public UUID getOwnedRoundIdByMatchId(UUID matchId, UUID ownerId) {
+    public synchronized UUID getOwnedRoundIdByMatchId(UUID matchId, UUID ownerId) {
         UUID roundId = matchToRoundMap.get(matchId);
         if (roundId == null) {
             return null;
@@ -53,7 +59,7 @@ public class RoundEngineRegistry {
         return engine != null && engine.belongsTo(ownerId, null) ? roundId : null;
     }
 
-    public void unregister(UUID roundId) {
+    public synchronized void unregister(UUID roundId) {
         RoundEngine removed = engines.remove(roundId);
         if (removed != null) {
             for (UUID matchId : removed.getMatchIds()) {
@@ -76,7 +82,7 @@ public class RoundEngineRegistry {
     }
 
     /** Stops only rounds explicitly registered for the requested owner. */
-    public int stopEnginesForOwner(UUID userId, String careerId) {
+    public synchronized int stopEnginesForOwner(UUID userId, String careerId) {
         int stopped = 0;
         for (Map.Entry<UUID, RoundEngine> entry : engines.entrySet()) {
             if (entry.getValue().belongsTo(userId, careerId) && engines.remove(entry.getKey(), entry.getValue())) {
@@ -95,11 +101,11 @@ public class RoundEngineRegistry {
         return stopped;
     }
 
-    public Set<UUID> getAllRoundIds() {
-        return engines.keySet();
+    public synchronized Set<UUID> getAllRoundIds() {
+        return Set.copyOf(engines.keySet());
     }
 
-    public void stopAllEngines() {
+    public synchronized void stopAllEngines() {
         engines.values().forEach(engine -> {
             try {
                 engine.stop();

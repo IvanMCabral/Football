@@ -226,10 +226,8 @@ public class GameController {
      *       stopped, or the match was never started)</li>
      * </ul>
      *
-     * <p>Note: scoping is intentionally global (same posture as the
-     * existing {@code MatchEngineController.getRoundIdForMatch}
-     * endpoint). User-scoping at the registry level is out of scope
-     * for this mini-sprint and would be a separate hardening pass.
+     * <p>The registry is global for lookup, but ownership is proven from the
+     * resolved engine before its private match snapshot is read.
      */
     @GetMapping("/match/{matchId}")
     public Mono<ResponseEntity<MatchStateSnapshot>> getMatchState(@PathVariable String matchId, Authentication authentication) {
@@ -247,18 +245,28 @@ public class GameController {
         }
 
         return Mono.justOrEmpty(roundEngineRegistry.getByMatchId(matchIdUuid))
-                .map(roundEngine -> {
+                .flatMap(roundEngine -> {
+                    // Prove ownership from engine metadata before touching the
+                    // private match snapshot. A foreign caller may discover
+                    // that a match exists, but cannot cause its state to be
+                    // read before the owner check succeeds.
+                    if (!roundEngine.belongsTo(userId, null)) {
+                        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .<MatchStateSnapshot>build());
+                    }
                     MatchStateSnapshot snapshot = roundEngine.getCurrentMatchSnapshot(matchIdUuid);
                     if (snapshot == null) {
-                        return ResponseEntity.notFound().<MatchStateSnapshot>build();
+                        return Mono.just(ResponseEntity.notFound().<MatchStateSnapshot>build());
                     }
                     if (snapshot.userId() == null || snapshot.userId().isBlank()) {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<MatchStateSnapshot>build();
+                        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .<MatchStateSnapshot>build());
                     }
                     if (!snapshot.userId().equals(userId.toString())) {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<MatchStateSnapshot>build();
+                        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .<MatchStateSnapshot>build());
                     }
-                    return ResponseEntity.ok(snapshot);
+                    return Mono.just(ResponseEntity.ok(snapshot));
                 })
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
