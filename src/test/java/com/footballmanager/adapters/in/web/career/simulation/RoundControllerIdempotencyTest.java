@@ -51,7 +51,9 @@ class RoundControllerIdempotencyTest {
             mock(ReactiveLifecycleExecutor.class));
 
         Authentication authentication = mock(Authentication.class);
-        when(authentication.getName()).thenReturn(UUID.randomUUID().toString());
+        UUID ownerId = UUID.randomUUID();
+        when(authentication.getName()).thenReturn(ownerId.toString());
+        doReturn(true).when(existing).belongsTo(ownerId, null);
 
         var response = controller.startRound(
             new RoundController.StartRoundRequest(roundId.toString(), null, List.of()),

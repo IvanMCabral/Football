@@ -43,6 +43,16 @@ public class RoundEngineRegistry {
         return matchToRoundMap.get(matchId);
     }
 
+    /** Returns a match's round only after the owning engine proves the actor. */
+    public UUID getOwnedRoundIdByMatchId(UUID matchId, UUID ownerId) {
+        UUID roundId = matchToRoundMap.get(matchId);
+        if (roundId == null) {
+            return null;
+        }
+        RoundEngine engine = engines.get(roundId);
+        return engine != null && engine.belongsTo(ownerId, null) ? roundId : null;
+    }
+
     public void unregister(UUID roundId) {
         RoundEngine removed = engines.remove(roundId);
         if (removed != null) {

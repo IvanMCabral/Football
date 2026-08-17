@@ -144,7 +144,18 @@ class CareerCommandControllerPauseResumeTest extends AbstractIntegrationTest {
             .returnResult()
             .getResponseBody();
 
-        return response.get("id").get("value").asText();
+        // GameId and CareerSave.careerId are no longer guaranteed to be the
+        // same UUID. Pause/resume must use the authoritative CareerSave id so
+        // the ownership contract is tested rather than the legacy bypass.
+        return webTestClient.mutateWith(mockUser(userId))
+            .get().uri("/api/v1/career/status")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(JsonNode.class)
+            .returnResult()
+            .getResponseBody()
+            .get("careerId").asText();
     }
 
     private String[] seedFirstFixtureMatch(String userId) {

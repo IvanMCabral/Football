@@ -102,6 +102,7 @@ class MatchEngineControllerStreamRoundStateV25D87Test extends AbstractIntegratio
         UUID roundId = UUID.randomUUID();
         UUID matchId = UUID.randomUUID();
         RoundEngine engine = new RoundEngine(roundId);
+        engine.setOwner(UUID.fromString(SEED_USER_ID), "test-career");
 
         MatchEngine matchEngine = mock(MatchEngine.class);
         when(matchEngine.isFinished()).thenReturn(false);
@@ -110,7 +111,7 @@ class MatchEngineControllerStreamRoundStateV25D87Test extends AbstractIntegratio
             matchId,
             UUID.randomUUID(), UUID.randomUUID(),
             0, MatchStatus.RUNNING, new Score(0, 0), List.of(),
-            "test-career", "test-user"
+            "test-career", SEED_USER_ID
         );
         lenient().when(matchEngine.getCurrentState()).thenReturn(runningState);
         engine.registerMatch(matchId, matchEngine);

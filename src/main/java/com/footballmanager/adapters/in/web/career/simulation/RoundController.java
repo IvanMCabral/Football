@@ -100,6 +100,11 @@ public class RoundController {
 
         RoundEngine existing = roundEngineRegistry.get(roundId);
         if (existing != null) {
+            if (!existing.belongsTo(userId, null)) {
+                trace.complete(false);
+                return Mono.error(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Round is not available"));
+            }
             trace.motorConsultable();
             trace.streamAvailable();
             trace.duration("responseMappingMs", 0);

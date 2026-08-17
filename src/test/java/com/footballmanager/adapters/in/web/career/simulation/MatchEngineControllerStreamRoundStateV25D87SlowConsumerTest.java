@@ -93,6 +93,7 @@ class MatchEngineControllerStreamRoundStateV25D87SlowConsumerTest extends Abstra
         UUID roundId = UUID.randomUUID();
         UUID matchId = UUID.randomUUID();
         RoundEngine engine = new RoundEngine(roundId);
+        engine.setOwner(UUID.fromString(SEED_USER_ID), "test-career");
 
         // One fast match — the controller's Flux publisher stream sees a
         // modest payload and produces 5+ emits while we hold the consumer

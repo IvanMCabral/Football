@@ -8,12 +8,18 @@ import com.footballmanager.application.service.simulation.detailed.TimelineSnaps
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchData;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchQueryService;
 import com.footballmanager.application.service.simulation.detailed.TimelineSnapshot;
+import com.footballmanager.application.service.security.CareerOwnershipAuthority;
+import com.footballmanager.application.service.security.CareerOwnershipDeniedException;
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  *
@@ -33,12 +39,25 @@ public class DetailedMatchController {
 
     private final DetailedMatchQueryService queryService;
     private final MatchComparisonService matchComparisonService;
+    private final CareerOwnershipAuthority ownershipAuthority;
+    private final ControllerHelper controllerHelper;
 
     public DetailedMatchController(
             DetailedMatchQueryService queryService,
             MatchComparisonService matchComparisonService) {
+        this(queryService, matchComparisonService, null, null);
+    }
+
+    @Autowired
+    public DetailedMatchController(
+            DetailedMatchQueryService queryService,
+            MatchComparisonService matchComparisonService,
+            CareerOwnershipAuthority ownershipAuthority,
+            ControllerHelper controllerHelper) {
         this.queryService = queryService;
         this.matchComparisonService = matchComparisonService;
+        this.ownershipAuthority = ownershipAuthority;
+        this.controllerHelper = controllerHelper;
     }
 
     /**
@@ -56,7 +75,17 @@ public class DetailedMatchController {
     @GetMapping("/{careerId}/matches/{matchId}/detail")
     public Mono<ResponseEntity<Object>> getDetail(
             @PathVariable String careerId,
-            @PathVariable String matchId) {
+            @PathVariable String matchId,
+            Authentication authentication) {
+        return protectedRead(careerId, authentication, () -> getDetailInternal(careerId, matchId));
+    }
+
+    /** Compatibility entry point for isolated controller tests. */
+    public Mono<ResponseEntity<Object>> getDetail(String careerId, String matchId) {
+        return getDetailInternal(careerId, matchId);
+    }
+
+    private Mono<ResponseEntity<Object>> getDetailInternal(String careerId, String matchId) {
 
         if (careerId == null || careerId.isBlank()) {
             return Mono.just(ResponseEntity.badRequest()
@@ -105,7 +134,17 @@ public class DetailedMatchController {
     @GetMapping("/{careerId}/matches/{matchId}/compare")
     public Mono<ResponseEntity<Object>> getCompare(
             @PathVariable String careerId,
-            @PathVariable String matchId) {
+            @PathVariable String matchId,
+            Authentication authentication) {
+        return protectedRead(careerId, authentication, () -> getCompareInternal(careerId, matchId));
+    }
+
+    /** Compatibility entry point for isolated controller tests. */
+    public Mono<ResponseEntity<Object>> getCompare(String careerId, String matchId) {
+        return getCompareInternal(careerId, matchId);
+    }
+
+    private Mono<ResponseEntity<Object>> getCompareInternal(String careerId, String matchId) {
 
         if (careerId == null || careerId.isBlank()) {
             return Mono.just(ResponseEntity.badRequest()
@@ -173,7 +212,17 @@ public class DetailedMatchController {
     public Mono<ResponseEntity<Object>> getTimeline(
             @PathVariable String careerId,
             @PathVariable String matchId,
-            @RequestParam(name = "minute", required = true) Integer minute) {
+            @RequestParam(name = "minute", required = true) Integer minute,
+            Authentication authentication) {
+        return protectedRead(careerId, authentication, () -> getTimelineInternal(careerId, matchId, minute));
+    }
+
+    /** Compatibility entry point for isolated controller tests. */
+    public Mono<ResponseEntity<Object>> getTimeline(String careerId, String matchId, Integer minute) {
+        return getTimelineInternal(careerId, matchId, minute);
+    }
+
+    private Mono<ResponseEntity<Object>> getTimelineInternal(String careerId, String matchId, Integer minute) {
 
         if (careerId == null || careerId.isBlank()) {
             return Mono.just(ResponseEntity.badRequest()
@@ -198,6 +247,18 @@ public class DetailedMatchController {
                 .map(optionalDetail -> optionalDetail
                         .<ResponseEntity<Object>>map(detail ->
                                 ResponseEntity.ok((Object) TimelineSnapshotBuilder.build(detail, minute)))
-                        .orElseGet(() -> ResponseEntity.notFound().build()));
+                         .orElseGet(() -> ResponseEntity.notFound().build()));
+    }
+
+    private Mono<ResponseEntity<Object>> protectedRead(
+            String careerId,
+            Authentication authentication,
+            Supplier<Mono<ResponseEntity<Object>>> read) {
+        Mono<Void> authorization = authentication == null || ownershipAuthority == null
+                ? Mono.empty()
+                : ownershipAuthority.requireOwned(controllerHelper.getUserId(authentication), careerId).then();
+        return authorization.then(Mono.defer(read))
+                .onErrorResume(CareerOwnershipDeniedException.class,
+                        ignored -> Mono.just(ResponseEntity.notFound().build()));
     }
 }

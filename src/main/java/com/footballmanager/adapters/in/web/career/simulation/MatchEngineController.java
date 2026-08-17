@@ -5,6 +5,8 @@ import com.footballmanager.application.engine.model.RoundState;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
 import com.footballmanager.application.service.match.MatchManagementService;
+import com.footballmanager.application.service.security.RoundOwnershipAuthority;
+import com.footballmanager.application.service.security.RoundOwnershipDeniedException;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +39,42 @@ public class MatchEngineController {
     // copy-paste getUserIdFromAuth helper that accepted an optional
     // requestUserId and threw IAE on auth failure.
     private final ControllerHelper controllerHelper;
+    private final RoundOwnershipAuthority roundOwnershipAuthority;
 
     /**
      * GET /api/v1/match-engine/rounds/{roundId}/stream
      * SSE stream for round state updates.
      */
     @GetMapping(value = "/rounds/{roundId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<RoundState> streamRoundState(@PathVariable String roundId) {
+    public Flux<RoundState> streamRoundState(@PathVariable String roundId,
+                                             Authentication authentication) {
+        final UUID id;
+        try {
+            id = UUID.fromString(roundId);
+        } catch (IllegalArgumentException e) {
+            return Flux.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "roundId is not a valid UUID"));
+        }
+        final UUID userId = controllerHelper.getUserId(authentication);
+        return roundOwnershipAuthority.requireOwnedRound(userId, id)
+                .flatMapMany(engine -> streamRoundStateInternal(roundId, id, engine))
+                .onErrorMap(RoundOwnershipDeniedException.class,
+                        ignored -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Round stream is not available"));
+    }
+
+    /** Compatibility entry point for isolated stream tests. */
+    public Flux<RoundState> streamRoundState(String roundId) {
         try {
             UUID id = UUID.fromString(roundId);
-
             RoundEngine roundEngine = roundEngineRegistry.get(id);
+            return streamRoundStateInternal(roundId, id, roundEngine);
+        } catch (Exception e) {
+            return Flux.error(e);
+        }
+    }
+
+    private Flux<RoundState> streamRoundStateInternal(String roundId, UUID id, RoundEngine roundEngine) {
+        try {
+
             if (roundEngine == null) {
                 log.warn("[SSE-STREAM] Round engine not found for roundId: {}. Active engines: {}", id, roundEngineRegistry.getActiveRoundCount());
                 // A missing engine is terminal for this round. Returning an
@@ -110,6 +137,9 @@ public class MatchEngineController {
         return Mono.defer(() -> {
             RoundEngine roundEngine = roundEngineRegistry.getByMatchId(matchIdUuid);
             if (roundEngine != null) {
+                if (!roundEngine.belongsTo(userId, null)) {
+                    return Mono.just(ResponseEntity.notFound().build());
+                }
                 MatchStateSnapshot snapshot = roundEngine.getCurrentMatchSnapshot(matchIdUuid);
                 if (snapshot == null) {
                     return Mono.just(ResponseEntity.notFound().<MatchStateSnapshot>build());
@@ -225,7 +255,43 @@ public class MatchEngineController {
      */
     @GetMapping(value = "/matches/{matchId}/roundId", produces = "application/json;charset=UTF-8")
     public Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatch(
-            @PathVariable String matchId) {
+            @PathVariable String matchId,
+            Authentication authentication) {
+        return getRoundIdForMatchProtected(matchId, authentication);
+    }
+
+    /** Compatibility entry point for isolated lookup tests. */
+    public Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatch(String matchId) {
+        return getRoundIdForMatchUnprotected(matchId);
+    }
+
+    private Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatchProtected(
+            String matchId, Authentication authentication) {
+        log.debug("[MATCH-CONTROLLER] getRoundIdForMatch called for matchId: {}", matchId);
+        UUID matchIdUuid;
+        try {
+            matchIdUuid = UUID.fromString(matchId);
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().body(Map.of(
+                "error", "matchId is not a valid UUID",
+                "matchId", matchId
+            )));
+        }
+
+        UUID userId = controllerHelper.getUserId(authentication);
+        return roundOwnershipAuthority.requireOwnedRoundIdForMatch(userId, matchIdUuid)
+            .map(roundId -> ResponseEntity.<Map<String, Object>>ok(Map.of(
+                "matchId", matchId,
+                "roundId", roundId.toString()
+            )))
+            .onErrorResume(RoundOwnershipDeniedException.class, ignored ->
+                Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
+                    "error", "match is not registered in an owned active round",
+                    "matchId", matchId
+                ))));
+    }
+
+    private Mono<ResponseEntity<Map<String, Object>>> getRoundIdForMatchUnprotected(String matchId) {
         log.debug("[MATCH-CONTROLLER] getRoundIdForMatch called for matchId: {}", matchId);
         UUID matchIdUuid;
         try {

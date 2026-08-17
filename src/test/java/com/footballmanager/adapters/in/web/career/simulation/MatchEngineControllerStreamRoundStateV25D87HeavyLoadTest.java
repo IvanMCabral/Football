@@ -98,6 +98,7 @@ class MatchEngineControllerStreamRoundStateV25D87HeavyLoadTest extends AbstractI
         int N = 30;
         UUID roundId = UUID.randomUUID();
         RoundEngine engine = new RoundEngine(roundId);
+        engine.setOwner(UUID.fromString(SEED_USER_ID), "test-career");
 
         // 30 mock matches, each with 50ms advanceTick() cost (CPU-bound
         // simulate approximation). Each match stays at minute=0 forever

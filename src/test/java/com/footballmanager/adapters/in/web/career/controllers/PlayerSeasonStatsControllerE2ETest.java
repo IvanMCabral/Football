@@ -74,6 +74,12 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
         return UUID.randomUUID().toString();
     }
 
+    private void ownCareer(String userId, String careerId) {
+        redisTemplate.opsForValue().set("career-owner:" + careerId, userId).block();
+        redisTemplate.opsForValue().set("career-generation:" + careerId, "test-generation").block();
+        redisTemplate.opsForSet().add("user:" + userId + ":career-ids", careerId).block();
+    }
+
     // ========== Tests ==========
 
     @Test
@@ -132,6 +138,7 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
     void getAllPlayerStats_noDetailedSprintata_returns200WithEmptyList() {
         String userId = uniqueUserId();
         String careerId = UUID.randomUUID().toString(); // careerId random — sin Detailed data
+        ownCareer(userId, careerId);
 
         webTestClient.mutateWith(mockUser(userId))
             .get().uri(uriBuilder -> uriBuilder
@@ -158,6 +165,7 @@ class PlayerSeasonStatsControllerE2ETest extends AbstractIntegrationTest {
     void getAllPlayerStats_withPaginationAndSort_returns200() {
         String userId = uniqueUserId();
         String careerId = UUID.randomUUID().toString();
+        ownCareer(userId, careerId);
 
         webTestClient.mutateWith(mockUser(userId))
             .get().uri(uriBuilder -> uriBuilder

@@ -4,6 +4,9 @@ import com.footballmanager.adapters.in.web.career.dto.request.CareerStartRequest
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import com.footballmanager.application.engine.round.RoundEngine;
 import com.footballmanager.application.engine.round.RoundEngineRegistry;
+import com.footballmanager.application.service.security.CareerOwnershipAuthority;
+import com.footballmanager.application.service.security.RoundOwnershipAuthority;
+import com.footballmanager.application.service.security.RoundOwnershipDeniedException;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.career.SeasonAdvancementService;
 import com.footballmanager.application.service.domain.GameService;
@@ -12,6 +15,7 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.port.in.career.AdvanceRoundUseCase;
 import com.footballmanager.domain.port.in.career.ContinueSeasonUseCase;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -42,6 +46,8 @@ public class CareerCommandController {
     // engine itself is `synchronized` + idempotent (RoundEngine.pauseAll
     // / resumeAll early-return if already in the requested state).
     private final RoundEngineRegistry roundEngineRegistry;
+    private final RoundOwnershipAuthority roundOwnershipAuthority;
+    private final CareerOwnershipAuthority careerOwnershipAuthority;
     // career-start flow also persists a Game entity sharing the career's
     // UUID. Without this, the dashboard's /games/{careerId} navigation
     // always 404s (Game entity never created).
@@ -53,11 +59,25 @@ public class CareerCommandController {
             SeasonAdvancementService seasonAdvancementService,
             RoundEngineRegistry roundEngineRegistry,
             GameService gameService) {
+        this(controllerHelper, sessionService, seasonAdvancementService, roundEngineRegistry, gameService, null, null);
+    }
+
+    @Autowired
+    public CareerCommandController(
+            ControllerHelper controllerHelper,
+            CareerSessionService sessionService,
+            SeasonAdvancementService seasonAdvancementService,
+            RoundEngineRegistry roundEngineRegistry,
+            GameService gameService,
+            RoundOwnershipAuthority roundOwnershipAuthority,
+            CareerOwnershipAuthority careerOwnershipAuthority) {
         this.controllerHelper = controllerHelper;
         this.sessionService = sessionService;
         this.seasonAdvancementService = seasonAdvancementService;
         this.roundEngineRegistry = roundEngineRegistry;
         this.gameService = gameService;
+        this.roundOwnershipAuthority = roundOwnershipAuthority;
+        this.careerOwnershipAuthority = careerOwnershipAuthority;
     }
 
     /**
@@ -203,7 +223,11 @@ public class CareerCommandController {
             Authentication authentication) {
 
         UUID userId = controllerHelper.getUserId(authentication);
-        return seasonAdvancementService.advanceToNextRound(userId, careerId);
+        if (careerOwnershipAuthority == null) {
+            return seasonAdvancementService.advanceToNextRound(userId, careerId);
+        }
+        return careerOwnershipAuthority.requireOwned(userId, careerId)
+                .then(seasonAdvancementService.advanceToNextRound(userId, careerId));
     }
 
     /**
@@ -251,10 +275,13 @@ public class CareerCommandController {
             )));
         }
 
-        return Mono.fromSupplier(() -> {
+        Mono<Boolean> ownership = roundOwnershipAuthority == null
+                ? Mono.just(true)
+                : roundOwnershipAuthority.requireOwned(userId, careerId, roundIdUuid).thenReturn(true);
+        return ownership.then(Mono.fromSupplier(() -> {
             RoundEngine engine = roundEngineRegistry.get(roundIdUuid);
             if (engine == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
                     "success", false,
                     "error", "round not found (no active engine for roundId)",
                     "careerId", careerId,
@@ -284,8 +311,12 @@ public class CareerCommandController {
             // 404. Keeping the flags preserves existing consumers while the
             // matches payload gives modals a real source of truth.
             body.put("matches", engine.getMatchStates());
-            return ResponseEntity.ok(body);
-        });
+            return ResponseEntity.<Map<String, Object>>ok(body);
+        })).onErrorResume(RoundOwnershipDeniedException.class, ignored -> Mono.just(
+                ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
+                        "success", false,
+                        "error", "round not found",
+                        "roundId", roundId))));
     }
 
     /**
@@ -316,10 +347,13 @@ public class CareerCommandController {
             )));
         }
 
-        return Mono.fromSupplier(() -> {
+        Mono<Boolean> ownership = roundOwnershipAuthority == null
+                ? Mono.just(true)
+                : roundOwnershipAuthority.requireOwned(userId, careerId, roundIdUuid).thenReturn(true);
+        return ownership.then(Mono.fromSupplier(() -> {
             RoundEngine engine = roundEngineRegistry.get(roundIdUuid);
             if (engine == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
                     "success", false,
                     "error", "round not found (no active engine for roundId)",
                     "careerId", careerId,
@@ -341,8 +375,12 @@ public class CareerCommandController {
             body.put("alreadyFinished", wasFinished);
             body.put("userId", userId.toString());
             body.put("matches", engine.getMatchStates());
-            return ResponseEntity.ok(body);
-        });
+            return ResponseEntity.<Map<String, Object>>ok(body);
+        })).onErrorResume(RoundOwnershipDeniedException.class, ignored -> Mono.just(
+                ResponseEntity.status(HttpStatus.NOT_FOUND).<Map<String, Object>>body(Map.of(
+                        "success", false,
+                        "error", "round not found",
+                        "roundId", roundId))));
     }
 
 }

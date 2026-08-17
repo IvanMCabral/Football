@@ -1,10 +1,15 @@
 package com.footballmanager.adapters.in.web.career.controllers;
 
 import com.footballmanager.application.service.simulation.detailed.stats.*;
+import com.footballmanager.application.service.security.CareerOwnershipAuthority;
+import com.footballmanager.application.service.security.CareerOwnershipDeniedException;
+import com.footballmanager.adapters.in.web.common.ControllerHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -38,9 +43,20 @@ import java.util.Map;
 public class PlayerSeasonStatsController {
 
     private final PlayerSeasonStatsQueryService queryService;
+    private final CareerOwnershipAuthority ownershipAuthority;
+    private final ControllerHelper controllerHelper;
 
     public PlayerSeasonStatsController(PlayerSeasonStatsQueryService queryService) {
+        this(queryService, null, null);
+    }
+
+    @Autowired
+    public PlayerSeasonStatsController(PlayerSeasonStatsQueryService queryService,
+                                       CareerOwnershipAuthority ownershipAuthority,
+                                       ControllerHelper controllerHelper) {
         this.queryService = queryService;
+        this.ownershipAuthority = ownershipAuthority;
+        this.controllerHelper = controllerHelper;
     }
 
     @GetMapping("/{careerId}/seasons/{season}/player-stats")
@@ -50,7 +66,19 @@ public class PlayerSeasonStatsController {
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String order) {
+            @RequestParam(required = false) String order,
+            Authentication authentication) {
+        return getPlayerSeasonStatsInternal(careerId, season, limit, offset, sortBy, order, authentication);
+    }
+
+    public Mono<ResponseEntity<Object>> getPlayerSeasonStats(
+            String careerId, Integer season, Integer limit, Integer offset, String sortBy, String order) {
+        return getPlayerSeasonStatsInternal(careerId, season, limit, offset, sortBy, order, null);
+    }
+
+    private Mono<ResponseEntity<Object>> getPlayerSeasonStatsInternal(
+            String careerId, Integer season, Integer limit, Integer offset, String sortBy, String order,
+            Authentication authentication) {
 
         if (careerId == null || careerId.isBlank()) {
             return Mono.just(ResponseEntity.badRequest()
@@ -82,11 +110,6 @@ public class PlayerSeasonStatsController {
                     .body(Map.of("error", "Invalid order: " + order + " (must be 'asc' or 'desc')")));
         }
 
-        if (!queryService.isApiEnabled()) {
-            log.debug("Player stats API disabled, returning 404 for careerId={}, season={}", careerId, season);
-            return Mono.just(ResponseEntity.notFound().build());
-        }
-
         int effectiveLimit = limit != null ? limit : 50;
         int effectiveOffset = offset != null ? offset : 0;
         // Clamp limit > 200 and track warning
@@ -98,13 +121,24 @@ public class PlayerSeasonStatsController {
                     "limit was greater than max and was clamped to 200",
                     "limit"));
         }
+        final int queryLimit = effectiveLimit;
+        final int queryOffset = effectiveOffset;
 
-        return queryService.getPlayerSeasonStats(
-                        careerId, season, null, null, effectiveLimit, effectiveOffset, sortBy, order)
-                .map(response -> withWarnings(response, warnings))
-                .map(response -> ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body((Object) response));
+        return authorize(careerId, authentication)
+                .then(Mono.defer(() -> {
+                    if (!queryService.isApiEnabled()) {
+                        log.debug("Player stats API disabled, returning 404 for careerId={}, season={}", careerId, season);
+                        return Mono.just(ResponseEntity.<Object>notFound().build());
+                    }
+                    return queryService.getPlayerSeasonStats(
+                                    careerId, season, null, null, queryLimit, queryOffset, sortBy, order)
+                            .map(response -> withWarnings(response, warnings))
+                            .map(response -> ResponseEntity.ok()
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .body((Object) response));
+                }))
+                .onErrorResume(CareerOwnershipDeniedException.class,
+                        ignored -> Mono.just(ResponseEntity.notFound().build()));
     }
 
     @GetMapping("/{careerId}/seasons/{season}/teams/{teamId}/player-stats")
@@ -115,7 +149,20 @@ public class PlayerSeasonStatsController {
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String order) {
+            @RequestParam(required = false) String order,
+            Authentication authentication) {
+        return getTeamPlayerSeasonStatsInternal(careerId, season, teamId, limit, offset, sortBy, order, authentication);
+    }
+
+    public Mono<ResponseEntity<Object>> getTeamPlayerSeasonStats(
+            String careerId, Integer season, String teamId, Integer limit, Integer offset,
+            String sortBy, String order) {
+        return getTeamPlayerSeasonStatsInternal(careerId, season, teamId, limit, offset, sortBy, order, null);
+    }
+
+    private Mono<ResponseEntity<Object>> getTeamPlayerSeasonStatsInternal(
+            String careerId, Integer season, String teamId, Integer limit, Integer offset,
+            String sortBy, String order, Authentication authentication) {
 
         if (careerId == null || careerId.isBlank()) {
             return Mono.just(ResponseEntity.badRequest()
@@ -151,12 +198,6 @@ public class PlayerSeasonStatsController {
                     .body(Map.of("error", "Invalid order: " + order + " (must be 'asc' or 'desc')")));
         }
 
-        if (!queryService.isApiEnabled()) {
-            log.debug("Player stats API disabled, returning 404 for careerId={}, season={}, teamId={}",
-                    careerId, season, teamId);
-            return Mono.just(ResponseEntity.notFound().build());
-        }
-
         int effectiveLimit = limit != null ? limit : 50;
         int effectiveOffset = offset != null ? offset : 0;
         List<PlayerSeasonStatsWarning> warnings = new ArrayList<>();
@@ -167,20 +208,42 @@ public class PlayerSeasonStatsController {
                     "limit was greater than max and was clamped to 200",
                     "limit"));
         }
+        final int queryLimit = effectiveLimit;
+        final int queryOffset = effectiveOffset;
 
-        return queryService.getPlayerSeasonStats(
-                        careerId, season, teamId, null, effectiveLimit, effectiveOffset, sortBy, order)
-                .map(response -> withWarnings(response, warnings))
-                .map(response -> ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body((Object) response));
+        return authorize(careerId, authentication)
+                .then(Mono.defer(() -> {
+                    if (!queryService.isApiEnabled()) {
+                        log.debug("Player stats API disabled, returning 404 for careerId={}, season={}, teamId={}",
+                                careerId, season, teamId);
+                        return Mono.just(ResponseEntity.<Object>notFound().build());
+                    }
+                    return queryService.getPlayerSeasonStats(
+                                    careerId, season, teamId, null, queryLimit, queryOffset, sortBy, order)
+                            .map(response -> withWarnings(response, warnings))
+                            .map(response -> ResponseEntity.ok()
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .body((Object) response));
+                }))
+                .onErrorResume(CareerOwnershipDeniedException.class,
+                        ignored -> Mono.just(ResponseEntity.notFound().build()));
     }
 
     @GetMapping("/{careerId}/seasons/{season}/players/{playerId}/stats")
     public Mono<ResponseEntity<Object>> getPlayerStats(
             @PathVariable String careerId,
             @PathVariable Integer season,
-            @PathVariable String playerId) {
+            @PathVariable String playerId,
+            Authentication authentication) {
+        return getPlayerStatsInternal(careerId, season, playerId, authentication);
+    }
+
+    public Mono<ResponseEntity<Object>> getPlayerStats(String careerId, Integer season, String playerId) {
+        return getPlayerStatsInternal(careerId, season, playerId, null);
+    }
+
+    private Mono<ResponseEntity<Object>> getPlayerStatsInternal(
+            String careerId, Integer season, String playerId, Authentication authentication) {
 
         if (careerId == null || careerId.isBlank()) {
             return Mono.just(ResponseEntity.badRequest()
@@ -195,18 +258,22 @@ public class PlayerSeasonStatsController {
                     .body(Map.of("error", "playerId must not be blank")));
         }
 
-        if (!queryService.isApiEnabled()) {
-            log.debug("Player stats API disabled, returning 404 for careerId={}, season={}, playerId={}",
-                    careerId, season, playerId);
-            return Mono.just(ResponseEntity.notFound().build());
-        }
-
-        return queryService.getPlayerSeasonStats(careerId, season, null, playerId)
-                .map(response -> response.playerStats().isEmpty()
-                        ? ResponseEntity.notFound().build()
-                        : ResponseEntity.ok()
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body((Object) response));
+        return authorize(careerId, authentication)
+                .then(Mono.defer(() -> {
+                    if (!queryService.isApiEnabled()) {
+                        log.debug("Player stats API disabled, returning 404 for careerId={}, season={}, playerId={}",
+                                careerId, season, playerId);
+                        return Mono.just(ResponseEntity.<Object>notFound().build());
+                    }
+                    return queryService.getPlayerSeasonStats(careerId, season, null, playerId)
+                            .map(response -> response.playerStats().isEmpty()
+                                    ? ResponseEntity.notFound().build()
+                                    : ResponseEntity.ok()
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .body((Object) response));
+                }))
+                .onErrorResume(CareerOwnershipDeniedException.class,
+                        ignored -> Mono.just(ResponseEntity.notFound().build()));
     }
 
     private PlayerSeasonStatsResponse withWarnings(
@@ -232,5 +299,12 @@ public class PlayerSeasonStatsController {
                 .metadata(response.metadata())
                 .warnings(allWarnings)
                 .build();
+    }
+
+    private Mono<Void> authorize(String careerId, Authentication authentication) {
+        if (authentication == null || ownershipAuthority == null) {
+            return Mono.empty();
+        }
+        return ownershipAuthority.requireOwned(controllerHelper.getUserId(authentication), careerId).then();
     }
 }
