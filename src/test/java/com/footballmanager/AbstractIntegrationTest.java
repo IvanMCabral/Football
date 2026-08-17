@@ -91,6 +91,33 @@ public abstract class AbstractIntegrationTest {
         databaseClient.sql("DELETE FROM teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
         databaseClient.sql("DELETE FROM league_teams").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
         databaseClient.sql("DELETE FROM leagues").fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
+
+        // Global authentication now requires a canonical user row.  Keep the
+        // long-standing deterministic integration-test owner IDs backed by
+        // current users instead of bypassing the production security boundary.
+        ensureCanonicalFixtureUser(
+            UUID.fromString("00000000-0000-0000-0000-000000000001"),
+            "fixture-current@example.test", "fixture-current", "USER");
+        ensureCanonicalFixtureUser(
+            UUID.fromString("00000000-0000-0000-0000-0000000000ff"),
+            "fixture-other@example.test", "fixture-other", "USER");
+        ensureCanonicalFixtureUser(
+            UUID.fromString("00000000-0000-0000-0000-00000000aaaa"),
+            "fixture-admin@example.test", "fixture-admin", "ADMIN");
+    }
+
+    private void ensureCanonicalFixtureUser(UUID id, String email, String username, String role) {
+        databaseClient.sql("""
+            INSERT INTO users (id, email, username, password_hash, role)
+            VALUES (:id, :email, :username, :passwordHash, :role)
+            ON CONFLICT (id) DO NOTHING
+            """)
+            .bind("id", id)
+            .bind("email", email)
+            .bind("username", username)
+            .bind("passwordHash", "fixture-password-hash")
+            .bind("role", role)
+            .fetch().rowsUpdated().onErrorResume(e -> reactor.core.publisher.Mono.just(0L)).block();
     }
 
     /**

@@ -66,6 +66,43 @@ class WorldAuthHardeningC48E2ETest extends AbstractIntegrationTest {
     void cleanRedis() {
         redisTemplate.getConnectionFactory().getReactiveConnection()
             .serverCommands().flushDb().block();
+        ensureCanonicalFixtureUsers();
+    }
+
+    private void ensureCanonicalFixtureUsers() {
+        databaseClient.sql("""
+            INSERT INTO users (id, email, username, password_hash, role)
+            VALUES (:id, :email, :username, :passwordHash, :role)
+            ON CONFLICT (id) DO NOTHING
+            """)
+            .bind("id", SEED_USER_ID)
+            .bind("email", "fixture-current@example.test")
+            .bind("username", "fixture-current")
+            .bind("passwordHash", "fixture-password-hash")
+            .bind("role", "USER")
+            .fetch().rowsUpdated().block();
+        databaseClient.sql("""
+            INSERT INTO users (id, email, username, password_hash, role)
+            VALUES (:id, :email, :username, :passwordHash, :role)
+            ON CONFLICT (id) DO NOTHING
+            """)
+            .bind("id", OTHER_USER_ID)
+            .bind("email", "fixture-other@example.test")
+            .bind("username", "fixture-other")
+            .bind("passwordHash", "fixture-password-hash")
+            .bind("role", "USER")
+            .fetch().rowsUpdated().block();
+        databaseClient.sql("""
+            INSERT INTO users (id, email, username, password_hash, role)
+            VALUES (:id, :email, :username, :passwordHash, :role)
+            ON CONFLICT (id) DO NOTHING
+            """)
+            .bind("id", ADMIN_USER_ID)
+            .bind("email", "fixture-admin@example.test")
+            .bind("username", "fixture-admin")
+            .bind("passwordHash", "fixture-password-hash")
+            .bind("role", "ADMIN")
+            .fetch().rowsUpdated().block();
     }
 
     /** Helper: configure WebTestClient with a Bearer token generated for the given user + role. */

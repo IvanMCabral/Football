@@ -3,6 +3,7 @@ package com.footballmanager.infrastructure.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.adapters.in.web.common.ErrorResponseBody;
 import com.footballmanager.infrastructure.config.CorsConfig;
+import com.footballmanager.domain.ports.out.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
     private final CorsConfig corsConfig;
+    private final UserRepository userRepository;
 
     private void addCorsHeaders(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
@@ -118,8 +120,23 @@ public class SecurityConfig {
         AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(reactiveAuthenticationManager());
         authenticationFilter.setServerAuthenticationConverter(serverAuthenticationConverter());
         authenticationFilter.setAuthenticationFailureHandler((webFilterExchange, exception) -> {
-            String path = webFilterExchange.getExchange().getRequest().getPath().toString();
-            return webFilterExchange.getExchange().getResponse().setComplete();
+            ServerWebExchange exchange = webFilterExchange.getExchange();
+            addCorsHeaders(exchange);
+            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+            exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
+            exchange.getResponse().getHeaders().setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            String requestId = exchange.getRequest().getHeaders()
+                .getFirst(RequestCorrelationWebFilter.REQUEST_ID_HEADER);
+            ErrorResponseBody body = ErrorResponseBody.unauthorized(
+                "No autenticado.", requestId == null || requestId.isBlank() ? "unavailable" : requestId);
+            try {
+                String json = objectMapper.writeValueAsString(body);
+                return exchange.getResponse().writeWith(reactor.core.publisher.Mono.just(
+                    exchange.getResponse().bufferFactory()
+                        .wrap(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)))).then();
+            } catch (com.fasterxml.jackson.core.JsonProcessingException serializationFailure) {
+                return exchange.getResponse().setComplete();
+            }
         });
         return authenticationFilter;
     }
@@ -149,7 +166,7 @@ public class SecurityConfig {
 
     @Bean
     public ReactiveAuthenticationManager reactiveAuthenticationManager() {
-        return authentication -> Mono.just(authentication);
+        return new CanonicalUserAuthenticationManager(userRepository);
     }
 
 }

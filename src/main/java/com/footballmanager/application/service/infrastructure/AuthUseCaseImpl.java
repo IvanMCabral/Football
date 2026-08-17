@@ -74,19 +74,32 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     @Override
     public Mono<AuthTokenResult> refreshToken(AuthRefreshCommand command) {
-        if (!authTokenService.validateToken(command.refreshToken())) {
-            return Mono.error(new IllegalArgumentException("Invalid refresh token"));
-        }
+        return Mono.defer(() -> {
+            String refreshToken = command == null ? null : command.refreshToken();
+            if (refreshToken == null || !authTokenService.validateToken(refreshToken)) {
+                return Mono.error(new AuthCredentialsException("Invalid refresh token"));
+            }
 
-        String userId = authTokenService.getUserIdFromToken(command.refreshToken());
-        String role = authTokenService.getRoleFromToken(command.refreshToken());
+            final UUID userId;
+            try {
+                userId = UUID.fromString(authTokenService.getUserIdFromToken(refreshToken));
+            } catch (RuntimeException invalidSubject) {
+                return Mono.error(new AuthCredentialsException("Invalid refresh token"));
+            }
 
-        String newAccessToken = authTokenService.generateToken(userId, role);
-        String newRefreshToken = authTokenService.generateRefreshToken(userId);
-
-        return Mono.just(new AuthTokenResult(
-            newAccessToken, newRefreshToken,
-            authTokenService.getExpirationTime(), "Bearer"));
+            return userRepository.findById(userId)
+                .switchIfEmpty(Mono.defer(() ->
+                    Mono.error(new AuthCredentialsException("Invalid refresh token"))))
+                .map(user -> {
+                    String canonicalUserId = user.getId().getValue().toString();
+                    String canonicalRole = user.getRole().name();
+                    String newAccessToken = authTokenService.generateToken(canonicalUserId, canonicalRole);
+                    String newRefreshToken = authTokenService.generateRefreshToken(canonicalUserId);
+                    return new AuthTokenResult(
+                        newAccessToken, newRefreshToken,
+                        authTokenService.getExpirationTime(), "Bearer");
+                });
+        });
     }
 
     @Override
