@@ -13,6 +13,7 @@ import com.footballmanager.domain.ports.out.auth.AuthTokenService;
 import com.footballmanager.domain.ports.out.user.UserRepository;
 import com.footballmanager.domain.port.in.auth.AuthUserInfo;
 import com.footballmanager.domain.port.in.auth.AuthUseCase;
+import com.footballmanager.domain.service.PasswordContract;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
         validateRegistration(command);
         AuthRegisterCommand normalizedCommand = new AuthRegisterCommand(
             command.email().trim(), command.username().trim(), command.password());
-        validatePassword(normalizedCommand.password());
+        validateRegistrationPassword(normalizedCommand.password());
         return userRepository.findByEmail(normalizedCommand.email())
             .<User>flatMap(user -> Mono.error(new AuthConflictException("Email already exists")))
             .switchIfEmpty(Mono.defer(() -> {
@@ -50,7 +51,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
                         if (usernameExists) {
                             return Mono.error(new AuthConflictException("Username already exists"));
                         }
-                        String encodedPassword = passwordEncoder.encode(normalizedCommand.password());
+                        String encodedPassword = encodePassword(normalizedCommand.password());
                         return userRepository.createNew(normalizedCommand.email(), normalizedCommand.username(), encodedPassword);
                     });
             }))
@@ -61,11 +62,14 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
     @Override
     public Mono<AuthTokenResult> login(AuthLoginCommand command) {
+        if (command == null) {
+            throw new AuthCredentialsException("Invalid credentials");
+        }
         validatePasswordShape(command.password());
         return userRepository.findByEmail(command.email())
             .switchIfEmpty(Mono.defer(() -> Mono.error(new AuthCredentialsException("Invalid credentials"))))
-            .filterWhen(user -> Mono.fromCallable(() ->
-                passwordEncoder.matches(command.password(), user.getPasswordHash())))
+            .filterWhen(user -> Mono.fromCallable(() -> matchesPassword(
+                command.password(), user.getPasswordHash())))
             .switchIfEmpty(Mono.defer(() -> Mono.error(new AuthCredentialsException("Invalid credentials"))))
             .flatMap(user -> {
                 return generateTokenResponse(user);
@@ -148,17 +152,31 @@ public class AuthUseCaseImpl implements AuthUseCase {
         });
     }
 
-    private static void validatePassword(String password) {
-        if (password == null || password.length() > 128 || password.isBlank()) {
-            throw new AuthValidationException("Invalid password");
-        }
-        if (password.length() < 8) {
-            throw new AuthValidationException("Password does not meet minimum requirements");
+    private static void validateRegistrationPassword(String password) {
+        if (!PasswordContract.isRegistrationPasswordValid(password)) {
+            throw new AuthValidationException(
+                "Password must contain at least 8 characters and no more than 72 UTF-8 bytes");
         }
     }
 
     private static void validatePasswordShape(String password) {
-        if (password == null || password.length() > 128 || password.isBlank()) {
+        if (!PasswordContract.isHashablePassword(password)) {
+            throw new AuthCredentialsException("Invalid credentials");
+        }
+    }
+
+    private String encodePassword(String password) {
+        try {
+            return passwordEncoder.encode(password);
+        } catch (IllegalArgumentException encodingFailure) {
+            throw new AuthValidationException("Invalid password");
+        }
+    }
+
+    private boolean matchesPassword(String password, String passwordHash) {
+        try {
+            return passwordEncoder.matches(password, passwordHash);
+        } catch (IllegalArgumentException matchingFailure) {
             throw new AuthCredentialsException("Invalid credentials");
         }
     }

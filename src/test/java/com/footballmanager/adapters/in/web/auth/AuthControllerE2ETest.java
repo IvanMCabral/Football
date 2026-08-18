@@ -120,6 +120,34 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("POST /register - 95-byte password is rejected before persistence")
+    void register_passwordBeyondBcryptBoundary_returnsControlledAuthValidation() {
+        String email = uniqueEmail();
+        String password = "a".repeat(95);
+
+        webTestClient.post().uri("/api/v1/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(String.format(
+                "{\"email\":\"%s\",\"username\":\"boundary-user\",\"password\":\"%s\"}",
+                email, password))
+            .exchange()
+            .expectStatus().isEqualTo(422)
+            .expectBody()
+            .jsonPath("$.code").isEqualTo("AUTH_VALIDATION_ERROR")
+            .jsonPath("$.code").value(code ->
+                org.junit.jupiter.api.Assertions.assertNotEquals("LINEUP_VALIDATION_ERROR", code))
+            .jsonPath("$.message").value(message ->
+                org.junit.jupiter.api.Assertions.assertFalse(message.toString().contains(password)));
+
+        Long persistedUsers = databaseClient.sql("SELECT COUNT(*) FROM users WHERE email = :email")
+            .bind("email", email)
+            .map((row, metadata) -> row.get(0, Long.class))
+            .one()
+            .block();
+        org.junit.jupiter.api.Assertions.assertEquals(0L, persistedUsers);
+    }
+
+    @Test
     @DisplayName("POST /register - missing username returns safe 422 instead of database 500")
     void register_missingUsername_returnsSafeValidationError() {
         webTestClient.post().uri("/api/v1/auth/register")
