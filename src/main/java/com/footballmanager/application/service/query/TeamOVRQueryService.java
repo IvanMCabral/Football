@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
+import com.footballmanager.domain.model.view.WorldPlayerOvrProjection;
 import com.footballmanager.domain.model.view.WorldView;
 import com.footballmanager.application.service.world.WorldQueryService;
 import com.footballmanager.domain.service.SessionTeamRankingPolicy;
@@ -18,7 +19,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para consultas de Teams con OVR.
@@ -102,21 +105,22 @@ public class TeamOVRQueryService {
     }
 
     private Mono<List<TeamOvrView>> buildCanonicalTeamsWithOVR(UUID userId, UUID leagueId) {
-        return worldQueryService.getTeamsByLeague(userId, leagueId)
-                .flatMap(teams -> playerRepository.findTeamOvrAggregatesFromDatabase()
-                        .map(aggregates -> buildTeamsWithOVRFromAggregates(teams, aggregates)));
+        return worldQueryService.getCanonicalTeamsByLeague(leagueId)
+                .zipWith(playerRepository.findPlayersForOvrFromDatabase(),
+                        this::buildTeamsWithOVRFromProjections);
     }
 
-    private List<TeamOvrView> buildTeamsWithOVRFromAggregates(
+    private List<TeamOvrView> buildTeamsWithOVRFromProjections(
             List<WorldTeam> teams,
-            java.util.Map<UUID, PlayerRepository.TeamOvrAggregate> aggregates) {
+            List<WorldPlayerOvrProjection> projections) {
+        Map<UUID, List<WorldPlayerOvrProjection>> projectionsByTeam = projections.stream()
+                .collect(Collectors.groupingBy(WorldPlayerOvrProjection::teamId));
         List<TeamOvrView> result = new ArrayList<>();
         for (WorldTeam team : teams) {
-            PlayerRepository.TeamOvrAggregate aggregate = aggregates.get(team.getRealTeamId());
-            int playerCount = aggregate == null ? 0 : aggregate.playerCount();
-            int ovr = aggregate == null || aggregate.averageOvr() == null
-                    ? 50
-                    : aggregate.averageOvr().setScale(0, java.math.RoundingMode.FLOOR).intValue();
+            List<WorldPlayerOvrProjection> teamPlayers = projectionsByTeam.getOrDefault(
+                    team.getRealTeamId(), List.of());
+            int playerCount = teamPlayers.size();
+            int ovr = calculateTeamOvrFromProjections(teamPlayers);
             result.add(new TeamOvrView(
                     team.getWorldTeamId(),
                     team.getName(),
@@ -128,6 +132,16 @@ public class TeamOVRQueryService {
         }
         result.sort(teamWithOVRComparator());
         return result;
+    }
+
+    private int calculateTeamOvrFromProjections(List<WorldPlayerOvrProjection> players) {
+        if (players == null || players.isEmpty()) {
+            return 50;
+        }
+        int totalOvr = players.stream()
+                .mapToInt(WorldPlayerOvrProjection::calculateOverall)
+                .sum();
+        return totalOvr / players.size();
     }
 
     private List<TeamOvrView> buildTeamsWithOVRFromView(WorldView worldView, List<WorldTeam> teams) {

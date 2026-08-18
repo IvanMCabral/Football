@@ -46,6 +46,18 @@ public class WorldQueryService {
         return loadTeamsForQuery(userId)
                 .map(teams -> teams.stream()
                         .filter(team -> leagueId.equals(team.getRealLeagueId()))
+                .toList());
+    }
+
+    /** Canonical-only projection for callers that already established no snapshot exists. */
+    public Mono<List<WorldTeam>> getCanonicalTeamsByLeague(UUID leagueId) {
+        return loadCanonicalDataTeamsByLeague(leagueId);
+    }
+
+    private Mono<List<WorldTeam>> loadCanonicalDataTeamsByLeague(UUID leagueId) {
+        return loadBaseDataService.loadCanonicalTeams()
+                .map(teams -> teams.stream()
+                        .filter(team -> leagueId.equals(team.getRealLeagueId()))
                         .toList());
     }
 

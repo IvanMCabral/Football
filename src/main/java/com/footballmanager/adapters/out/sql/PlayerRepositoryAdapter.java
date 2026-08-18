@@ -5,6 +5,7 @@ import com.footballmanager.infrastructure.persistence.repository.*;
 import com.footballmanager.infrastructure.persistence.redis.PlayerRedisRepository;
 
 import com.footballmanager.domain.model.entity.Player;
+import com.footballmanager.domain.model.view.WorldPlayerOvrProjection;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 import com.footballmanager.domain.ports.out.player.PlayerRepository;
 import com.footballmanager.application.service.world.DurableBoundaryClassification;
@@ -101,38 +102,25 @@ public class PlayerRepositoryAdapter implements PlayerRepository {
     }
 
     @Override
-    public Mono<java.util.Map<UUID, PlayerRepository.TeamOvrAggregate>> findTeamOvrAggregatesFromDatabase() {
+    public Mono<java.util.List<WorldPlayerOvrProjection>> findPlayersForOvrFromDatabase() {
         return databaseClient.sql("""
-                        SELECT ts.team_id,
-                               COUNT(*) AS player_count,
-                               AVG(ROUND(CASE
-                                   WHEN p.position = 'GK' THEN p.defense * 0.40 + p.technique * 0.20
-                                       + p.mentality * 0.20 + p.stamina * 0.10 + p.speed * 0.05 + p.attack * 0.05
-                                   WHEN p.position IN ('LB', 'CB', 'RB', 'LWB', 'RWB') THEN p.defense * 0.35
-                                       + p.technique * 0.15 + p.mentality * 0.15 + p.stamina * 0.15
-                                       + p.speed * 0.10 + p.attack * 0.10
-                                   WHEN p.position IN ('CDM', 'CM', 'CAM', 'LM', 'RM') THEN p.technique * 0.30
-                                       + p.stamina * 0.20 + p.mentality * 0.15 + p.defense * 0.15
-                                       + p.speed * 0.10 + p.attack * 0.10
-                                   WHEN p.position IN ('LW', 'RW') THEN p.speed * 0.30 + p.attack * 0.25
-                                       + p.technique * 0.20 + p.stamina * 0.15 + p.mentality * 0.05
-                                       + p.defense * 0.05
-                                   WHEN p.position IN ('CF', 'ST') THEN p.attack * 0.40 + p.technique * 0.20
-                                       + p.speed * 0.15 + p.mentality * 0.10 + p.stamina * 0.10
-                                       + p.defense * 0.05
-                                   ELSE (p.attack + p.defense + p.technique + p.speed + p.stamina + p.mentality) / 6.0
-                               END)) AS average_ovr
+                        SELECT ts.team_id, p.position, p.attack, p.defense, p.technique,
+                               p.speed, p.stamina, p.mentality
                         FROM players p
                         INNER JOIN team_squad ts ON p.id = ts.player_id
-                        GROUP BY ts.team_id
+                        ORDER BY ts.team_id, p.id
                         """)
-                .map((row, metadata) -> new java.util.AbstractMap.SimpleEntry<>(
+                .map((row, metadata) -> new WorldPlayerOvrProjection(
                         row.get("team_id", UUID.class),
-                        new PlayerRepository.TeamOvrAggregate(
-                                row.get("player_count", Long.class).intValue(),
-                                row.get("average_ovr", BigDecimal.class))))
+                        row.get("position", String.class),
+                        row.get("attack", Integer.class),
+                        row.get("defense", Integer.class),
+                        row.get("technique", Integer.class),
+                        row.get("speed", Integer.class),
+                        row.get("stamina", Integer.class),
+                        row.get("mentality", Integer.class)))
                 .all()
-                .collectMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue);
+                .collectList();
     }
 
     @Override

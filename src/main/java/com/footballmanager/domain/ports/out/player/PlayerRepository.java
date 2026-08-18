@@ -1,12 +1,13 @@
 package com.footballmanager.domain.ports.out.player;
 
 import com.footballmanager.domain.model.entity.Player;
+import com.footballmanager.domain.model.view.WorldPlayerOvrProjection;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public interface PlayerRepository {
@@ -21,12 +22,11 @@ public interface PlayerRepository {
     Flux<Player> findByTeamId(UUID teamId);
     /** Reads canonical players grouped by team in one database query. */
     Mono<java.util.Map<UUID, java.util.List<Player>>> findAllByTeamFromDatabase();
-    /** Reads the existing WorldPlayer OVR semantics as one grouped projection. */
-    Mono<java.util.Map<UUID, TeamOvrAggregate>> findTeamOvrAggregatesFromDatabase();
+    /** Reads only the raw fields required by the canonical WorldPlayer OVR. */
+    Mono<List<WorldPlayerOvrProjection>> findPlayersForOvrFromDatabase();
     Flux<PlayerSpecialTrait> findSpecialTraitsByPlayerIds(Collection<UUID> playerIds);
     Mono<Void> addPlayerToTeamSquad(UUID teamId, UUID playerId);
     Mono<Void> removePlayerFromTeamSquad(UUID teamId, UUID playerId);
 
-    record TeamOvrAggregate(int playerCount, BigDecimal averageOvr) {}
 }
 

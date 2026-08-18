@@ -5,6 +5,7 @@ import com.footballmanager.domain.model.metadata.WorldIdentityReference;
 
 import com.footballmanager.domain.model.valueobject.PlayerSkill;
 import com.footballmanager.domain.model.valueobject.PlayerSpecialTrait;
+import com.footballmanager.domain.service.WorldPlayerOvrCalculator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -188,56 +189,14 @@ public class WorldPlayer {
      * Calcula el overall base del jugador según su posición
      */
     public Integer calculateOverall() {
-        if (baseAttack == null || baseDefense == null || baseTechnique == null || 
-            baseSpeed == null || baseStamina == null || baseMentality == null) {
-            return 50;
-        }
-        
-        double overall = switch (position) {
-            case "GK" -> 
-                baseDefense * 0.40 + 
-                baseTechnique * 0.20 + 
-                baseMentality * 0.20 + 
-                baseStamina * 0.10 + 
-                baseSpeed * 0.05 + 
-                baseAttack * 0.05;
-            
-            case "DEF" -> 
-                baseDefense * 0.35 + 
-                baseTechnique * 0.15 + 
-                baseMentality * 0.15 + 
-                baseStamina * 0.15 + 
-                baseSpeed * 0.10 + 
-                baseAttack * 0.10;
-            
-            case "MID" -> 
-                baseTechnique * 0.30 + 
-                baseStamina * 0.20 + 
-                baseMentality * 0.15 + 
-                baseDefense * 0.15 + 
-                baseSpeed * 0.10 + 
-                baseAttack * 0.10;
-            
-            case "WINGER" -> 
-                baseSpeed * 0.30 + 
-                baseAttack * 0.25 + 
-                baseTechnique * 0.20 + 
-                baseStamina * 0.15 + 
-                baseMentality * 0.05 + 
-                baseDefense * 0.05;
-            
-            case "ATT" -> 
-                baseAttack * 0.40 + 
-                baseTechnique * 0.20 + 
-                baseSpeed * 0.15 + 
-                baseMentality * 0.10 + 
-                baseStamina * 0.10 + 
-                baseDefense * 0.05;
-            
-            default -> (baseAttack + baseDefense + baseTechnique + baseSpeed + baseStamina + baseMentality) / 6.0;
-        };
-        
-        return (int) Math.round(overall);
+        return WorldPlayerOvrCalculator.calculate(
+                baseAttack,
+                baseDefense,
+                baseTechnique,
+                baseSpeed,
+                baseStamina,
+                baseMentality,
+                position);
     }
     
     // ========== Getters y Setters ==========
