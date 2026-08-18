@@ -11,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
@@ -85,6 +88,76 @@ class WorldQueryControllerE2ETest extends AbstractIntegrationTest {
             .expectStatus().isOk()
             .expectBody()
             .jsonPath("$").isArray();
+    }
+
+    @Test
+    @DisplayName("GET /world/teams — canonical catalog does not create a Redis snapshot")
+    void teams_catalogReadDoesNotWriteRedis() {
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/teams")
+                .queryParam("userId", SEED_USER_ID)
+                .build())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk();
+
+        org.assertj.core.api.Assertions.assertThat(
+                redisTemplate.keys("*").collectList().block())
+            .as("teams-only catalog reads must not create owner Redis state")
+            .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Local teams read timing — repeated canonical and OVR calls")
+    void teams_localTimingHarnessReportsMedian() {
+        List<Long> teamsMillis = new ArrayList<>();
+        List<Long> ovrMillis = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            long started = System.nanoTime();
+            webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+                .get().uri(uriBuilder -> uriBuilder
+                    .path("/api/v1/world/teams")
+                    .queryParam("userId", SEED_USER_ID)
+                    .build())
+                .exchange()
+                .expectStatus().isOk();
+            teamsMillis.add((System.nanoTime() - started) / 1_000_000);
+
+            started = System.nanoTime();
+            webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+                .get().uri(uriBuilder -> uriBuilder
+                    .path("/api/v1/world/leagues/{leagueId}/teams-with-ovr")
+                    .queryParam("userId", SEED_USER_ID)
+                    .build(LALIGA_ID))
+                .exchange()
+                .expectStatus().isOk();
+            ovrMillis.add((System.nanoTime() - started) / 1_000_000);
+        }
+        teamsMillis.sort(Comparator.naturalOrder());
+        ovrMillis.sort(Comparator.naturalOrder());
+        System.out.printf("[PB123H829-LOCAL] teamsRuns=%s medianMs=%d ovrRuns=%s medianMs=%d%n",
+                teamsMillis, teamsMillis.get(2), ovrMillis, ovrMillis.get(2));
+    }
+
+    @Test
+    @DisplayName("GET /world/leagues/{id}/teams-with-ovr — canonical grouped OVR path returns 200")
+    void teamsWithOvr_usesCanonicalProjection() {
+        webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/leagues/{leagueId}/teams-with-ovr")
+                .queryParam("userId", SEED_USER_ID)
+                .build(LALIGA_ID))
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$").isArray();
+
+        org.assertj.core.api.Assertions.assertThat(
+                redisTemplate.keys("*").collectList().block())
+            .as("teams-with-ovr canonical reads must not create owner Redis state")
+            .isEmpty();
     }
 
     @Test

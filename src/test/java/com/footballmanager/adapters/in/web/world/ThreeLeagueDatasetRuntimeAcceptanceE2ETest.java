@@ -104,6 +104,21 @@ class ThreeLeagueDatasetRuntimeAcceptanceE2ETest extends AbstractIntegrationTest
                 .hasSizeGreaterThanOrEqualTo(24);
             autoSelect(userId);
         }
+        UUID catalogUserId = UUID.nameUUIDFromBytes("runtime-acceptance|BRA".getBytes());
+        List<Map<String, Object>> allTeams = webTestClient.mutateWith(mockUser(catalogUserId.toString()))
+            .get().uri(uriBuilder -> uriBuilder
+                .path("/api/v1/world/teams")
+                .queryParam("userId", catalogUserId)
+                .build())
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+            .returnResult()
+            .getResponseBody();
+        assertThat(allTeams).hasSize(70);
+        assertThat(allTeams.stream().map(team -> team.get("worldTeamId")).distinct()).hasSize(70);
+        assertThat(allTeams.stream().map(team -> team.get("realLeagueId")).distinct()).hasSize(3);
         assertGeneratedTraitCoverage();
     }
 

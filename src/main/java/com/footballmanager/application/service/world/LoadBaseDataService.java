@@ -100,6 +100,12 @@ public class LoadBaseDataService {
         return loaded;
     }
 
+    /** Loads the canonical team catalog without hydrating players or traits. */
+    public Mono<List<WorldTeam>> loadCanonicalTeams() {
+        return leagueTeamSyncService.loadCanonicalLeagueTeamsMap()
+                .flatMap(teamPlayerLoaderService::loadTeamsOnly);
+    }
+
     private Mono<BaseDataResult> loadCanonicalFromSources(UUID ownerId) {
         return leagueTeamSyncService.loadCanonicalLeagueTeamsMap()
                 .flatMap(leagueTeamsMap -> Mono.zip(

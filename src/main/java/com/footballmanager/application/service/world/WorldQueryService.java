@@ -2,6 +2,7 @@ package com.footballmanager.application.service.world;
 
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
+import com.footballmanager.domain.model.entity.WorldSnapshot;
 import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.view.WorldView;
 import com.footballmanager.domain.ports.in.query.BuildWorldViewUseCase;
@@ -42,16 +43,17 @@ public class WorldQueryService {
      * Obtiene todos los equipos de una liga
      */
     public Mono<List<WorldTeam>> getTeamsByLeague(UUID userId, UUID leagueId) {
-        return worldViewForQuery(userId)
-                .map(worldView -> worldView.getTeamsByLeague(leagueId));
+        return loadTeamsForQuery(userId)
+                .map(teams -> teams.stream()
+                        .filter(team -> leagueId.equals(team.getRealLeagueId()))
+                        .toList());
     }
 
     /**
      * Obtiene todos los WorldTeams
      */
     public Mono<List<WorldTeam>> getAllTeams(UUID userId) {
-        return worldViewForQuery(userId)
-                .map(WorldView::teams);
+        return loadTeamsForQuery(userId);
     }
 
     /**
@@ -133,11 +135,25 @@ public class WorldQueryService {
         return worldSnapshotRepository.existsByUserId(userId)
                 .flatMap(exists -> exists
                         ? buildWorldViewUseCase.build(userId)
-                        : loadBaseDataService.loadCanonical(userId).map(base -> new WorldView(
+                : loadBaseDataService.loadCanonical(userId).map(base -> new WorldView(
                                 userId,
                                 base.leagues(),
                                 base.teams(),
                                 base.players(),
                                 new java.util.HashMap<>())));
+    }
+
+    /**
+     * Catalog reads retain the owner snapshot's custom-team semantics when a
+     * snapshot already exists, but never create one as a side effect.  New
+     * owners use the narrow canonical teams projection instead of hydrating
+     * the player-inclusive world view.
+     */
+    private Mono<List<WorldTeam>> loadTeamsForQuery(UUID userId) {
+        return worldSnapshotRepository.findByUserId(userId)
+                .filter(snapshot -> snapshot.getWorldTeams() != null
+                        && !snapshot.getWorldTeams().isEmpty())
+                .map(WorldSnapshot::getAllWorldTeams)
+                .switchIfEmpty(Mono.defer(loadBaseDataService::loadCanonicalTeams));
     }
 }

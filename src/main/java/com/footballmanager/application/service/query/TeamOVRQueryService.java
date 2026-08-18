@@ -8,6 +8,8 @@ import com.footballmanager.domain.model.entity.WorldTeam;
 import com.footballmanager.domain.model.view.WorldView;
 import com.footballmanager.application.service.world.WorldQueryService;
 import com.footballmanager.domain.service.SessionTeamRankingPolicy;
+import com.footballmanager.domain.ports.out.player.PlayerRepository;
+import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -27,6 +29,8 @@ import java.util.UUID;
 public class TeamOVRQueryService {
 
     private final WorldQueryService worldQueryService;
+    private final PlayerRepository playerRepository;
+    private final WorldSnapshotRepository worldSnapshotRepository;
 
     // ========== Shared Sorting Logic (used by CareerSave and Preview) ==========
 
@@ -89,9 +93,41 @@ public class TeamOVRQueryService {
      * deserialization and canonical merge cost during career setup.
      */
     public Mono<List<TeamOvrView>> buildTeamsWithOVR(UUID userId, UUID leagueId) {
-        return worldQueryService.worldViewForQuery(userId)
-                .map(worldView -> buildTeamsWithOVRFromView(
-                        worldView, worldView.getTeamsByLeague(leagueId)));
+        return worldSnapshotRepository.existsByUserId(userId)
+                .flatMap(snapshotExists -> snapshotExists
+                        ? worldQueryService.worldViewForQuery(userId)
+                            .map(worldView -> buildTeamsWithOVRFromView(
+                                    worldView, worldView.getTeamsByLeague(leagueId)))
+                        : buildCanonicalTeamsWithOVR(userId, leagueId));
+    }
+
+    private Mono<List<TeamOvrView>> buildCanonicalTeamsWithOVR(UUID userId, UUID leagueId) {
+        return worldQueryService.getTeamsByLeague(userId, leagueId)
+                .flatMap(teams -> playerRepository.findTeamOvrAggregatesFromDatabase()
+                        .map(aggregates -> buildTeamsWithOVRFromAggregates(teams, aggregates)));
+    }
+
+    private List<TeamOvrView> buildTeamsWithOVRFromAggregates(
+            List<WorldTeam> teams,
+            java.util.Map<UUID, PlayerRepository.TeamOvrAggregate> aggregates) {
+        List<TeamOvrView> result = new ArrayList<>();
+        for (WorldTeam team : teams) {
+            PlayerRepository.TeamOvrAggregate aggregate = aggregates.get(team.getRealTeamId());
+            int playerCount = aggregate == null ? 0 : aggregate.playerCount();
+            int ovr = aggregate == null || aggregate.averageOvr() == null
+                    ? 50
+                    : aggregate.averageOvr().setScale(0, java.math.RoundingMode.FLOOR).intValue();
+            result.add(new TeamOvrView(
+                    team.getWorldTeamId(),
+                    team.getName(),
+                    team.getCountry(),
+                    team.getBaseFormation() != null ? team.getBaseFormation().toString() : "4-3-3",
+                    ovr,
+                    playerCount,
+                    team.getBaseBudget() != null ? team.getBaseBudget() : BigDecimal.ZERO));
+        }
+        result.sort(teamWithOVRComparator());
+        return result;
     }
 
     private List<TeamOvrView> buildTeamsWithOVRFromView(WorldView worldView, List<WorldTeam> teams) {

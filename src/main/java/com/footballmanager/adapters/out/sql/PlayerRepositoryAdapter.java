@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Component
@@ -100,6 +101,41 @@ public class PlayerRepositoryAdapter implements PlayerRepository {
     }
 
     @Override
+    public Mono<java.util.Map<UUID, PlayerRepository.TeamOvrAggregate>> findTeamOvrAggregatesFromDatabase() {
+        return databaseClient.sql("""
+                        SELECT ts.team_id,
+                               COUNT(*) AS player_count,
+                               AVG(ROUND(CASE
+                                   WHEN p.position = 'GK' THEN p.defense * 0.40 + p.technique * 0.20
+                                       + p.mentality * 0.20 + p.stamina * 0.10 + p.speed * 0.05 + p.attack * 0.05
+                                   WHEN p.position IN ('LB', 'CB', 'RB', 'LWB', 'RWB') THEN p.defense * 0.35
+                                       + p.technique * 0.15 + p.mentality * 0.15 + p.stamina * 0.15
+                                       + p.speed * 0.10 + p.attack * 0.10
+                                   WHEN p.position IN ('CDM', 'CM', 'CAM', 'LM', 'RM') THEN p.technique * 0.30
+                                       + p.stamina * 0.20 + p.mentality * 0.15 + p.defense * 0.15
+                                       + p.speed * 0.10 + p.attack * 0.10
+                                   WHEN p.position IN ('LW', 'RW') THEN p.speed * 0.30 + p.attack * 0.25
+                                       + p.technique * 0.20 + p.stamina * 0.15 + p.mentality * 0.05
+                                       + p.defense * 0.05
+                                   WHEN p.position IN ('CF', 'ST') THEN p.attack * 0.40 + p.technique * 0.20
+                                       + p.speed * 0.15 + p.mentality * 0.10 + p.stamina * 0.10
+                                       + p.defense * 0.05
+                                   ELSE (p.attack + p.defense + p.technique + p.speed + p.stamina + p.mentality) / 6.0
+                               END)) AS average_ovr
+                        FROM players p
+                        INNER JOIN team_squad ts ON p.id = ts.player_id
+                        GROUP BY ts.team_id
+                        """)
+                .map((row, metadata) -> new java.util.AbstractMap.SimpleEntry<>(
+                        row.get("team_id", UUID.class),
+                        new PlayerRepository.TeamOvrAggregate(
+                                row.get("player_count", Long.class).intValue(),
+                                row.get("average_ovr", BigDecimal.class))))
+                .all()
+                .collectMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue);
+    }
+
+    @Override
     public Flux<PlayerSpecialTrait> findSpecialTraitsByPlayerIds(Collection<UUID> playerIds) {
         if (playerIds == null || playerIds.isEmpty()) {
             return Flux.empty();
@@ -130,5 +166,6 @@ public class PlayerRepositoryAdapter implements PlayerRepository {
     public Mono<Void> removePlayerFromTeamSquad(java.util.UUID teamId, java.util.UUID playerId) {
         return squadRepository.removePlayerFromTeam(teamId, playerId);
     }
+
 }
 

@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface PlayerRepository {
@@ -20,8 +21,12 @@ public interface PlayerRepository {
     Flux<Player> findByTeamId(UUID teamId);
     /** Reads canonical players grouped by team in one database query. */
     Mono<java.util.Map<UUID, java.util.List<Player>>> findAllByTeamFromDatabase();
+    /** Reads the existing WorldPlayer OVR semantics as one grouped projection. */
+    Mono<java.util.Map<UUID, TeamOvrAggregate>> findTeamOvrAggregatesFromDatabase();
     Flux<PlayerSpecialTrait> findSpecialTraitsByPlayerIds(Collection<UUID> playerIds);
     Mono<Void> addPlayerToTeamSquad(UUID teamId, UUID playerId);
     Mono<Void> removePlayerFromTeamSquad(UUID teamId, UUID playerId);
+
+    record TeamOvrAggregate(int playerCount, BigDecimal averageOvr) {}
 }
 

@@ -69,6 +69,13 @@ public class TeamPlayerLoaderService {
                 });
     }
 
+    /** Loads only canonical team rows for teams-only catalog reads. */
+    public Mono<List<WorldTeam>> loadTeamsOnly(Map<UUID, UUID> leagueTeamsMap) {
+        return teamRepository.findAllFromDatabase()
+                .map(team -> mapTeamToWorldTeam(team, leagueTeamsMap))
+                .collectList();
+    }
+
     private Mono<List<WorldPlayer>> attachSpecialTraits(List<WorldPlayer> players) {
         List<UUID> playerIds = players.stream()
                 .map(WorldPlayer::getRealPlayerId)
@@ -93,6 +100,15 @@ public class TeamPlayerLoaderService {
                                                             Map<UUID, UUID> leagueTeamsMap,
                                                             ReloadWorldTiming timing) {
         return loadTeamsAndPlayers(userId, leagueTeamsMap);
+    }
+
+    private WorldTeam mapTeamToWorldTeam(Team team, Map<UUID, UUID> leagueTeamsMap) {
+        UUID leagueId = leagueTeamsMap.get(team.getId().getValue());
+        return WorldTeam.fromRealTeam(
+                team.getId().getValue(), leagueId, team.getName(), team.getCountry(),
+                team.getCountry(), team.getBudget(),
+                team.getFormation() != null ? team.getFormation().toString() : "4-3-3",
+                team.getDivision() != null ? team.getDivision() : Division.defaultDivision());
     }
 
     private WorldPlayer mapPlayerToWorldPlayer(UUID ownerId, Player player, String worldTeamId) {
