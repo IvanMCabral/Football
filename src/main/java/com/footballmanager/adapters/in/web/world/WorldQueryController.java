@@ -7,6 +7,7 @@ import com.footballmanager.application.service.query.DivisionPreviewService;
 import com.footballmanager.application.service.query.DivisionPreviewView;
 import com.footballmanager.application.service.query.TeamOVRQueryService;
 import com.footballmanager.application.service.query.TeamOvrView;
+import com.footballmanager.infrastructure.observability.TeamsRequestObservability;
 import com.footballmanager.domain.model.entity.WorldLeague;
 import com.footballmanager.domain.model.entity.WorldPlayer;
 import com.footballmanager.domain.model.entity.WorldTeam;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -47,6 +49,7 @@ public class WorldQueryController {
     private final TeamOVRQueryService teamOVRQueryService;
     private final DivisionPreviewService divisionPreviewService;
     private final ControllerHelper controllerHelper;
+    private final TeamsRequestObservability teamsRequestObservability;
 
     /**
      * GET /api/v1/world/leagues?userId={userId}
@@ -115,7 +118,11 @@ public class WorldQueryController {
     @GetMapping("/teams")
     public Mono<ResponseEntity<List<WorldTeam>>> getAllTeams(
             @RequestParam UUID userId,
-            Authentication authentication) {
+            Authentication authentication,
+            ServerWebExchange exchange) {
+        teamsRequestObservability.controllerEnter(
+                TeamsRequestObservability.correlationId(exchange),
+                TeamsRequestObservability.startNanos(exchange));
         controllerHelper.requireSelfUserId(authentication, userId);
         return getAllTeamsUseCase.execute(userId)
                 .map(ResponseEntity::ok);

@@ -3,6 +3,7 @@ package com.footballmanager.infrastructure.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.footballmanager.adapters.in.web.common.ErrorResponseBody;
 import com.footballmanager.infrastructure.config.CorsConfig;
+import com.footballmanager.infrastructure.observability.TeamsRequestObservability;
 import com.footballmanager.domain.ports.out.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final CorsConfig corsConfig;
     private final UserRepository userRepository;
+    private final TeamsRequestObservability teamsRequestObservability;
 
     private void addCorsHeaders(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
@@ -63,29 +65,13 @@ public class SecurityConfig {
             }, SecurityWebFiltersOrder.FIRST)
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((exchange, ex) -> {
-                    addCorsHeaders(exchange);
-                    exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                    exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
-                    exchange.getResponse().getHeaders().setContentType(
-                        org.springframework.http.MediaType.APPLICATION_JSON);
-                    String requestId = exchange.getResponse().getHeaders()
-                        .getFirst(RequestCorrelationWebFilter.REQUEST_ID_HEADER);
-                    ErrorResponseBody body = ErrorResponseBody.unauthorized(
-                        "No autenticado.",
-                        requestId == null || requestId.isBlank() ? "unavailable" : requestId);
-                    String json;
-                    try {
-                        json = objectMapper.writeValueAsString(body);
-                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                        // Should not happen with a simple record, but defensive
-                        // guard in case Jackson config is changed in the future.
-                        throw new RuntimeException("Failed to serialize 401 ErrorResponseBody", e);
-                    }
-                    return exchange.getResponse().writeWith(
-                        reactor.core.publisher.Mono.just(exchange.getResponse()
-                            .bufferFactory()
-                            .wrap(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
-                    ).then();
+                    return Mono.deferContextual(contextView -> {
+                        teamsRequestObservability.authFailure(
+                            exchange,
+                            TeamsRequestObservability.correlationId(contextView),
+                            TeamsRequestObservability.startNanos(contextView));
+                        return writeUnauthorized(exchange);
+                    });
                 })
                 .accessDeniedHandler((exchange, ex) -> {
                     addCorsHeaders(exchange);
@@ -115,28 +101,54 @@ public class SecurityConfig {
             .build();
     }
 
+    private Mono<Void> writeUnauthorized(ServerWebExchange exchange) {
+        addCorsHeaders(exchange);
+        exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+        exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
+        exchange.getResponse().getHeaders().setContentType(
+            org.springframework.http.MediaType.APPLICATION_JSON);
+        String requestId = exchange.getResponse().getHeaders()
+            .getFirst(RequestCorrelationWebFilter.REQUEST_ID_HEADER);
+        ErrorResponseBody body = ErrorResponseBody.unauthorized(
+            "No autenticado.",
+            requestId == null || requestId.isBlank() ? "unavailable" : requestId);
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(body);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            // Should not happen with a simple record, but defensive
+            // guard in case Jackson config is changed in the future.
+            throw new RuntimeException("Failed to serialize 401 ErrorResponseBody", e);
+        }
+        return exchange.getResponse().writeWith(
+            reactor.core.publisher.Mono.just(exchange.getResponse()
+                .bufferFactory()
+                .wrap(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+        ).then();
+    }
+
     @Bean
     public AuthenticationWebFilter jwtAuthenticationFilter() {
         AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(reactiveAuthenticationManager());
         authenticationFilter.setServerAuthenticationConverter(serverAuthenticationConverter());
+        authenticationFilter.setAuthenticationSuccessHandler((webFilterExchange, authentication) ->
+            Mono.deferContextual(contextView -> {
+                ServerWebExchange exchange = webFilterExchange.getExchange();
+                teamsRequestObservability.authSuccess(
+                    exchange,
+                    TeamsRequestObservability.correlationId(contextView),
+                    TeamsRequestObservability.startNanos(contextView));
+                return webFilterExchange.getChain().filter(exchange);
+            }));
         authenticationFilter.setAuthenticationFailureHandler((webFilterExchange, exception) -> {
             ServerWebExchange exchange = webFilterExchange.getExchange();
-            addCorsHeaders(exchange);
-            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-            exchange.getResponse().getHeaders().set("WWW-Authenticate", "Bearer");
-            exchange.getResponse().getHeaders().setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-            String requestId = exchange.getRequest().getHeaders()
-                .getFirst(RequestCorrelationWebFilter.REQUEST_ID_HEADER);
-            ErrorResponseBody body = ErrorResponseBody.unauthorized(
-                "No autenticado.", requestId == null || requestId.isBlank() ? "unavailable" : requestId);
-            try {
-                String json = objectMapper.writeValueAsString(body);
-                return exchange.getResponse().writeWith(reactor.core.publisher.Mono.just(
-                    exchange.getResponse().bufferFactory()
-                        .wrap(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)))).then();
-            } catch (com.fasterxml.jackson.core.JsonProcessingException serializationFailure) {
-                return exchange.getResponse().setComplete();
-            }
+            return Mono.deferContextual(contextView -> {
+                teamsRequestObservability.authFailure(
+                    exchange,
+                    TeamsRequestObservability.correlationId(contextView),
+                    TeamsRequestObservability.startNanos(contextView));
+                return writeUnauthorized(exchange);
+            });
         });
         return authenticationFilter;
     }
