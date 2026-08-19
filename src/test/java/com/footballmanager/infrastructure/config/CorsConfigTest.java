@@ -33,4 +33,25 @@ class CorsConfigTest {
 
         assertTrue(corsConfig.allowedHeaders().contains("X-Request-Id"));
     }
+
+    @Test
+    void productionAndDiagnosticOriginsAreExactAndForeignOriginsAreRejected() {
+        CorsConfig corsConfig = new CorsConfig(
+            "https://manager-4f952.web.app,https://manager-4f952-diagnostic.web.app");
+
+        assertTrue(corsConfig.isAllowedOrigin("https://manager-4f952.web.app"));
+        assertTrue(corsConfig.isAllowedOrigin("https://manager-4f952-diagnostic.web.app"));
+        assertFalse(corsConfig.isAllowedOrigin("https://manager-4f952-diagnostic.web.app.attacker.example"));
+        assertFalse(corsConfig.isAllowedOrigin("https://attacker.example"));
+    }
+
+    @Test
+    void exposesOnlyContentTypeAndOpaqueRequestCorrelation() {
+        CorsConfig corsConfig = new CorsConfig("https://manager-4f952.web.app");
+
+        assertTrue(corsConfig.exposedHeaders().contains("Content-Type"));
+        assertTrue(corsConfig.exposedHeaders().contains("X-Request-Id"));
+        assertFalse(corsConfig.exposedHeaders().contains("Authorization"));
+        assertFalse(corsConfig.exposedHeaders().contains("Set-Cookie"));
+    }
 }

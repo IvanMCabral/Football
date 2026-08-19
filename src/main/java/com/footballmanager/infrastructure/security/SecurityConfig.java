@@ -45,6 +45,8 @@ public class SecurityConfig {
             response.getHeaders().set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
             response.getHeaders().set("Access-Control-Allow-Headers",
                 String.join(",", corsConfig.allowedHeaders()));
+            response.getHeaders().set("Access-Control-Expose-Headers",
+                String.join(",", corsConfig.exposedHeaders()));
         }
     }
 

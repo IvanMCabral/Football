@@ -14,6 +14,9 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
+    public static final String DIAGNOSTIC_ORIGIN = "https://manager-4f952-diagnostic.web.app";
+    private static final String REQUEST_ID_HEADER = "X-Request-Id";
+
     private static final List<String> ALLOWED_HEADERS = List.of(
         HttpHeaders.AUTHORIZATION,
         HttpHeaders.CONTENT_TYPE,
@@ -24,8 +27,15 @@ public class CorsConfig {
 
     private final List<String> allowedOrigins;
 
-    public CorsConfig(@Value("${app.security.cors.allowed-origins:}") String allowedOrigins) {
-        this.allowedOrigins = parseOrigins(allowedOrigins);
+    @org.springframework.beans.factory.annotation.Autowired
+    public CorsConfig(
+            @Value("${app.security.cors.allowed-origins:}") String allowedOrigins,
+            @Value("${app.security.cors.diagnostic-origin:" + DIAGNOSTIC_ORIGIN + "}") String diagnosticOrigin) {
+        this.allowedOrigins = parseOrigins(allowedOrigins + "," + diagnosticOrigin);
+    }
+
+    public CorsConfig(String allowedOrigins) {
+        this(allowedOrigins, "");
     }
 
     public boolean isAllowedOrigin(String origin) {
@@ -41,6 +51,10 @@ public class CorsConfig {
         return ALLOWED_HEADERS;
     }
 
+    public List<String> exposedHeaders() {
+        return List.of(HttpHeaders.CONTENT_TYPE, REQUEST_ID_HEADER);
+    }
+
     @Bean
     public CorsWebFilter corsWebFilterBean() {
         CorsConfiguration corsConfig = new CorsConfiguration();
@@ -48,7 +62,7 @@ public class CorsConfig {
         corsConfig.setMaxAge(3600L);
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         corsConfig.setAllowedHeaders(ALLOWED_HEADERS);
-        corsConfig.setExposedHeaders(List.of(HttpHeaders.CONTENT_TYPE));
+        corsConfig.setExposedHeaders(exposedHeaders());
         corsConfig.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
