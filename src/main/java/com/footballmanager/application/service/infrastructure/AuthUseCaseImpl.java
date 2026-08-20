@@ -4,6 +4,7 @@ import com.footballmanager.domain.model.aggregate.User;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.application.exception.TeamAlreadyAssignedException;
 import com.footballmanager.domain.port.in.auth.AuthLoginCommand;
 import com.footballmanager.domain.port.in.auth.AuthRefreshCommand;
 import com.footballmanager.domain.port.in.auth.AuthRegisterCommand;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
+import io.r2dbc.postgresql.api.PostgresqlException;
 
 /**
  * Authentication use case implementation.
@@ -110,10 +112,29 @@ public class AuthUseCaseImpl implements AuthUseCase {
     public Mono<Void> assignTeam(String userId, UUID teamId) {
         return userRepository.findById(UUID.fromString(userId))
             .switchIfEmpty(Mono.defer(() -> Mono.error(new IllegalArgumentException("User not found"))))
-            .flatMap(user -> {
-                user.setTeamId(teamId);
-                return userRepository.save(user).then();
-            });
+            .flatMap(user -> userRepository.findByTeamId(teamId)
+                .filter(owner -> !owner.getId().equals(user.getId()))
+                .flatMap(owner -> Mono.<Void>error(new TeamAlreadyAssignedException()))
+                .switchIfEmpty(Mono.defer(() -> {
+                    user.setTeamId(teamId);
+                    return userRepository.save(user).then();
+                })))
+            .onErrorMap(AuthUseCaseImpl::isSingleOwnerConstraintViolation,
+                ignored -> new TeamAlreadyAssignedException());
+    }
+
+    private static boolean isSingleOwnerConstraintViolation(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof PostgresqlException postgresqlException
+                    && "23505".equals(postgresqlException.getErrorDetails().getCode())
+                    && "uk_users_team_id_single_owner".equals(
+                        postgresqlException.getErrorDetails().getConstraintName().orElse(null))) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     @Override

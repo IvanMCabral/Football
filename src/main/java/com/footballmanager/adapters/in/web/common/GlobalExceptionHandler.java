@@ -5,6 +5,7 @@ import com.footballmanager.application.exception.NotEnoughPlayersException;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthCredentialsException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.application.exception.TeamAlreadyAssignedException;
 import com.footballmanager.application.exception.CareerAlreadyExistsException;
 import com.footballmanager.application.service.match.MatchSessionNotFoundException;
 import com.footballmanager.application.service.security.CareerOwnershipDeniedException;
@@ -60,6 +61,19 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponseBody(
                 "AUTH_EMAIL_EXISTS",
                 messageResolver.clientMessage(ex, "El email ya esta registrado."),
+                HttpStatus.CONFLICT.value(),
+                requestId(exchange))));
+    }
+
+    @ExceptionHandler(TeamAlreadyAssignedException.class)
+    public Mono<ResponseEntity<ErrorResponseBody>> handleTeamAlreadyAssigned(
+            TeamAlreadyAssignedException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ErrorResponseBody(
+                "TEAM_ALREADY_ASSIGNED",
+                "El equipo ya fue asignado.",
                 HttpStatus.CONFLICT.value(),
                 requestId(exchange))));
     }

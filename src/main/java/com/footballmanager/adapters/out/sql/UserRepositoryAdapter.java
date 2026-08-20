@@ -77,6 +77,12 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Mono<User> findByTeamId(UUID teamId) {
+        return RuntimeOperationMetrics.measure("postgres.user.findByTeamId",
+            r2dbcRepository.findByTeamId(teamId).map(UserEntity::toDomain));
+    }
+
+    @Override
     public Mono<Boolean> existsByEmail(String email) {
         return RuntimeOperationMetrics.measure("postgres.user.existsByEmail",
             r2dbcRepository.findByEmail(email).hasElement());

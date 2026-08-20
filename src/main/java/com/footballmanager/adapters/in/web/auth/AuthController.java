@@ -9,6 +9,7 @@ import com.footballmanager.domain.port.in.auth.AuthUserInfo;
 import com.footballmanager.domain.port.in.auth.AuthUseCase;
 import com.footballmanager.application.exception.AuthConflictException;
 import com.footballmanager.application.exception.AuthValidationException;
+import com.footballmanager.application.exception.TeamAlreadyAssignedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,9 @@ public class AuthController {
         String userId = authentication != null ? authentication.getName() : null;
         return authUseCase.assignTeam(userId, request.teamId())
             .thenReturn(ResponseEntity.ok("Team assigned successfully"))
-            .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body("Could not assign team")));
+            .onErrorResume(error -> error instanceof TeamAlreadyAssignedException
+                ? Mono.error(error)
+                : Mono.just(ResponseEntity.badRequest().body("Could not assign team")));
     }
 
     @PostMapping("/register")

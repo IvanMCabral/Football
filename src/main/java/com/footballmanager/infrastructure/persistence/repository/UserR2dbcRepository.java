@@ -25,5 +25,6 @@ public interface UserR2dbcRepository extends R2dbcRepository<UserEntity, UUID> {
 
     Mono<UserEntity> findByEmail(String email);
     Mono<UserEntity> findByUsername(String username);
+    Mono<UserEntity> findByTeamId(UUID teamId);
 }
 
