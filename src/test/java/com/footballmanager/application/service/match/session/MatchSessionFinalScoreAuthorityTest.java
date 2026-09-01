@@ -11,16 +11,20 @@ import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.model.entity.SessionTeam;
+import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MatchSessionFinalScoreAuthorityTest {
 
@@ -74,6 +78,160 @@ class MatchSessionFinalScoreAuthorityTest {
                 .count());
     }
 
+    @Test
+    void connectedSubscriber_observesOneCanonicalFinishedSnapshotAfterStaleLiveScore() {
+        UUID matchId = UUID.fromString("00000000-0000-0000-0000-000000008711");
+        UUID homeId = UUID.fromString("00000000-0000-0000-0000-000000008712");
+        UUID awayId = UUID.fromString("00000000-0000-0000-0000-000000008713");
+        MatchSession session = session(matchId, homeId, awayId);
+        List<MatchStateSnapshot> observed = new ArrayList<>();
+        session.getStateStream().subscribe(observed::add);
+
+        List<DetailedMatchEvent> staleEvents = List.of(goal(17, homeId), goal(44, homeId), goal(66, awayId));
+        MatchStateSnapshot staleLive = session.adaptDetailedSnapshot(new LiveSnapshot(
+                matchId.toString(), 90, 2, 1, homeId.toString(), awayId.toString(), false,
+                staleEvents, 52, 48, "BALANCED", "BALANCED", "4-4-2", "4-4-2"));
+        setFieldUnchecked(session, "currentState", staleLive);
+        session.start();
+
+        DetailedMatchResult finalResult = result(matchId, homeId, awayId, 3, 1);
+        forceFinishedLiveSession(session.getLiveSession(), finalResult, staleEvents);
+        session.advanceTick();
+
+        List<MatchStateSnapshot> terminals = observed.stream()
+                .filter(snapshot -> snapshot.status() == MatchStatus.FINISHED)
+                .toList();
+        assertEquals(List.of(MatchStatus.RUNNING, MatchStatus.FINISHED),
+                observed.stream().map(MatchStateSnapshot::status).toList());
+        assertEquals(1, terminals.size(), "a connected client receives exactly one terminal SSE snapshot");
+        assertEquals(3, terminals.getFirst().score().home());
+        assertEquals(1, terminals.getFirst().score().away());
+        assertTrue(observed.stream().noneMatch(snapshot -> snapshot.status() == MatchStatus.FINISHED
+                        && snapshot.score().home() == 2 && snapshot.score().away() == 1),
+                "a stale 2-1 may be live, never terminal");
+    }
+
+    @Test
+    void lateAndMultipleSubscribers_receiveOnlyTheCanonicalRetainedTerminalSnapshot() {
+        UUID matchId = UUID.fromString("00000000-0000-0000-0000-000000008721");
+        UUID homeId = UUID.fromString("00000000-0000-0000-0000-000000008722");
+        UUID awayId = UUID.fromString("00000000-0000-0000-0000-000000008723");
+        MatchSession session = session(matchId, homeId, awayId);
+        List<MatchStateSnapshot> firstConnected = new ArrayList<>();
+        List<MatchStateSnapshot> secondConnected = new ArrayList<>();
+        session.getStateStream().subscribe(firstConnected::add);
+        session.getStateStream().subscribe(secondConnected::add);
+
+        DetailedMatchResult finalResult = result(matchId, homeId, awayId, 3, 1);
+        forceFinishedLiveSession(session.getLiveSession(), finalResult,
+                List.of(goal(17, homeId), goal(44, homeId), goal(66, awayId)));
+        session.advanceTick();
+
+        List<MatchStateSnapshot> lateSubscriber = new ArrayList<>();
+        session.getStateStream().subscribe(lateSubscriber::add);
+        assertCanonicalTerminal(firstConnected);
+        assertCanonicalTerminal(secondConnected);
+        assertEquals(1, lateSubscriber.size(), "replay().latest() retains only the canonical terminal snapshot");
+        assertCanonicalTerminal(lateSubscriber);
+    }
+
+    @Test
+    void doubleFinalize_emitsAndCallsBackExactlyOnce() {
+        UUID matchId = UUID.fromString("00000000-0000-0000-0000-000000008731");
+        UUID homeId = UUID.fromString("00000000-0000-0000-0000-000000008732");
+        UUID awayId = UUID.fromString("00000000-0000-0000-0000-000000008733");
+        MatchSession session = session(matchId, homeId, awayId);
+        List<MatchStateSnapshot> observed = new ArrayList<>();
+        AtomicInteger callbacks = new AtomicInteger();
+        session.getStateStream().subscribe(observed::add);
+        session.setOnFinishCallback(ignored -> callbacks.incrementAndGet());
+
+        DetailedMatchResult finalResult = result(matchId, homeId, awayId, 1, 1);
+        forceFinishedLiveSession(session.getLiveSession(), finalResult,
+                List.of(goal(17, homeId), goal(66, awayId)));
+        session.advanceTick();
+        session.advanceTick();
+        session.refreshDetailedSnapshot();
+
+        assertEquals(1, observed.stream().filter(snapshot -> snapshot.status() == MatchStatus.FINISHED).count());
+        assertEquals(1, callbacks.get());
+        assertEquals(1, session.getCurrentState().score().home());
+        assertEquals(1, session.getCurrentState().score().away());
+    }
+
+    @Test
+    void terminalScoreVariants_keepTheCanonicalScoreForScorelessDrawHomeAndAwayResults() {
+        assertTerminalScoreVariant("8741", 0, 0);
+        assertTerminalScoreVariant("8751", 1, 1);
+        assertTerminalScoreVariant("8761", 2, 0);
+        assertTerminalScoreVariant("8771", 0, 2);
+    }
+
+    @Test
+    void backgroundFinalization_completesCallbackOnceWithoutAnSseSubscriber() {
+        UUID matchId = UUID.fromString("00000000-0000-0000-0000-000000008781");
+        UUID homeId = UUID.fromString("00000000-0000-0000-0000-000000008782");
+        UUID awayId = UUID.fromString("00000000-0000-0000-0000-000000008783");
+        MatchSession session = session(matchId, homeId, awayId);
+        AtomicInteger callbacks = new AtomicInteger();
+        session.setOnFinishCallback(ignored -> callbacks.incrementAndGet());
+        DetailedMatchResult finalResult = result(matchId, homeId, awayId, 2, 0);
+        forceFinishedLiveSession(session.getLiveSession(), finalResult, finalResult.timeline().events());
+
+        session.advanceTick();
+        session.advanceTick();
+
+        assertEquals(MatchStatus.FINISHED, session.getCurrentState().status());
+        assertEquals(2, session.getCurrentState().score().home());
+        assertEquals(0, session.getCurrentState().score().away());
+        assertEquals(1, callbacks.get());
+    }
+
+    private static void assertCanonicalTerminal(List<MatchStateSnapshot> observed) {
+        List<MatchStateSnapshot> terminals = observed.stream()
+                .filter(snapshot -> snapshot.status() == MatchStatus.FINISHED)
+                .toList();
+        assertEquals(1, terminals.size());
+        assertEquals(3, terminals.getFirst().score().home());
+        assertEquals(1, terminals.getFirst().score().away());
+    }
+
+    private static DetailedMatchResult result(UUID matchId, UUID homeId, UUID awayId, int homeGoals, int awayGoals) {
+        MatchTimeline timeline = new MatchTimeline();
+        for (int goal = 0; goal < homeGoals; goal++) {
+            timeline.addEvent(goal(10 + goal, homeId));
+        }
+        for (int goal = 0; goal < awayGoals; goal++) {
+            timeline.addEvent(goal(60 + goal, awayId));
+        }
+        return DetailedMatchResult.builder()
+                .matchId(matchId.toString())
+                .homeTeamId(homeId.toString())
+                .awayTeamId(awayId.toString())
+                .homeGoals(homeGoals).awayGoals(awayGoals)
+                .homePossession(52).awayPossession(48)
+                .timeline(timeline)
+                .build();
+    }
+
+    private void assertTerminalScoreVariant(String suffix, int homeGoals, int awayGoals) {
+        UUID matchId = UUID.fromString("00000000-0000-0000-0000-00000000" + suffix);
+        UUID homeId = UUID.fromString("00000000-0000-0000-0000-00000000" + (Integer.parseInt(suffix) + 1));
+        UUID awayId = UUID.fromString("00000000-0000-0000-0000-00000000" + (Integer.parseInt(suffix) + 2));
+        MatchSession session = session(matchId, homeId, awayId);
+        List<MatchStateSnapshot> observed = new ArrayList<>();
+        session.getStateStream().subscribe(observed::add);
+        DetailedMatchResult finalResult = result(matchId, homeId, awayId, homeGoals, awayGoals);
+        forceFinishedLiveSession(session.getLiveSession(), finalResult, finalResult.timeline().events());
+
+        session.advanceTick();
+
+        assertEquals(1, observed.size());
+        assertEquals(MatchStatus.FINISHED, observed.getFirst().status());
+        assertEquals(homeGoals, observed.getFirst().score().home());
+        assertEquals(awayGoals, observed.getFirst().score().away());
+    }
+
     private static void forceFinishedLiveSession(
             LiveSession liveSession,
             DetailedMatchResult finalResult,
@@ -96,6 +254,14 @@ class MatchSessionFinalScoreAuthorityTest {
     private static void setField(Object target, String name, Object value) throws ReflectiveOperationException {
         Field field = field(target, name);
         field.set(target, value);
+    }
+
+    private static void setFieldUnchecked(Object target, String name, Object value) {
+        try {
+            setField(target, name, value);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("failed to prepare isolated H8.2.87F2 state", exception);
+        }
     }
 
     private static Field field(Object target, String name) throws NoSuchFieldException {

@@ -27,6 +27,7 @@ import reactor.core.publisher.Sinks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
@@ -62,7 +63,9 @@ public class MatchSession {
     }
 
     private Consumer<MatchFinishedResult> onFinishCallback;
-    private volatile boolean finishCallbackExecuted = false;
+    /** Guards the only externally visible terminal transition for this session. */
+    private final AtomicBoolean terminalPublicationStarted = new AtomicBoolean(false);
+    private final AtomicBoolean finishCallbackExecuted = new AtomicBoolean(false);
 
     /**
      * Legacy constructor — no LiveSession.
@@ -139,6 +142,9 @@ public class MatchSession {
     }
 
     public void start() {
+        if (terminalPublicationStarted.get() || isFinished()) {
+            return;
+        }
         this.currentState = currentState.withStatus(MatchStatus.RUNNING);
         emitState();
     }
@@ -151,6 +157,9 @@ public class MatchSession {
         if (detailedMatchSession != null) {
             // detailed match path: use LiveSession.tick() — no MatchTickHandler involved
             LiveSnapshot snap = detailedMatchSession.tick();
+            if (snap.isFinished()) {
+                return publishCanonicalDetailedTerminal(snap);
+            }
             this.currentState = adaptDetailedSnapshot(snap);
             emitState();
         } else {
@@ -166,27 +175,62 @@ public class MatchSession {
             for (MatchTickHandler.TickResult result : results) {
                 newState = result.newState();
             }
+            if (newState.status() == MatchStatus.FINISHED) {
+                return publishLegacyTerminal(newState);
+            }
             this.currentState = newState;
             emitState();
         }
 
-        if (isFinished() && onFinishCallback != null && !finishCallbackExecuted) {
-            finishCallbackExecuted = true;
-            try {
-                DetailedMatchResult detailedResult = (detailedMatchSession != null)
-                        ? detailedMatchSession.finalResult()
-                        : null;
-                if (detailedResult != null) {
-                    this.currentState = finalizeDetailedSnapshot(detailedResult);
-                    emitState();
-                }
-                onFinishCallback.accept(new MatchFinishedResult(currentState, detailedResult));
-            } catch (Exception exception) {
-                log.error("final match result was not published for matchId={}", matchId, exception);
-            }
-        }
-
         return currentState;
+    }
+
+    /**
+     * Publishes the detailed-match terminal transition exactly once.
+     *
+     * <p>The completed {@link DetailedMatchResult} is read before any state is
+     * marked FINISHED or sent to the replaying SSE sink. This makes the
+     * terminal snapshot atomic from a connected client's perspective:
+     * RUNNING snapshots may be stale while the engine is live, but a stale
+     * FINISHED snapshot is never emitted.
+     */
+    private MatchStateSnapshot publishCanonicalDetailedTerminal(LiveSnapshot finalLiveSnapshot) {
+        if (!terminalPublicationStarted.compareAndSet(false, true)) {
+            return currentState;
+        }
+        try {
+            DetailedMatchResult detailedResult = detailedMatchSession.finalResult();
+            if (detailedResult == null) {
+                throw new IllegalStateException("detailed match finished without a final result");
+            }
+
+            MatchStateSnapshot finalMetadata = adaptDetailedSnapshot(finalLiveSnapshot, MatchStatus.RUNNING);
+            MatchStateSnapshot canonicalTerminal = finalizeDetailedSnapshot(finalMetadata, detailedResult);
+            this.currentState = canonicalTerminal;
+            emitState();
+            invokeFinishCallback(canonicalTerminal, detailedResult);
+            return canonicalTerminal;
+        } catch (Exception exception) {
+            log.error("canonical final match result was not published for matchId={}", matchId, exception);
+            return currentState;
+        }
+    }
+
+    private MatchStateSnapshot publishLegacyTerminal(MatchStateSnapshot terminalState) {
+        if (!terminalPublicationStarted.compareAndSet(false, true)) {
+            return currentState;
+        }
+        this.currentState = terminalState;
+        emitState();
+        invokeFinishCallback(terminalState, null);
+        return terminalState;
+    }
+
+    private void invokeFinishCallback(MatchStateSnapshot canonicalTerminal, DetailedMatchResult detailedResult) {
+        Consumer<MatchFinishedResult> callback = onFinishCallback;
+        if (callback != null && finishCallbackExecuted.compareAndSet(false, true)) {
+            callback.accept(new MatchFinishedResult(canonicalTerminal, detailedResult));
+        }
     }
 
     /**
@@ -201,15 +245,19 @@ public class MatchSession {
      * snapshot, so they cannot consume a different final score.
      */
     MatchStateSnapshot finalizeDetailedSnapshot(DetailedMatchResult result) {
+        return finalizeDetailedSnapshot(currentState, result);
+    }
+
+    private MatchStateSnapshot finalizeDetailedSnapshot(MatchStateSnapshot finalMetadata, DetailedMatchResult result) {
         if (!matchId.toString().equals(result.matchId())) {
             throw new IllegalStateException("detailed result matchId does not match live session");
         }
-        if (currentState.homeTeamId() != null
-                && !currentState.homeTeamId().toString().equals(result.homeTeamId())) {
+        if (finalMetadata.homeTeamId() != null
+                && !finalMetadata.homeTeamId().toString().equals(result.homeTeamId())) {
             throw new IllegalStateException("detailed result home team does not match live session");
         }
-        if (currentState.awayTeamId() != null
-                && !currentState.awayTeamId().toString().equals(result.awayTeamId())) {
+        if (finalMetadata.awayTeamId() != null
+                && !finalMetadata.awayTeamId().toString().equals(result.awayTeamId())) {
             throw new IllegalStateException("detailed result away team does not match live session");
         }
 
@@ -237,9 +285,10 @@ public class MatchSession {
         for (DetailedMatchEvent event : finalEvents) {
             authoritativeEvents.add(toDomainMatchEvent(event));
         }
-        return currentState
+        return finalMetadata
                 .withScore(new Score(result.homeGoals(), result.awayGoals()))
-                .withEvents(authoritativeEvents);
+                .withEvents(authoritativeEvents)
+                .withStatus(MatchStatus.FINISHED);
     }
 
     /**
@@ -252,25 +301,38 @@ public class MatchSession {
      * lineup until the following tick.
      */
     public synchronized MatchStateSnapshot refreshDetailedSnapshot() {
-        if (detailedMatchSession == null) {
+        if (detailedMatchSession == null || terminalPublicationStarted.get() || isFinished()) {
             return currentState;
         }
-        this.currentState = adaptDetailedSnapshot(detailedMatchSession.snapshot());
+        LiveSnapshot snapshot = detailedMatchSession.snapshot();
+        if (snapshot.isFinished()) {
+            return publishCanonicalDetailedTerminal(snapshot);
+        }
+        this.currentState = adaptDetailedSnapshot(snapshot);
         emitState();
         return currentState;
     }
 
     public void pause() {
+        if (terminalPublicationStarted.get() || isFinished()) {
+            return;
+        }
         this.currentState = currentState.withStatus(MatchStatus.PAUSED);
         emitState();
     }
 
     public void resume() {
+        if (terminalPublicationStarted.get() || isFinished()) {
+            return;
+        }
         this.currentState = currentState.withStatus(MatchStatus.RUNNING);
         emitState();
     }
 
     public boolean queueCommand(MatchCommand command, MatchCommandHandler commandHandler) {
+        if (terminalPublicationStarted.get() || isFinished()) {
+            return false;
+        }
         if (commandHandler.isCommandValid(command, currentState)) {
             MatchStateSnapshot newState = commandHandler.handleCommand(command, currentState);
             this.currentState = newState;
@@ -310,6 +372,9 @@ public class MatchSession {
     }
 
     private void emitState() {
+        if (terminalPublicationStarted.get() && currentState.status() != MatchStatus.FINISHED) {
+            return;
+        }
         stateSink.tryEmitNext(currentState);
     }
 
@@ -331,6 +396,10 @@ public class MatchSession {
      * can drive it with controlled inputs. Not part of the public API.
      */
     MatchStateSnapshot adaptDetailedSnapshot(LiveSnapshot snap) {
+        return adaptDetailedSnapshot(snap, snap.isFinished() ? MatchStatus.FINISHED : MatchStatus.RUNNING);
+    }
+
+    private MatchStateSnapshot adaptDetailedSnapshot(LiveSnapshot snap, MatchStatus status) {
         UUID homeTeamId = parseSnapshotTeamId(snap.homeTeamId(), currentState != null ? currentState.homeTeamId() : null);
         UUID awayTeamId = parseSnapshotTeamId(snap.awayTeamId(), currentState != null ? currentState.awayTeamId() : null);
 
@@ -376,7 +445,7 @@ public class MatchSession {
                 homeTeamId,
                 awayTeamId,
                 snap.minute(),
-                snap.isFinished() ? MatchStatus.FINISHED : MatchStatus.RUNNING,
+                status,
                 new Score(snap.homeGoals(), snap.awayGoals()),
                 adaptedEvents,
                 currentState.careerId(),
