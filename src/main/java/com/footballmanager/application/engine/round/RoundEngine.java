@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +38,8 @@ public class RoundEngine {
     private final RoundStatusCalculator statusCalculator;
     private final Sinks.Many<RoundState> stateSink;
     private volatile RoundState latestState;
+    /** One round instance has exactly one public COMPLETED transition. */
+    private final AtomicBoolean completionEmitted = new AtomicBoolean(false);
 
     private volatile boolean isRunning = false;
     private volatile boolean isPaused = false;
@@ -184,6 +187,9 @@ public class RoundEngine {
     }
 
     public void emitCompletedState() {
+        if (!completionEmitted.compareAndSet(false, true)) {
+            return;
+        }
         List<MatchStateSnapshot> matchStates = getMatchStates();
         RoundState completedState = new RoundState(roundId, Instant.now(), matchStates,
             RoundState.RoundStatus.COMPLETED);

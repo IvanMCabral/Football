@@ -224,8 +224,7 @@ public class RoundController {
                                     log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", matchId, finished, totalMatches);
 
                                     if (finished == totalMatches) {
-                                        log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
-                                        roundEngine.emitCompletedState();
+                                        log.info("[ROUND-CONTROLLER] All matches finished; RoundEngine tick owns public completion emission");
                                         lifecycleExecutor.execute(
                                                 "process legacy match-day results",
                                                 orchestrator.processMatchDayResults(userId.toString(), matchResults));
@@ -399,8 +398,7 @@ public class RoundController {
         log.info("[ROUND-CONTROLLER] Match {} finished, {}/{} total", result.snapshot().matchId(), finished, totalMatches);
 
         if (finished == totalMatches) {
-            log.info("[ROUND-CONTROLLER] All matches finished, emitting completed state");
-            roundEngine.emitCompletedState();
+            log.info("[ROUND-CONTROLLER] All matches finished; RoundEngine tick owns public completion emission");
 
             if (tracking != null) {
                 leagueSimulator.applyEndOfRoundLiveLifecycle(
