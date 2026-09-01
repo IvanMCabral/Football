@@ -6,6 +6,7 @@ import com.footballmanager.application.service.simulation.detailed.LiveSession;
 import com.footballmanager.application.service.simulation.detailed.LiveSessionContextView;
 import com.footballmanager.application.service.simulation.detailed.LiveSnapshot;
 import com.footballmanager.application.service.simulation.detailed.DetailedMatchEvent;
+import com.footballmanager.application.service.simulation.detailed.DetailedMatchEventType;
 import com.footballmanager.application.service.simulation.detailed.MatchTimeline;
 import com.footballmanager.application.service.simulation.detailed.PlayerMatchRatingDto;
 import com.footballmanager.domain.model.valueobject.PlayerMatchRating;
@@ -18,6 +19,8 @@ import com.footballmanager.domain.model.entity.MatchState;
 import com.footballmanager.domain.model.entity.MatchStateSnapshot;
 import com.footballmanager.domain.model.valueobject.MatchStatus;
 import com.footballmanager.domain.model.valueobject.Score;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -36,6 +39,8 @@ import java.util.function.Consumer;
  * path (detailedMatchSession == null) uses MatchTickHandler.
  */
 public class MatchSession {
+
+    private static final Logger log = LoggerFactory.getLogger(MatchSession.class);
 
     public final UUID matchId;
     private final UUID userId;
@@ -171,12 +176,70 @@ public class MatchSession {
                 DetailedMatchResult detailedResult = (detailedMatchSession != null)
                         ? detailedMatchSession.finalResult()
                         : null;
+                if (detailedResult != null) {
+                    this.currentState = finalizeDetailedSnapshot(detailedResult);
+                    emitState();
+                }
                 onFinishCallback.accept(new MatchFinishedResult(currentState, detailedResult));
-            } catch (Exception ignored) {
+            } catch (Exception exception) {
+                log.error("final match result was not published for matchId={}", matchId, exception);
             }
         }
 
         return currentState;
+    }
+
+    /**
+     * Creates the one final score projection for the detailed-match path.
+     *
+     * <p>The last SSE snapshot is a live, event-derived view. It is useful
+     * while the match is running, but it is not the final authority: it may
+     * still contain a deduplicated incremental timeline. At final whistle the
+     * completed {@link DetailedMatchResult} is the engine's immutable result.
+     * Every downstream sink (fixture, summary, standings, history and detail)
+     * receives the {@link MatchFinishedResult} built from this normalized
+     * snapshot, so they cannot consume a different final score.
+     */
+    MatchStateSnapshot finalizeDetailedSnapshot(DetailedMatchResult result) {
+        if (!matchId.toString().equals(result.matchId())) {
+            throw new IllegalStateException("detailed result matchId does not match live session");
+        }
+        if (currentState.homeTeamId() != null
+                && !currentState.homeTeamId().toString().equals(result.homeTeamId())) {
+            throw new IllegalStateException("detailed result home team does not match live session");
+        }
+        if (currentState.awayTeamId() != null
+                && !currentState.awayTeamId().toString().equals(result.awayTeamId())) {
+            throw new IllegalStateException("detailed result away team does not match live session");
+        }
+
+        List<DetailedMatchEvent> finalEvents = new ArrayList<>(result.timeline().events());
+        for (DetailedMatchEvent event : detailedMatchSession.accumulatedEvents()) {
+            if ((event.type() == DetailedMatchEventType.SUBSTITUTION
+                    || event.type() == DetailedMatchEventType.TACTICAL_CHANGE)
+                    && !finalEvents.contains(event)) {
+                finalEvents.add(event);
+            }
+        }
+        long homeGoalEvents = finalEvents.stream()
+                .filter(event -> event.type() == DetailedMatchEventType.GOAL)
+                .filter(event -> result.homeTeamId().equals(event.teamId()))
+                .count();
+        long awayGoalEvents = finalEvents.stream()
+                .filter(event -> event.type() == DetailedMatchEventType.GOAL)
+                .filter(event -> result.awayTeamId().equals(event.teamId()))
+                .count();
+        if (homeGoalEvents != result.homeGoals() || awayGoalEvents != result.awayGoals()) {
+            throw new IllegalStateException("detailed final score does not reconcile with its goal events");
+        }
+
+        List<MatchEvent> authoritativeEvents = new ArrayList<>(finalEvents.size());
+        for (DetailedMatchEvent event : finalEvents) {
+            authoritativeEvents.add(toDomainMatchEvent(event));
+        }
+        return currentState
+                .withScore(new Score(result.homeGoals(), result.awayGoals()))
+                .withEvents(authoritativeEvents);
     }
 
     /**
