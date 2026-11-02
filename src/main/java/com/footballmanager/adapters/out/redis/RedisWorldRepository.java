@@ -78,6 +78,8 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     private final WorldStoragePhysicalCapacityModel physicalCapacityModel =
             new WorldStoragePhysicalCapacityModel();
     private final WorldMigrationTransitionObserver transitionObserver;
+    private final Map<String, CatalogValidation> validatedCatalogs = new java.util.concurrent.ConcurrentHashMap<>();
+    private record CatalogValidation(String fingerprint, String rawDigest) {}
     @Value("${app.redis.world-ttl:30d}")
     private Duration worldTtl;
     @Value("${app.redis.world-catalog-ttl:365d}")
@@ -356,15 +358,25 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     }
 
     private Mono<Void> validateCatalog(String key, String expectedFingerprint, String catalogJson) {
-        return Mono.fromCallable(() -> objectMapper.readValue(catalogJson, WorldSnapshot.class))
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(catalog -> {
+        return Mono.fromCallable(() -> {
+                    // Reuse semantic validation only for exactly the same bytes
+                    // and content-addressed identity. Changed or corrupt Redis
+                    // values still require full validation on the very next read.
+                    String rawDigest = sha256(catalogJson.getBytes(StandardCharsets.UTF_8));
+                    CatalogValidation known = validatedCatalogs.get(key);
+                    if (known != null && known.fingerprint().equals(expectedFingerprint)
+                            && known.rawDigest().equals(rawDigest)) return true;
+                    WorldSnapshot catalog = objectMapper.readValue(catalogJson, WorldSnapshot.class);
                     String actual = catalogFingerprint.fingerprint(catalog);
                     if (!expectedFingerprint.equals(actual) || !key.equals(catalogKey(actual))) {
-                        return Mono.error(new WorldStorageFormatException("World catalog fingerprint mismatch"));
+                        throw new WorldStorageFormatException("World catalog fingerprint mismatch");
                     }
-                    return Mono.<Void>empty();
+                    if (validatedCatalogs.size() >= 64) validatedCatalogs.clear();
+                    validatedCatalogs.put(key, new CatalogValidation(actual, rawDigest));
+                    return true;
                 })
+                .subscribeOn(Schedulers.boundedElastic())
+                .then()
                 .onErrorMap(error -> error instanceof WorldStorageFormatException
                         ? error : new WorldStorageFormatException("Invalid world catalog payload"));
     }
