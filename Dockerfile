@@ -10,13 +10,15 @@ RUN mvn -q -DskipTests package
 # Temurin 21.0.11_10 JRE Alpine 3.23, linux/amd64 manifest digest verified from Docker Hub.
 FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23@sha256:426401268a42785be73823f6115ee0e721bdb59c12c779947b83fcead1a66645
 
+# Favor quick startup on the sleeping Free instance. Full tiering can be
+# restored without changing the image with JAVA_OPTS=-XX:TieredStopAtLevel=4.
 ENV TZ=UTC \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     SPRING_PROFILES_ACTIVE=prod \
     SERVER_ADDRESS=0.0.0.0 \
     PORT=8080 \
-    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.security.egd=file:/dev/./urandom"
+    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError -XX:TieredStopAtLevel=1 -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.security.egd=file:/dev/./urandom"
 
 RUN apk add --no-cache curl ca-certificates tzdata shadow findutils \
     && apk upgrade --no-cache \
