@@ -96,10 +96,16 @@ public final class CanonicalWorldCatalogFingerprint {
             return sorted;
         }
         ArrayNode sorted = objectMapper.createArrayNode();
-        List<JsonNode> elements = new ArrayList<>();
-        node.forEach(value -> elements.add(canonicalize(value)));
-        elements.sort(Comparator.comparing(JsonNode::toString));
-        elements.forEach(sorted::add);
+        // Keep the exact lexical ordering, but serialize each element once
+        // instead of once for every comparison of a large player array.
+        record Element(JsonNode value, String key) {}
+        List<Element> elements = new ArrayList<>();
+        node.forEach(value -> {
+            JsonNode canonical = canonicalize(value);
+            elements.add(new Element(canonical, canonical.toString()));
+        });
+        elements.sort(Comparator.comparing(Element::key));
+        elements.forEach(element -> sorted.add(element.value()));
         return sorted;
     }
 }

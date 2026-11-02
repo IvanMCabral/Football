@@ -87,6 +87,37 @@ class CanonicalWorldCatalogFingerprintTest {
         return world;
     }
 
+    @Test
+    void optimizedOrderingPreservesPersistedHashesExactly() {
+        var mapper = new ObjectMapper().findAndRegisterModules();
+        var legacy = new LegacyColdFingerprint(mapper);
+        for (int i = 0; i < 8; i++) {
+            WorldSnapshot world = fixture((i & 1) != 0, (i & 2) != 0, (i & 4) != 0);
+            world.getLeagues().add(null);
+            world.getWorldPlayers().put("null-entry", null);
+            assertEquals(legacy.fingerprint(world), fingerprint.fingerprint(world));
+        }
+    }
+
+    @Test
+    void fullSizedCatalogKeepsExactHashWithLessRepeatedSerialization() {
+        WorldSnapshot world = fixture(false, false, false);
+        for (int i = 0; i < 1680; i++) {
+            UUID real = UUID.nameUUIDFromBytes(("cold-player-" + i).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            WorldPlayer player = player(world.getUserId(), real, "team", "Player " + i, (i & 1) == 0);
+            world.getWorldPlayers().put(player.getWorldPlayerId(), player);
+        }
+        var legacy = new LegacyColdFingerprint(new ObjectMapper().findAndRegisterModules());
+        long before = System.nanoTime();
+        String oldHash = legacy.fingerprint(world);
+        long middle = System.nanoTime();
+        String newHash = fingerprint.fingerprint(world);
+        long after = System.nanoTime();
+        assertEquals(oldHash, newHash);
+        System.out.printf("[COLD-FINGERPRINT] legacyMs=%d optimizedMs=%d exactHash=true%n",
+                (middle - before) / 1_000_000L, (after - middle) / 1_000_000L);
+    }
+
     private WorldPlayer player(UUID owner, UUID realId, String team, String name, boolean reverseTraits) {
         WorldPlayer player = WorldPlayer.fromCanonicalPlayer(owner, realId, team, name, 22,
                 "MID", 70, 70, 70, 70, 70, 70, BigDecimal.TEN);

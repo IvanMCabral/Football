@@ -4,6 +4,9 @@ spring:
       on-profile: prod
   r2dbc:
     pool:
+      # Allocate for actual demand instead of reserving ten speculative
+      # connections on the first request of the sleeping Free instance.
+      initial-size: ${R2DBC_INITIAL_SIZE:0}
       # Managed PostgreSQL providers can close idle TCP sessions before the
       # client-side pool notices. Evict and validate proactively so the first
       # public request after an idle window creates a fresh connection.

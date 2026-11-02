@@ -44,6 +44,16 @@ public class RedisCareerRepository implements CareerRepository {
     private static final Duration CACHE_TTL = Duration.ofDays(30); // 30 días de inactividad
     private static final Duration CAREER_INDEX_TTL = Duration.ofDays(31);
     private static final int MAX_CAREER_INDEX_SIZE = 256;
+    private static final RedisScript<String> LOAD_GENERATION_AND_INDEX = RedisScript.of("""
+            local generation = redis.call('GET', KEYS[1])
+            if not generation then return 'MISSING' end
+            if redis.call('SISMEMBER', KEYS[2], ARGV[1]) == 0 then
+              if redis.call('SCARD', KEYS[2]) >= tonumber(ARGV[2]) then return 'LIMIT' end
+              redis.call('SADD', KEYS[2], ARGV[1])
+            end
+            redis.call('EXPIRE', KEYS[2], ARGV[3])
+            return 'OK:' .. generation
+            """, String.class);
     private static final ConcurrentMap<String, OwnerSaveQueue> SAVE_QUEUES = new ConcurrentHashMap<>();
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
@@ -233,10 +243,18 @@ public class RedisCareerRepository implements CareerRepository {
             return Mono.just(career);
         }
         CareerSave value = career.get();
-        return redisTemplate.opsForValue().get(generationKey(value.getCareerId()))
-                .switchIfEmpty(Mono.error(new IllegalStateException("career lifecycle generation missing")))
-                .doOnNext(value::setLifecycleGeneration)
-                .then(indexCareer(value)).thenReturn(career);
+        return redisTemplate.execute(LOAD_GENERATION_AND_INDEX,
+                        List.of(generationKey(value.getCareerId()), indexKey(value.getUserId())),
+                        value.getCareerId(), Integer.toString(MAX_CAREER_INDEX_SIZE),
+                        Long.toString(CAREER_INDEX_TTL.getSeconds()))
+                .single()
+                .flatMap(result -> {
+                    if ("MISSING".equals(result)) return Mono.error(new IllegalStateException("career lifecycle generation missing"));
+                    if ("LIMIT".equals(result)) return Mono.error(new CareerIndexLimitException());
+                    if (!result.startsWith("OK:")) return Mono.error(new IllegalStateException("career index read failed"));
+                    value.setLifecycleGeneration(result.substring(3));
+                    return Mono.just(career);
+                });
     }
 
     private Mono<Void> indexCareer(CareerSave career) {

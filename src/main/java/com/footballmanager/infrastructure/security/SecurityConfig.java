@@ -164,17 +164,13 @@ public class SecurityConfig {
             }
 
             String token = authHeader.substring(7);
-            if (!jwtTokenProvider.validateToken(token)) {
-                return Mono.empty();
-            }
-
-            String userId = jwtTokenProvider.getUserIdFromToken(token);
-            String role = jwtTokenProvider.getRoleFromToken(token);
-
-            return Mono.just(new UsernamePasswordAuthenticationToken(userId, null,
-                    java.util.Collections.singletonList(
-                            new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role)
-                    )));
+            // Parsing the subject already verifies signature and expiry. The
+            // authentication manager reads the current role from PostgreSQL.
+            return Mono.fromCallable(() -> jwtTokenProvider.getUserIdFromToken(token))
+                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                    .map(userId -> (org.springframework.security.core.Authentication)
+                            new UsernamePasswordAuthenticationToken(userId, null))
+                    .onErrorResume(error -> Mono.empty());
         };
     }
 

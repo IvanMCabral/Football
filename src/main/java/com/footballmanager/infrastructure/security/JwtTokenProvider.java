@@ -2,6 +2,7 @@ package com.footballmanager.infrastructure.security;
 
 import com.footballmanager.domain.ports.out.auth.AuthTokenService;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,22 @@ public class JwtTokenProvider implements AuthTokenService {
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpirationMs;
+
+    private volatile JwtParser parser;
+
+    private JwtParser parser() {
+        JwtParser current = parser;
+        if (current == null) {
+            synchronized (this) {
+                current = parser;
+                if (current == null) {
+                    current = Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes())).build();
+                    parser = current;
+                }
+            }
+        }
+        return current;
+    }
 
     @Override
     public String generateToken(String userId, String role) {
@@ -51,10 +68,7 @@ public class JwtTokenProvider implements AuthTokenService {
 
     @Override
     public String getUserIdFromToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
+        return parser()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -62,10 +76,7 @@ public class JwtTokenProvider implements AuthTokenService {
 
     @Override
     public String getRoleFromToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        return (String) Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
+        return (String) parser()
                 .parseClaimsJws(token)
                 .getBody()
                 .get("role");
@@ -74,11 +85,7 @@ public class JwtTokenProvider implements AuthTokenService {
     @Override
     public boolean validateToken(String token) {
         try {
-            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+            parser().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
