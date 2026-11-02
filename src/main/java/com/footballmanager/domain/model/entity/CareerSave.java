@@ -302,6 +302,7 @@ public class CareerSave {
     public void addTournamentResult(TournamentResult result) { seasonManager.addTournamentResult(result); data.touch(); }
 
     public java.util.List<Promotion> getPromotions() { return seasonManager.getPromotions(); }
+    public void setPromotions(java.util.List<Promotion> promotions) { seasonManager.setPromotions(promotions); }
     public void updateTopTeams(TournamentResult result) { seasonManager.updateTopTeams(result); data.touch(); }
 
     public void executePromotionsAndRelegations() { seasonManager.executePromotionsAndRelegations(); data.touch(); }

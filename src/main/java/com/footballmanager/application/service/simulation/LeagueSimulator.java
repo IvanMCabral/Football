@@ -130,6 +130,22 @@ public class LeagueSimulator {
         }
         roundLifecycleService().applyEndOfRound(career, round, allFixtures, tracking, preRoundInjured);
     }
+
+    /** Complete the other divisions with the existing quick league simulator.
+     * Live fixtures and their player lifecycle are owned by the live engine.
+     * Include older pending fixtures so a save affected by the missing call can
+     * catch up without replacing any result that was already recorded. */
+    public void simulateOtherDivisionsThroughRound(CareerSave career, int throughRound) {
+        var ownDivision = career.getUserDivision();
+        if (ownDivision == null) return;
+        var state = career.getTournamentState();
+        for (MatchFixture fixture : state.getFixtures()) {
+            if (fixture.getRound() > throughRound || !fixture.canBeSimulated()) continue;
+            if (ownDivision.containsTeam(fixture.getHomeTeamId()) || ownDivision.containsTeam(fixture.getAwayTeamId())) continue;
+            simulateWithDefaultEngine(fixture, calculateTeamOVR(career, fixture.getHomeTeamId()),
+                    calculateTeamOVR(career, fixture.getAwayTeamId()), state);
+        }
+    }
     private void simulateWithDefaultEngine(MatchFixture fixture, int homeOvr, int awayOvr, TournamentState tournamentState) {
         MatchSimulator.MatchResult result = matchSimulator.simulateQuick(
                 fixture.getHomeTeamId(),

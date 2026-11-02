@@ -165,6 +165,8 @@ public class MatchSimulationOrchestrator {
 
         log.info("[orchestrator] userId={} round={} detected BYE round — auto-advancing career", userId, currentRound);
 
+        leagueSimulator.simulateOtherDivisionsThroughRound(career, currentRound);
+
         if (currentRound >= totalRounds) {
             java.util.List<TournamentResult> allResults = resultProcessor.determineDivisionChampions(career);
             finishTournament(career, allResults);
@@ -233,6 +235,8 @@ public class MatchSimulationOrchestrator {
         if (nuevosProcesados == 0) {
             return null;
         }
+
+        leagueSimulator.simulateOtherDivisionsThroughRound(career, careerCurrentRound);
 
         career.getTournamentState().finishMatchDay();
 

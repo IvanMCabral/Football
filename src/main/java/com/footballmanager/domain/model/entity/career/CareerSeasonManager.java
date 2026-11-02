@@ -110,6 +110,10 @@ public class CareerSeasonManager {
         return promotionCalculator.getPromotions();
     }
 
+    public void setPromotions(List<Promotion> promotions) {
+        promotionCalculator.replacePromotions(promotions);
+    }
+
     // ========== Palmares / Titles ==========
 
     public List<TournamentResult> getPalmares() {

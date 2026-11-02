@@ -144,6 +144,28 @@ class MatchSimulationOrchestratorTest {
     }
 
     @Test
+    void liveRoundCompletionAlsoPersistsTheOtherDivisionsOnce() {
+        CareerSave career = makeCareer(1, 2, Map.of(1, List.of(
+                new String[]{USER_TEAM, OTHER_TEAM_A}, new String[]{"parallel-a", "parallel-b"})));
+        var own = new com.footballmanager.domain.model.entity.Division("Own", 1);
+        own.addTeam(USER_TEAM); own.addTeam(OTHER_TEAM_A);
+        var other = new com.footballmanager.domain.model.entity.Division("Other", 2);
+        other.addTeam("parallel-a"); other.addTeam("parallel-b");
+        career.getSeasonManager().setDivisions(List.of(own, other));
+        seedStandings(career, USER_TEAM, OTHER_TEAM_A, "parallel-a", "parallel-b");
+        when(matchSimulator.simulateQuick("parallel-a", "parallel-b", 50, 50))
+                .thenReturn(new MatchSimulator.MatchResult(1, 0));
+        when(careerSessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.just(career));
+        var result = new MatchResultProcessor.MatchResultInfo("match-r1-1", 2, 0);
+        orchestrator.processMatchDayResults(USER_ID_STR, List.of(result)).block(Duration.ofSeconds(5));
+        orchestrator.processMatchDayResults(USER_ID_STR, List.of(result)).block(Duration.ofSeconds(5));
+        assertEquals(1, career.getTournamentState().getStandings().get(USER_TEAM).getPlayed());
+        assertEquals(1, career.getTournamentState().getStandings().get("parallel-a").getPlayed());
+        assertEquals(3, career.getTournamentState().getStandings().get("parallel-a").getPoints());
+        verify(matchSimulator).simulateQuick("parallel-a", "parallel-b", 50, 50);
+    }
+
+    @Test
     void completedRoundWritesThroughACleanCachedSessionToDurableRepository() {
         CareerSave career = makeCareer(1, 2, Map.of(
                 1, List.<String[]>of(new String[]{USER_TEAM, OTHER_TEAM_A}),

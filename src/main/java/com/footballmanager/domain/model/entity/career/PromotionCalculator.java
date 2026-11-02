@@ -104,4 +104,17 @@ public class PromotionCalculator {
     public List<Promotion> getPromotions() {
         return promotionList;
     }
+
+    public void replacePromotions(List<Promotion> promotions) {
+        // Both the legacy root alias and seasonManager contain this list in
+        // persisted saves. Replace it rather than letting Jackson append it.
+        var unique = new java.util.LinkedHashMap<MovementKey, Promotion>();
+        if (promotions != null) for (Promotion p : promotions) {
+            unique.putIfAbsent(new MovementKey(p.getTeamId(), p.getFromDivisionId(), p.getToDivisionId(), p.getType()), p);
+        }
+        promotionList.clear();
+        promotionList.addAll(unique.values());
+    }
+
+    private record MovementKey(String team, String from, String to, Promotion.PromotionType type) {}
 }
