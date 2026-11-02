@@ -263,6 +263,9 @@ public class MatchSimulationOrchestrator {
             return Mono.empty();
         }
         UUID roundId = resolveRoundId(results);
+        // Results and BYE advancement mutate the cached object in place. The
+        // session must not treat that same object as an unchanged saved snapshot.
+        careerSessionService.markDirty(userUUID);
         return careerSessionService.saveCareer(career)
                 .thenReturn(career)
                 .doOnSuccess(saved -> {

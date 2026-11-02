@@ -31,6 +31,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -139,6 +141,40 @@ class MatchSimulationOrchestratorTest {
         career.setTournamentState(tournamentState);
 
         return career;
+    }
+
+    @Test
+    void completedRoundWritesThroughACleanCachedSessionToDurableRepository() {
+        CareerSave career = makeCareer(1, 2, Map.of(
+                1, List.<String[]>of(new String[]{USER_TEAM, OTHER_TEAM_A}),
+                2, List.<String[]>of(new String[]{OTHER_TEAM_A, USER_TEAM})));
+        career.getData().setCareerId(UUID.randomUUID().toString());
+        career.setLifecycleGeneration("synthetic-generation");
+        seedStandings(career, USER_TEAM, OTHER_TEAM_A);
+        var realSession = new CareerSessionService(
+                careerRepository,
+                mock(com.footballmanager.domain.port.in.career.StartCareerUseCase.class),
+                mock(com.footballmanager.domain.port.in.career.ContinueCareerUseCase.class),
+                roundEngineRegistry,
+                mock(com.footballmanager.application.service.match.session.MatchSessionRegistry.class),
+                mock(com.footballmanager.domain.ports.out.career.CareerDataCleanupRepository.class));
+        realSession.cacheCareer(career);
+        var durableRound = new java.util.concurrent.atomic.AtomicInteger(1);
+        lenient().when(careerRepository.saveExistingCareer(any(), same(career)))
+                .thenAnswer(invocation -> Mono.fromRunnable(() ->
+                        durableRound.set(career.getTournamentState().getCurrentRound())));
+        var realOrchestrator = new MatchSimulationOrchestrator(careerRepository, realSession,
+                notificationService, resultProcessor, leagueSimulator, roundEngineRegistry);
+        try {
+            var fixture = career.getTournamentState().getFixturesForRound(1).getFirst();
+            realOrchestrator.processMatchDayResults(USER_ID_STR, List.of(
+                    new MatchResultProcessor.MatchResultInfo(fixture.getMatchId(), 2, 1, List.of())))
+                    .block(Duration.ofSeconds(5));
+            assertEquals(2, durableRound.get(), "Completed round must reach durable storage, not just the cached object");
+            verify(careerRepository).saveExistingCareer(any(), same(career));
+        } finally {
+            realOrchestrator.shutdown();
+        }
     }
 
     /** Seed standings for the supplied team ids so {@code updateStandingsWithResult} can run. */
