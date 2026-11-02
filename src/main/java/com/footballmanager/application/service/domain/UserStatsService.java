@@ -48,29 +48,14 @@ public class UserStatsService {
                     .defaultIfEmpty("Unknown"));
 
         // Obtener stats desde CareerSave (Redis)
-        Mono<TeamStandings> standingsMono = RuntimeOperationMetrics.measure(
+        Mono<java.util.Optional<com.footballmanager.domain.model.entity.CareerSave>> careerMono = RuntimeOperationMetrics.measure(
             "dashboard.userStats.loadCareer",
             careerSessionService.getCareerFromCache(userId))
-            .map(career -> {
-                String userTeamId = career.getUserSessionTeamId();
-                if (userTeamId == null) {
-                    return null;
-                }
-                TournamentState state = career.getTournamentState();
-                if (state == null || state.getStandings() == null) {
-                    return null;
-                }
-                return state.getStandings().get(userTeamId);
-            })
-            .switchIfEmpty(Mono.empty());
+            .map(java.util.Optional::of)
+            .defaultIfEmpty(java.util.Optional.empty());
 
         return RuntimeOperationMetrics.measure("dashboard.userStats.total",
-            Mono.zip(userNameMono, standingsMono))
-            .map(tuple -> {
-                String userName = tuple.getT1();
-                TeamStandings standing = tuple.getT2();
-
-                return summarizeStanding(userName, standing);
-            });
+            Mono.zip(userNameMono, careerMono))
+            .map(tuple -> summarizeCareer(tuple.getT1(), tuple.getT2().orElse(null)));
     }
 }

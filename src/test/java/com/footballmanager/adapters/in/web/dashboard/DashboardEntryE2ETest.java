@@ -37,6 +37,7 @@ class DashboardEntryE2ETest extends AbstractIntegrationTest {
         var entry = objectMapper.readTree(read("/dashboard/entry", tokens.generateToken(OWNER.toString(), "USER")));
         assertTrue(entry.path("careerStatus").path("careerId").isNull());
         assertEquals(0, entry.path("userStats").path("matchesPlayed").asInt());
+        assertEquals(entry.path("userStats"), objectMapper.readTree(read("/dashboard/user-stats", tokens.generateToken(OWNER.toString(), "USER"))));
         assertFalse(reactiveRedisTemplate.hasKey("world:" + OWNER).block());
     }
 
