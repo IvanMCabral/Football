@@ -9,6 +9,7 @@ import com.footballmanager.application.service.world.WorldSnapshotService;
 import com.footballmanager.application.service.world.WorldStatusQueryService;
 import com.footballmanager.application.service.world.WorldStatusSummary;
 import com.footballmanager.application.observability.RuntimeOperationMetrics;
+import com.footballmanager.application.observability.WorldSummaryTiming;
 import com.footballmanager.application.observability.ReloadWorldTiming;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -39,10 +40,13 @@ public class DashboardController {
     }
 
     @GetMapping("/world-status")
-    public Mono<WorldStatusResponse> getWorldStatus(Authentication authentication) {
+    public Mono<WorldStatusResponse> getWorldStatus(Authentication authentication, ServerHttpResponse response) {
         UUID userId = controllerHelper.getUserId(authentication);
+        WorldSummaryTiming timing = new WorldSummaryTiming();
         return RuntimeOperationMetrics.measure("http.dashboard.worldStatus",
-            worldStatusQueryService.getWorldStatus(userId).map(DashboardController::toDto));
+            worldStatusQueryService.getWorldStatus(userId).map(DashboardController::toDto))
+                .doOnNext(ignored -> timing.writeHeaders(response))
+                .contextWrite(context -> context.put(WorldSummaryTiming.CONTEXT_KEY, timing));
     }
 
     /**

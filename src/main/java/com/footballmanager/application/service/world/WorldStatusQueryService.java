@@ -38,7 +38,8 @@ public class WorldStatusQueryService {
      */
     public Mono<WorldStatusSummary> getWorldStatus(UUID userId) {
         Mono<Integer> matchesMono = RuntimeOperationMetrics.measure("dashboard.loadCareer",
-            careerSessionService.getCareerFromCache(userId))
+            com.footballmanager.application.observability.WorldSummaryTiming.measure("career",
+                    careerSessionService.getCareerFromCache(userId)))
                 .map(this::countPlayedFixtures)
                 .defaultIfEmpty(0);
 

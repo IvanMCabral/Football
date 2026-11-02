@@ -40,6 +40,9 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private RedisWorldRepository worldRepository;
 
+    @Autowired
+    private com.footballmanager.domain.ports.out.auth.AuthTokenService authTokenService;
+
     private RedisWorldRepository isolatedRepository;
 
     @BeforeEach
@@ -550,6 +553,77 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
                 "ATT", 80, 40, 75, 80, 80, 75, BigDecimal.TEN);
         snapshot.getWorldPlayers().put(player.getWorldPlayerId(), player);
         return snapshot;
+    }
+
+    @Test
+    void warmSummaryUsesOneBatchedReadAndReloadedRootCanChangeCatalog() throws Exception {
+        UUID owner = UUID.randomUUID();
+        isolatedRepository.saveInitial(snapshot(owner)).block();
+        String before = timedSummary(owner);
+        assertTrue(before.contains("redis-root;dur="));
+        assertTrue(before.contains("redis-catalog;dur="));
+        String warm = timedSummary(owner);
+        assertTrue(warm.contains("redis-batch;dur="));
+        assertTrue(!warm.contains("redis-root;") && !warm.contains("redis-catalog;"), warm);
+        String oldRoot = reactiveRedisTemplate.opsForValue().get("world:" + owner).block();
+        String oldKey = objectMapper.readTree(oldRoot).path("catalogKey").asText();
+        WorldSnapshot replacement = snapshot(owner, UUID.randomUUID());
+        isolatedRepository.saveInitial(replacement).block();
+        String newRoot = reactiveRedisTemplate.opsForValue().get("world:" + owner).block();
+        String newKey = objectMapper.readTree(newRoot).path("catalogKey").asText();
+        org.junit.jupiter.api.Assertions.assertNotEquals(oldKey, newKey);
+        // A stale key hint cannot override the freshly loaded envelope.
+        String changed = timedSummary(owner);
+        assertTrue(changed.contains("redis-batch;dur=") && changed.contains("redis-catalog;dur="), changed);
+        String settled = timedSummary(owner);
+        assertTrue(settled.contains("redis-batch;dur=") && !settled.contains("redis-catalog;"), settled);
+        reactiveRedisTemplate.delete("world:" + owner).block();
+        org.junit.jupiter.api.Assertions.assertNull(isolatedRepository.findSizeByUserId(owner).block());
+    }
+
+    @Test
+    void warmSummaryFailsClosedWhenCatalogTypeIsCorruptAndDoesNotOverwriteWorld() throws Exception {
+        UUID owner = UUID.randomUUID();
+        isolatedRepository.saveInitial(snapshot(owner)).block();
+        isolatedRepository.findSizeByUserId(owner).block();
+        String root = reactiveRedisTemplate.opsForValue().get("world:" + owner).block();
+        String catalog = objectMapper.readTree(root).path("catalogKey").asText();
+        reactiveRedisTemplate.delete(catalog).block();
+        reactiveRedisTemplate.opsForList().rightPush(catalog, "wrong type").block();
+        assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
+                () -> isolatedRepository.findSizeByUserId(owner).block());
+        assertEquals(root, reactiveRedisTemplate.opsForValue().get("world:" + owner).block());
+    }
+
+    private String timedSummary(UUID owner) {
+        var timing = new com.footballmanager.application.observability.WorldSummaryTiming();
+        var size = isolatedRepository.findSizeByUserId(owner)
+                .contextWrite(context -> context.put(com.footballmanager.application.observability.WorldSummaryTiming.CONTEXT_KEY, timing)).block();
+        assertEquals(new com.footballmanager.domain.model.valueobject.WorldSize(1, 1, 1), size);
+        var response = new org.springframework.mock.http.server.reactive.MockServerHttpResponse();
+        timing.writeHeaders(response);
+        String header = response.getHeaders().getFirst("Server-Timing");
+        assertTrue(!header.contains(owner.toString()) && !header.contains("world:"));
+        return header;
+    }
+
+    @Test
+    void realJwtSummaryReportsSanitizedStagesAndUsesBatchOnTheNextRequest() {
+        UUID owner = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        isolatedRepository.saveInitial(snapshot(owner)).block();
+        String token = authTokenService.generateToken(owner.toString(), "USER");
+        for (int i = 0; i < 2; i++) {
+            var response = webTestClient.get().uri("/api/v1/dashboard/world-status")
+                    .headers(headers -> headers.setBearerAuth(token)).exchange()
+                    .expectStatus().isOk()
+                    .expectHeader().exists("Server-Timing")
+                    .expectBody().jsonPath("$.clubs").isEqualTo(1)
+                    .jsonPath("$.players").isEqualTo(1).returnResult();
+            String timing = response.getResponseHeaders().getFirst("Server-Timing");
+            assertTrue(!timing.contains(owner.toString()) && !timing.contains("world:"));
+            if (i == 1) assertTrue(timing.contains("redis-batch;dur="), timing);
+        }
+        webTestClient.get().uri("/api/v1/dashboard/world-status").exchange().expectStatus().isUnauthorized();
     }
 
     private WorldSnapshot largeLegacy(UUID owner, int players) {

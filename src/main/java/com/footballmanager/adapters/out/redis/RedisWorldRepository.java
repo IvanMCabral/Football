@@ -10,6 +10,7 @@ import com.footballmanager.domain.ports.out.world.WorldSnapshotRepository;
 import com.footballmanager.domain.ports.out.world.CanonicalWorldCatalogSource;
 import com.footballmanager.infrastructure.persistence.redis.CareerOwnershipTouchService;
 import com.footballmanager.application.observability.ReloadWorldTiming;
+import com.footballmanager.application.observability.WorldSummaryTiming;
 import com.footballmanager.application.service.world.WorldMigrationAdmission;
 import com.footballmanager.application.service.world.WorldStorageMigrationExecutor;
 import com.footballmanager.application.service.world.WorldPersistedWriter;
@@ -80,6 +81,21 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     private final WorldMigrationTransitionObserver transitionObserver;
     private final Map<String, CatalogValidation> validatedCatalogs = new java.util.concurrent.ConcurrentHashMap<>();
     private record CatalogValidation(String fingerprint, String rawDigest, WorldCountsProjection counts) {}
+    // Hints choose keys to fetch together. The freshly read envelope remains authority.
+    private final Map<UUID, String> summaryCatalogHints = new java.util.concurrent.ConcurrentHashMap<>();
+    private record CatalogRead(String key, String json, boolean invalidType) {}
+    @SuppressWarnings("rawtypes")
+    private static final RedisScript<java.util.List> READ_SUMMARY_INPUTS = RedisScript.of("""
+            local root = redis.call('GET', KEYS[1])
+            if not root then return {} end
+            local catalog = redis.pcall('GET', KEYS[2])
+            if type(catalog) == 'table' and catalog.err then
+              return {root, '', 'ERROR'}
+            end
+            if not catalog then return {root, '', 'MISSING'} end
+            redis.call('PEXPIRE', KEYS[2], ARGV[1])
+            return {root, catalog, 'VALUE'}
+            """, java.util.List.class);
     @Value("${app.redis.world-ttl:30d}")
     private Duration worldTtl;
     @Value("${app.redis.world-catalog-ttl:365d}")
@@ -213,14 +229,32 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
 
     @Override
     public Mono<com.footballmanager.domain.model.valueobject.WorldSize> findSizeByUserId(UUID userId) {
-        return redisTemplate.opsForValue().get(generateKey(userId))
-                .flatMap(json -> decodeSnapshot(json, userId, true))
+        return Mono.defer(() -> {
+                    String hint = summaryCatalogHints.get(userId);
+                    if (hint == null) {
+                        return WorldSummaryTiming.measure("redis-root", redisTemplate.opsForValue().get(generateKey(userId)))
+                                .flatMap(json -> decodeSnapshot(json, userId, true));
+                    }
+                    return WorldSummaryTiming.measure("redis-batch", redisTemplate.execute(READ_SUMMARY_INPUTS,
+                                    java.util.List.of(generateKey(userId), hint),
+                                    java.util.List.of(Long.toString(requireCatalogTtl().toMillis()))).single())
+                            .flatMap(values -> {
+                                if (values.isEmpty()) return Mono.empty();
+                                if (values.size() != 3) return Mono.error(new WorldStorageFormatException("Invalid world summary response"));
+                                String root = (String) values.get(0);
+                                String catalog = "VALUE".equals(values.get(2)) ? (String) values.get(1) : null;
+                                return decodeSnapshot(root, userId, true,
+                                        new CatalogRead(hint, catalog, "ERROR".equals(values.get(2))));
+                            })
+                            .onErrorMap(error -> error instanceof WorldStorageFormatException ? error
+                                    : new WorldStorageFormatException("World summary read failed"));
+                })
                 .map(com.footballmanager.domain.model.valueobject.WorldSize::from)
                 .onErrorResume(e -> e instanceof WorldStorageFormatException ? Mono.error(e) : Mono.empty());
     }
 
     private Mono<WorldSnapshot> catalogForRead(WorldStorageEnvelope envelope, String json, boolean identitiesOnly) {
-        return Mono.fromCallable(() -> {
+        return WorldSummaryTiming.measure("projection", Mono.fromCallable(() -> {
             if (!identitiesOnly) return objectMapper.readValue(json, WorldSnapshot.class);
             CatalogValidation known = validatedCatalogs.get(envelope.catalogKey());
             String digest = sha256(json.getBytes(StandardCharsets.UTF_8));
@@ -229,7 +263,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                     && known.rawDigest().equals(digest) ? known.counts()
                     : WorldCountsProjection.from(objectMapper.readValue(json, WorldSnapshot.class));
             return counts.materialize();
-        }).subscribeOn(Schedulers.boundedElastic());
+        }).subscribeOn(Schedulers.boundedElastic()));
     }
 
     /**
@@ -281,6 +315,10 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     }
 
     private Mono<WorldSnapshot> decodeSnapshot(String json, UUID requestedOwner, boolean identitiesOnly) {
+        return decodeSnapshot(json, requestedOwner, identitiesOnly, null);
+    }
+
+    private Mono<WorldSnapshot> decodeSnapshot(String json, UUID requestedOwner, boolean identitiesOnly, CatalogRead prefetched) {
         return Mono.fromCallable(() -> objectMapper.readTree(json))
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorMap(error -> error instanceof WorldStorageFormatException
@@ -309,9 +347,16 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                                     return Mono.error(new WorldStorageFormatException("World storage is not committed"));
                                 }
                                 return verifyOverlayChecksum(envelope, node.path("overlay"))
-                                        .then(loadOrRecoverCatalog(envelope))
+                                        .then(loadCatalogForSummary(envelope, prefetched))
                                         .flatMap(catalogJson -> catalogForRead(envelope, catalogJson, identitiesOnly))
-                                        .map(canonical -> envelope.overlay().applyTo(canonical));
+                                        .flatMap(canonical -> WorldSummaryTiming.measure("overlay", Mono.fromCallable(
+                                                () -> envelope.overlay().applyTo(canonical))))
+                                        .doOnNext(ignored -> {
+                                            if (identitiesOnly) {
+                                                if (summaryCatalogHints.size() >= 128) summaryCatalogHints.clear();
+                                                summaryCatalogHints.put(requestedOwner, envelope.catalogKey());
+                                            }
+                                        });
                             });
                 })
                 .onErrorMap(error -> error instanceof WorldStorageFormatException
@@ -381,7 +426,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     }
 
     private Mono<Void> validateCatalog(String key, String expectedFingerprint, String catalogJson) {
-        return Mono.fromCallable(() -> {
+        return WorldSummaryTiming.measure("catalog-validation", Mono.fromCallable(() -> {
                     // Reuse semantic validation only for exactly the same bytes
                     // and content-addressed identity. Changed or corrupt Redis
                     // values still require full validation on the very next read.
@@ -401,13 +446,23 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                 .subscribeOn(Schedulers.boundedElastic())
                 .then()
                 .onErrorMap(error -> error instanceof WorldStorageFormatException
-                        ? error : new WorldStorageFormatException("Invalid world catalog payload"));
+                        ? error : new WorldStorageFormatException("Invalid world catalog payload")));
+    }
+
+    private Mono<String> loadCatalogForSummary(WorldStorageEnvelope envelope, CatalogRead prefetched) {
+        if (prefetched == null || !envelope.catalogKey().equals(prefetched.key())) {
+            return loadOrRecoverCatalog(envelope);
+        }
+        if (prefetched.invalidType()) return Mono.error(new WorldStorageFormatException("Invalid world catalog payload"));
+        if (prefetched.json() == null) return recoverCatalog(envelope);
+        return validateCatalog(envelope.catalogKey(), envelope.catalogFingerprint(), prefetched.json())
+                .thenReturn(prefetched.json());
     }
 
     private Mono<String> loadOrRecoverCatalog(WorldStorageEnvelope envelope) {
         // Read and renew retention in one round trip. Even when retention was
         // renewed, the bytes must pass full validation before any caller uses them.
-        return redisTemplate.opsForValue().getAndExpire(envelope.catalogKey(), requireCatalogTtl())
+        return WorldSummaryTiming.measure("redis-catalog", redisTemplate.opsForValue().getAndExpire(envelope.catalogKey(), requireCatalogTtl()))
                 .flatMap(json -> validateCatalog(envelope.catalogKey(), envelope.catalogFingerprint(), json)
                         .thenReturn(json))
                 .switchIfEmpty(Mono.defer(() -> recoverCatalog(envelope)));
