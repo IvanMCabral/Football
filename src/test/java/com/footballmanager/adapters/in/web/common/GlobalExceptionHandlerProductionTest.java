@@ -78,6 +78,35 @@ class GlobalExceptionHandlerProductionTest {
     }
 
     @Test
+    void correlatesUnexpectedFailureWithoutLoggingSecretsOrQueryParameters() {
+        var logger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+        var appender = new ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            var exchange = MockServerWebExchange.from(MockServerHttpRequest
+                .get("/api/v1/world/leagues?token=synthetic-secret")
+                .header(RequestCorrelationWebFilter.REQUEST_ID_HEADER, "req-world-error"));
+            exchange.getAttributes().put(
+                org.springframework.web.reactive.HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE,
+                new org.springframework.web.util.pattern.PathPatternParser().parse("/api/v1/world/leagues"));
+            handler.handleUnexpected(new RuntimeException(SENSITIVE_MESSAGE,
+                new java.util.concurrent.TimeoutException("synthetic-password")), exchange).block();
+
+            assertThat(appender.list).hasSize(1);
+            var event = appender.list.getFirst();
+            assertThat(event.getFormattedMessage()).contains("req-world-error", "/api/v1/world/leagues",
+                "java.lang.RuntimeException", "java.util.concurrent.TimeoutException");
+            assertThat(event.getFormattedMessage()).doesNotContain(
+                "synthetic-secret", "synthetic-password", "internal-db", "C:\\secret");
+            assertThat(event.getThrowableProxy()).isNull();
+        } finally {
+            logger.detachAppender(appender);
+            appender.stop();
+        }
+    }
+
+    @Test
     void classifiesAuthenticationFailuresOutsideLineupContract() {
         ErrorResponseBody conflict = handler.handleAuthConflict(
                 new AuthConflictException("jdbc:postgresql://internal-db duplicate"),

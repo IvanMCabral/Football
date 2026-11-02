@@ -322,6 +322,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponseBody("AUTH_VALIDATION_ERROR", "La solicitud de autenticacion no es valida.",
                     HttpStatus.UNPROCESSABLE_ENTITY.value(), requestId(exchange))));
         }
+        // Exception messages and stack traces can contain connection strings or
+        // submitted values. Keep only stable route metadata and cause types.
+        Object route = exchange.getAttribute(
+            org.springframework.web.reactive.HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        log.error("Public request failed: requestId={}, route={}, causes={}",
+            requestId(exchange), route == null ? "unmapped" : route, causeChain(ex));
         ErrorResponseBody body = new ErrorResponseBody(
             "INTERNAL_ERROR",
             GENERIC_UNEXPECTED_MESSAGE,
