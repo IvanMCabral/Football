@@ -18,6 +18,8 @@ spring:
     baseline-on-migrate: false
   data:
     redis:
+      repositories:
+        enabled: false
       ssl:
         enabled: ${REDIS_SSL:true}
 

@@ -35,8 +35,15 @@ public class WorldQueryService {
      * Obtiene todas las ligas
      */
     public Mono<List<WorldLeague>> getLeagues(UUID userId) {
-        return worldViewForQuery(userId)
-                .map(WorldView::leagues);
+        // League metadata needs neither player hydration nor per-team relation
+        // repair. Preserve the owner's snapshot when present, including an
+        // intentionally empty league list; otherwise read only canonical leagues.
+        return worldSnapshotRepository.findByUserId(userId)
+                .filter(snapshot -> snapshot.getWorldTeams() != null
+                        && !snapshot.getWorldTeams().isEmpty()
+                        && snapshot.getLeagues() != null)
+                .map(WorldSnapshot::getLeagues)
+                .switchIfEmpty(Mono.defer(loadBaseDataService::loadCanonicalLeagues));
     }
 
     /**

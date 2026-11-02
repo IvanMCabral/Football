@@ -16,6 +16,53 @@ import static org.mockito.Mockito.*;
 class WorldQueryServiceTeamsCatalogTest {
 
     @Test
+    void leaguesForNewOwnerReadOnlyLeagueMetadata() {
+        var builder = mock(BuildWorldViewUseCase.class);
+        var snapshots = mock(WorldSnapshotRepository.class);
+        var loader = mock(LoadBaseDataService.class);
+        var owner = UUID.randomUUID();
+        var league = mock(com.footballmanager.domain.model.entity.WorldLeague.class);
+        when(snapshots.findByUserId(owner)).thenReturn(Mono.empty());
+        when(loader.loadCanonicalLeagues()).thenReturn(Mono.just(List.of(league)));
+        assertThat(new WorldQueryService(builder, snapshots, loader).getLeagues(owner).block())
+                .containsExactly(league);
+        verify(loader).loadCanonicalLeagues();
+        verify(loader, never()).loadCanonical(any());
+        verifyNoInteractions(builder);
+    }
+
+    @Test
+    void leaguesPreserveOwnerCustomMetadataIncludingAnEmptyList() {
+        var builder = mock(BuildWorldViewUseCase.class);
+        var snapshots = mock(WorldSnapshotRepository.class);
+        var loader = mock(LoadBaseDataService.class);
+        var owner = UUID.randomUUID();
+        var snapshot = new WorldSnapshot();
+        snapshot.setUserId(owner);
+        snapshot.addWorldTeam(mock(WorldTeam.class));
+        var custom = mock(com.footballmanager.domain.model.entity.WorldLeague.class);
+        snapshot.setLeagues(List.of(custom));
+        when(snapshots.findByUserId(owner)).thenReturn(Mono.just(snapshot));
+        var service = new WorldQueryService(builder, snapshots, loader);
+        assertThat(service.getLeagues(owner).block()).containsExactly(custom);
+        snapshot.setLeagues(List.of());
+        assertThat(service.getLeagues(owner).block()).isEmpty();
+        verifyNoInteractions(builder, loader);
+    }
+
+    @Test
+    void leaguesDoNotMaskStorageFailuresAsCanonicalData() {
+        var snapshots = mock(WorldSnapshotRepository.class);
+        var loader = mock(LoadBaseDataService.class);
+        var owner = UUID.randomUUID();
+        when(snapshots.findByUserId(owner)).thenReturn(Mono.error(new IllegalStateException("synthetic")));
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                new WorldQueryService(mock(BuildWorldViewUseCase.class), snapshots, loader)
+                        .getLeagues(owner).block()).isInstanceOf(IllegalStateException.class);
+        verifyNoInteractions(loader);
+    }
+
+    @Test
     void teamsCatalogFallsBackToCanonicalProjectionWithoutBuildingWorldView() {
         BuildWorldViewUseCase buildWorldViewUseCase = mock(BuildWorldViewUseCase.class);
         WorldSnapshotRepository snapshotRepository = mock(WorldSnapshotRepository.class);

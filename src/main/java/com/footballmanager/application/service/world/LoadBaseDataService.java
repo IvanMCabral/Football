@@ -100,6 +100,11 @@ public class LoadBaseDataService {
         return loaded;
     }
 
+    /** Loads league metadata without hydrating teams, players or traits. */
+    public Mono<List<WorldLeague>> loadCanonicalLeagues() {
+        return leagueLoaderService.loadCanonicalLeagues();
+    }
+
     /** Loads the canonical team catalog without hydrating players or traits. */
     public Mono<List<WorldTeam>> loadCanonicalTeams() {
         return leagueTeamSyncService.loadCanonicalLeagueTeamsMap()
