@@ -60,8 +60,9 @@ public class UserRepositoryAdapter implements UserRepository {
 
     @Override
     public Mono<User> findById(java.util.UUID id) {
-        return RuntimeOperationMetrics.measure("postgres.user.findById",
-            r2dbcRepository.findById(id).map(UserEntity::toDomain));
+        return com.footballmanager.infrastructure.persistence.RequestUserLookup.find(id,
+            () -> RuntimeOperationMetrics.measure("postgres.user.findById",
+                r2dbcRepository.findById(id).map(UserEntity::toDomain)));
     }
 
     @Override

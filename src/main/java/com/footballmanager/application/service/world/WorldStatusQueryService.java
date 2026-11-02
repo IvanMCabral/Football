@@ -43,11 +43,11 @@ public class WorldStatusQueryService {
                 .defaultIfEmpty(0);
 
         return RuntimeOperationMetrics.measure("dashboard.loadWorld",
-                worldService.getWorldSnapshot(userId))
+                worldService.getWorldSize(userId))
                 .zipWith(matchesMono)
                 .map(tuple -> new WorldStatusSummary(
-                        tuple.getT1().getAllWorldTeams() != null ? tuple.getT1().getAllWorldTeams().size() : 0,
-                        tuple.getT1().getAllWorldPlayers() != null ? tuple.getT1().getAllWorldPlayers().size() : 0,
+                        tuple.getT1().clubs(),
+                        tuple.getT1().players(),
                         tuple.getT2()
                 ))
                 .switchIfEmpty(Mono.just(new WorldStatusSummary(0, 0, 0)));

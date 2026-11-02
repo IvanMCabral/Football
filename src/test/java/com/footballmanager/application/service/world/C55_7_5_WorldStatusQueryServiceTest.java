@@ -95,7 +95,7 @@ class C55_7_5_WorldStatusQueryServiceTest {
     void worldStatus_freshCareer_matchesZero() {
         WorldSnapshot snapshot = makeSnapshot(60, 500);
         CareerSave career = makeCareer(10, 0);  // 10 fixtures, none played.
-        when(worldService.getWorldSnapshot(USER_ID)).thenReturn(Mono.just(snapshot));
+        when(worldService.getWorldSize(USER_ID)).thenReturn(Mono.just(com.footballmanager.domain.model.valueobject.WorldSize.from(snapshot)));
         when(careerSessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.getWorldStatus(USER_ID))
@@ -117,7 +117,7 @@ class C55_7_5_WorldStatusQueryServiceTest {
         // must reflect fixtures with non-null result.
         WorldSnapshot snapshot = makeSnapshot(60, 500);
         CareerSave career = makeCareer(50, 42);  // 50 fixtures, 42 played (10 rounds × ~4 user matches).
-        when(worldService.getWorldSnapshot(USER_ID)).thenReturn(Mono.just(snapshot));
+        when(worldService.getWorldSize(USER_ID)).thenReturn(Mono.just(com.footballmanager.domain.model.valueobject.WorldSize.from(snapshot)));
         when(careerSessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.just(career));
 
         StepVerifier.create(useCase.getWorldStatus(USER_ID))
@@ -133,7 +133,7 @@ class C55_7_5_WorldStatusQueryServiceTest {
     @DisplayName("C55.7.5 #30: WorldStatus handles null CareerSave gracefully (no career yet)")
     void worldStatus_nullCareer_matchesZero() {
         WorldSnapshot snapshot = makeSnapshot(60, 500);
-        when(worldService.getWorldSnapshot(USER_ID)).thenReturn(Mono.just(snapshot));
+        when(worldService.getWorldSize(USER_ID)).thenReturn(Mono.just(com.footballmanager.domain.model.valueobject.WorldSize.from(snapshot)));
         when(careerSessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.getWorldStatus(USER_ID))

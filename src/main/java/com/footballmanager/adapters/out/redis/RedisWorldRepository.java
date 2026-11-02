@@ -79,7 +79,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
             new WorldStoragePhysicalCapacityModel();
     private final WorldMigrationTransitionObserver transitionObserver;
     private final Map<String, CatalogValidation> validatedCatalogs = new java.util.concurrent.ConcurrentHashMap<>();
-    private record CatalogValidation(String fingerprint, String rawDigest) {}
+    private record CatalogValidation(String fingerprint, String rawDigest, WorldCountsProjection counts) {}
     @Value("${app.redis.world-ttl:30d}")
     private Duration worldTtl;
     @Value("${app.redis.world-catalog-ttl:365d}")
@@ -211,6 +211,27 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                         : Mono.empty());
     }
 
+    @Override
+    public Mono<com.footballmanager.domain.model.valueobject.WorldSize> findSizeByUserId(UUID userId) {
+        return redisTemplate.opsForValue().get(generateKey(userId))
+                .flatMap(json -> decodeSnapshot(json, userId, true))
+                .map(com.footballmanager.domain.model.valueobject.WorldSize::from)
+                .onErrorResume(e -> e instanceof WorldStorageFormatException ? Mono.error(e) : Mono.empty());
+    }
+
+    private Mono<WorldSnapshot> catalogForRead(WorldStorageEnvelope envelope, String json, boolean identitiesOnly) {
+        return Mono.fromCallable(() -> {
+            if (!identitiesOnly) return objectMapper.readValue(json, WorldSnapshot.class);
+            CatalogValidation known = validatedCatalogs.get(envelope.catalogKey());
+            String digest = sha256(json.getBytes(StandardCharsets.UTF_8));
+            WorldCountsProjection counts = known != null
+                    && known.fingerprint().equals(envelope.catalogFingerprint())
+                    && known.rawDigest().equals(digest) ? known.counts()
+                    : WorldCountsProjection.from(objectMapper.readValue(json, WorldSnapshot.class));
+            return counts.materialize();
+        }).subscribeOn(Schedulers.boundedElastic());
+    }
+
     /**
      * Verifica si existe un WorldSnapshot para el userId
      */
@@ -256,6 +277,10 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     }
 
     private Mono<WorldSnapshot> decodeSnapshot(String json, UUID requestedOwner) {
+        return decodeSnapshot(json, requestedOwner, false);
+    }
+
+    private Mono<WorldSnapshot> decodeSnapshot(String json, UUID requestedOwner, boolean identitiesOnly) {
         return Mono.fromCallable(() -> objectMapper.readTree(json))
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorMap(error -> error instanceof WorldStorageFormatException
@@ -285,9 +310,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                                 }
                                 return verifyOverlayChecksum(envelope, node.path("overlay"))
                                         .then(loadOrRecoverCatalog(envelope))
-                                        .flatMap(catalogJson -> Mono.fromCallable(() -> objectMapper.readValue(
-                                                catalogJson, WorldSnapshot.class))
-                                                .subscribeOn(Schedulers.boundedElastic()))
+                                        .flatMap(catalogJson -> catalogForRead(envelope, catalogJson, identitiesOnly))
                                         .map(canonical -> envelope.overlay().applyTo(canonical));
                             });
                 })
@@ -371,8 +394,8 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                     if (!expectedFingerprint.equals(actual) || !key.equals(catalogKey(actual))) {
                         throw new WorldStorageFormatException("World catalog fingerprint mismatch");
                     }
-                    if (validatedCatalogs.size() >= 64) validatedCatalogs.clear();
-                    validatedCatalogs.put(key, new CatalogValidation(actual, rawDigest));
+                    if (validatedCatalogs.size() >= 16) validatedCatalogs.clear();
+                    validatedCatalogs.put(key, new CatalogValidation(actual, rawDigest, WorldCountsProjection.from(catalog)));
                     return true;
                 })
                 .subscribeOn(Schedulers.boundedElastic())

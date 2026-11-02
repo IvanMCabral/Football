@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
+import java.util.Map;
 
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockUser;
 
@@ -54,6 +55,28 @@ class AuthControllerE2ETest extends AbstractIntegrationTest {
 
     private String uniqueEmail() {
         return "user-" + UUID.randomUUID() + "@test.local";
+    }
+
+    @Test
+    void realJwtRequestsReadCanonicalUserOncePerProfileOrStatsRequest() {
+        String email = uniqueEmail();
+        JsonNode registration = webTestClient.post().uri("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("email", email, "username", "reads-" + UUID.randomUUID().toString().substring(0, 8),
+                        "password", "pass1234"))
+                .exchange().expectStatus().isOk().expectBody(JsonNode.class).returnResult().getResponseBody();
+        String token = registration.get("accessToken").asText();
+        for (String path : java.util.List.of("/api/v1/auth/me", "/api/v1/dashboard/user-stats", "/api/v1/auth/me")) {
+            long before = physicalUserReads();
+            webTestClient.get().uri(path).headers(headers -> headers.setBearerAuth(token))
+                    .exchange().expectStatus().isOk().expectBody().returnResult();
+            org.junit.jupiter.api.Assertions.assertEquals(1, physicalUserReads() - before, path);
+        }
+    }
+
+    private long physicalUserReads() {
+        var metric = com.footballmanager.application.observability.RuntimeOperationMetrics.snapshot().get("postgres.user.findById");
+        return metric == null ? 0 : metric.count();
     }
 
     @Test

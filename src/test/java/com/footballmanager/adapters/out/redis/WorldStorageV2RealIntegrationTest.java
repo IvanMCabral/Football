@@ -164,6 +164,8 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
         org.junit.jupiter.api.Assertions.assertNull(loadedB.getWorldTeam(customTeam.getWorldTeamId()));
         org.junit.jupiter.api.Assertions.assertNull(loadedB.getWorldPlayer(customPlayer.getWorldPlayerId()));
 
+        assertEquals(com.footballmanager.domain.model.valueobject.WorldSize.from(loadedA), sharedRepository.findSizeByUserId(ownerA).block());
+        assertEquals(com.footballmanager.domain.model.valueobject.WorldSize.from(loadedB), sharedRepository.findSizeByUserId(ownerB).block());
         reactiveRedisTemplate.opsForValue().set("world:" + ownerB, jsonA, Duration.ofDays(30)).block(Duration.ofSeconds(5));
         assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
                 () -> sharedRepository.findByUserId(ownerB).block(Duration.ofSeconds(5)));
@@ -187,6 +189,8 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
         assertNotNull(recovering.findByUserId(ownerA).block(Duration.ofSeconds(10)));
         assertTrue(Boolean.TRUE.equals(reactiveRedisTemplate.hasKey(catalogKey).block(Duration.ofSeconds(5))));
         assertNotNull(recovering.findByUserId(ownerB).block(Duration.ofSeconds(10)));
+        reactiveRedisTemplate.delete(catalogKey).block();
+        assertEquals(com.footballmanager.domain.model.valueobject.WorldSize.from(authorities.get(ownerA)), recovering.findSizeByUserId(ownerA).block());
         assertTrue(reactiveRedisTemplate.getExpire(catalogKey).block(Duration.ofSeconds(5)).toDays() > 30);
     }
 
@@ -438,6 +442,97 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
 
     private WorldSnapshot snapshot(UUID owner) {
         return snapshot(owner, UUID.fromString("11111111-1111-1111-1111-111111111111"));
+    }
+
+    @Test
+    void summaryMatchesFullReadsAcrossCustomizationsRemovalsAndOwnersWithoutCatalogDeserialization() throws Exception {
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot canonical = snapshot(owner);
+        var repository = repository(ignored -> reactor.core.publisher.Mono.just(canonical), Duration.ofDays(365));
+        var mapperSpy = org.mockito.Mockito.spy(objectMapper);
+        ReflectionTestUtils.setField(repository, "objectMapper", mapperSpy);
+        WorldSnapshot custom = snapshot(owner);
+        var team = com.footballmanager.domain.model.entity.WorldTeam.createCustom("Custom", "AR", BigDecimal.ONE, "4-4-2");
+        WorldPlayer player = WorldPlayer.createCustom("Custom", 21, "MID", 70, 70, 70, 70, 70, 70, BigDecimal.ONE);
+        player.setWorldTeamId(team.getWorldTeamId());
+        custom.getWorldTeams().put(team.getWorldTeamId(), team);
+        custom.getWorldPlayers().put(player.getWorldPlayerId(), player);
+        custom.getAllWorldPlayers().get(0).setName("Owner customization");
+        repository.saveInitial(custom).block(Duration.ofSeconds(10));
+        var expected = com.footballmanager.domain.model.valueobject.WorldSize.from(repository.findByUserId(owner).block());
+        var coldRepository = repository(null, Duration.ofDays(365));
+        ReflectionTestUtils.setField(coldRepository, "objectMapper", mapperSpy);
+        org.mockito.Mockito.clearInvocations(mapperSpy);
+        assertEquals(expected, coldRepository.findSizeByUserId(owner).block());
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.times(1)).readValue(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(WorldSnapshot.class));
+        org.mockito.Mockito.clearInvocations(mapperSpy);
+        assertEquals(expected, repository.findSizeByUserId(owner).block());
+        assertEquals(new com.footballmanager.domain.model.valueobject.WorldSize(2, 2, 1), expected);
+        // A validated unchanged catalog is not parsed into 1,680 full players on each summary.
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).readValue(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(WorldSnapshot.class));
+
+        custom.getWorldTeams().remove(canonical.getWorldTeams().keySet().iterator().next());
+        custom.getWorldPlayers().remove(canonical.getWorldPlayers().keySet().iterator().next());
+        repository.saveInitial(custom).block();
+        assertEquals(new com.footballmanager.domain.model.valueobject.WorldSize(1, 1, 1), repository.findSizeByUserId(owner).block());
+        assertEquals(com.footballmanager.domain.model.valueobject.WorldSize.from(repository.findByUserId(owner).block()),
+                repository.findSizeByUserId(owner).block());
+        assertEquals(1, canonical.getWorldTeams().size(), "shared authority must remain untouched");
+        UUID other = UUID.randomUUID();
+        repository.saveInitial(snapshot(other)).block();
+        assertEquals(new com.footballmanager.domain.model.valueobject.WorldSize(1, 1, 1), repository.findSizeByUserId(other).block());
+        assertEquals(new com.footballmanager.domain.model.valueobject.WorldSize(1, 1, 1), repository.findSizeByUserId(owner).block());
+    }
+
+    @Test
+    void summaryRejectsCorruptionEvenAfterWarmingTheProjection() throws Exception {
+        UUID owner = UUID.randomUUID();
+        isolatedRepository.saveInitial(snapshot(owner)).block();
+        assertNotNull(isolatedRepository.findSizeByUserId(owner).block());
+        String key = "world:" + owner;
+        String raw = reactiveRedisTemplate.opsForValue().get(key).block();
+        var original = objectMapper.readTree(raw);
+        String catalogKey = original.path("catalogKey").asText();
+        String catalog = reactiveRedisTemplate.opsForValue().get(catalogKey).block();
+        // Each root mutation must fail closed, including a valid checksum with an invalid alias.
+        for (String mutation : List.of("owner", "version", "state", "checksum", "alias")) {
+            var node = (com.fasterxml.jackson.databind.node.ObjectNode) objectMapper.readTree(raw);
+            switch (mutation) {
+                case "owner" -> node.put("ownerId", UUID.randomUUID().toString());
+                case "version" -> node.put("storageVersion", 999);
+                case "state" -> node.put("state", "PREPARED");
+                case "checksum" -> node.with("overlay").put("lastUpdated", "2026-01-01T00:00:00Z");
+                case "alias" -> {
+                    node.with("overlay").with("legacyPlayerAliases").put("bad-alias", "missing-player");
+                    node.put("overlayChecksum", sha256ForTest(objectMapper.writeValueAsString(node.path("overlay"))));
+                }
+            }
+            reactiveRedisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(node)).block();
+            assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
+                    () -> isolatedRepository.findSizeByUserId(owner).block(), mutation);
+        }
+        reactiveRedisTemplate.opsForValue().set(key, raw).block();
+        var corruptCatalog = (com.fasterxml.jackson.databind.node.ObjectNode) objectMapper.readTree(catalog);
+        corruptCatalog.with("worldPlayers").removeAll();
+        reactiveRedisTemplate.opsForValue().set(catalogKey, objectMapper.writeValueAsString(corruptCatalog)).block();
+        assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
+                () -> isolatedRepository.findSizeByUserId(owner).block());
+        reactiveRedisTemplate.opsForValue().set(catalogKey, catalog).block();
+        assertNotNull(isolatedRepository.findSizeByUserId(owner).block());
+        reactiveRedisTemplate.delete(catalogKey).block();
+        assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
+                () -> isolatedRepository.findSizeByUserId(owner).block());
+    }
+
+    @Test
+    void summaryKeepsLegacyReadCompatibilityAndMissingOwnerSemantics() throws Exception {
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot legacy = snapshot(owner);
+        reactiveRedisTemplate.opsForValue().set("world:" + owner, objectMapper.writeValueAsString(legacy)).block();
+        assertEquals(com.footballmanager.domain.model.valueobject.WorldSize.from(legacy), isolatedRepository.findSizeByUserId(owner).block());
+        assertEquals(null, isolatedRepository.findSizeByUserId(UUID.randomUUID()).block());
     }
 
     private WorldSnapshot snapshot(UUID owner, UUID realPlayer) {

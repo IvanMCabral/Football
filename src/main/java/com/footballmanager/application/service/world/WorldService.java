@@ -31,6 +31,10 @@ public class WorldService {
         return snapshotService.initializeFromDatabase(userId);
     }
 
+    public Mono<com.footballmanager.domain.model.valueobject.WorldSize> getWorldSize(UUID userId) {
+        return snapshotService.getSize(userId);
+    }
+
     public Mono<WorldSnapshot> getWorldSnapshot(UUID userId) {
         return snapshotService.getSnapshot(userId);
     }

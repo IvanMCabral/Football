@@ -51,6 +51,13 @@ public class WorldSnapshotService {
                 }));
     }
 
+    public Mono<com.footballmanager.domain.model.valueobject.WorldSize> getSize(UUID userId) {
+        return worldRepository.findSizeByUserId(userId)
+                .filter(size -> !size.incomplete())
+                .switchIfEmpty(Mono.defer(() -> snapshotCreator.create(userId)
+                        .map(com.footballmanager.domain.model.valueobject.WorldSize::from)));
+    }
+
     /**
      * Guarda el WorldSnapshot en Redis.
      */

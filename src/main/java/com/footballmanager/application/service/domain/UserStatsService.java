@@ -10,9 +10,6 @@ import reactor.core.publisher.Mono;
 import com.footballmanager.application.observability.RuntimeOperationMetrics;
 
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.time.Duration;
 
 /**
  * UserStatsService - Servicio de estadísticas de usuario.
@@ -26,15 +23,12 @@ public class UserStatsService {
 
     private final UserRepository userRepository;
     private final CareerSessionService careerSessionService;
-    private final ConcurrentMap<UUID, Mono<String>> userNameCache = new ConcurrentHashMap<>();
 
     public Mono<UserStatsSummary> getUserStats(UUID userId) {
-        Mono<String> userNameMono = userNameCache.computeIfAbsent(userId, id ->
-            RuntimeOperationMetrics.measure("dashboard.userStats.userName",
-                userRepository.findById(id)
+        Mono<String> userNameMono = RuntimeOperationMetrics.measure("dashboard.userStats.userName",
+                userRepository.findById(userId)
                     .map(userEntity -> userEntity.getUsername())
-                    .defaultIfEmpty("Unknown"))
-                .cache(Duration.ofMinutes(10)));
+                    .defaultIfEmpty("Unknown"));
 
         // Obtener stats desde CareerSave (Redis)
         Mono<TeamStandings> standingsMono = RuntimeOperationMetrics.measure(
