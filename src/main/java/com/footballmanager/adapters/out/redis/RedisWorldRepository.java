@@ -81,8 +81,11 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     private final WorldMigrationTransitionObserver transitionObserver;
     private final Map<String, CatalogValidation> validatedCatalogs = new java.util.concurrent.ConcurrentHashMap<>();
     private record CatalogValidation(String fingerprint, String rawDigest, WorldCountsProjection counts) {}
-    // Hints choose keys to fetch together. The freshly read envelope remains authority.
-    private final Map<UUID, String> summaryCatalogHints = new java.util.concurrent.ConcurrentHashMap<>();
+    // Immutable scalar results only. Both inputs are freshly read before reuse.
+    // Only hashes, keys and counts are retained, never owner payloads or mutable graphs.
+    private final Map<UUID, SummaryReadState> summaryReads = new java.util.concurrent.ConcurrentHashMap<>();
+    private record SummaryReadState(String rootDigest, String catalogKey, String rawDigest,
+                                    com.footballmanager.domain.model.valueobject.WorldSize size) {}
     private record CatalogRead(String key, String json, boolean invalidType) {}
     @SuppressWarnings("rawtypes")
     private static final RedisScript<java.util.List> READ_SUMMARY_INPUTS = RedisScript.of("""
@@ -230,26 +233,40 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     @Override
     public Mono<com.footballmanager.domain.model.valueobject.WorldSize> findSizeByUserId(UUID userId) {
         return Mono.defer(() -> {
-                    String hint = summaryCatalogHints.get(userId);
-                    if (hint == null) {
+                    SummaryReadState previous = summaryReads.get(userId);
+                    if (previous == null) {
                         return WorldSummaryTiming.measure("redis-root", redisTemplate.opsForValue().get(generateKey(userId)))
-                                .flatMap(json -> decodeSnapshot(json, userId, true));
+                                .flatMap(json -> decodeSnapshot(json, userId, true))
+                                .map(com.footballmanager.domain.model.valueobject.WorldSize::from);
                     }
                     return WorldSummaryTiming.measure("redis-batch", redisTemplate.execute(READ_SUMMARY_INPUTS,
-                                    java.util.List.of(generateKey(userId), hint),
+                                    java.util.List.of(generateKey(userId), previous.catalogKey()),
                                     java.util.List.of(Long.toString(requireCatalogTtl().toMillis()))).single())
                             .flatMap(values -> {
                                 if (values.isEmpty()) return Mono.empty();
                                 if (values.size() != 3) return Mono.error(new WorldStorageFormatException("Invalid world summary response"));
                                 String root = (String) values.get(0);
                                 String catalog = "VALUE".equals(values.get(2)) ? (String) values.get(1) : null;
+                                if (catalog != null) {
+                                    // Reuse only when BOTH complete inputs are unchanged. The semantic
+                                    // catalog fingerprint alone does not cover owner overlay validity.
+                                    return WorldSummaryTiming.measure("inputs-validation", Mono.fromCallable(
+                                                    () -> sha256(root.getBytes(StandardCharsets.UTF_8)).equals(previous.rootDigest())
+                                                        && sha256(catalog.getBytes(StandardCharsets.UTF_8)).equals(previous.rawDigest()))
+                                            .subscribeOn(Schedulers.boundedElastic()))
+                                            .flatMap(unchanged -> unchanged
+                                                    ? Mono.just(previous.size())
+                                                    : decodeSnapshot(root, userId, true,
+                                                        new CatalogRead(previous.catalogKey(), catalog, false))
+                                                        .map(com.footballmanager.domain.model.valueobject.WorldSize::from));
+                                }
                                 return decodeSnapshot(root, userId, true,
-                                        new CatalogRead(hint, catalog, "ERROR".equals(values.get(2))));
+                                        new CatalogRead(previous.catalogKey(), catalog, "ERROR".equals(values.get(2))))
+                                        .map(com.footballmanager.domain.model.valueobject.WorldSize::from);
                             })
                             .onErrorMap(error -> error instanceof WorldStorageFormatException ? error
                                     : new WorldStorageFormatException("World summary read failed"));
                 })
-                .map(com.footballmanager.domain.model.valueobject.WorldSize::from)
                 .onErrorResume(e -> e instanceof WorldStorageFormatException ? Mono.error(e) : Mono.empty());
     }
 
@@ -348,15 +365,18 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                                 }
                                 return verifyOverlayChecksum(envelope, node.path("overlay"))
                                         .then(loadCatalogForSummary(envelope, prefetched))
-                                        .flatMap(catalogJson -> catalogForRead(envelope, catalogJson, identitiesOnly))
+                                        .flatMap(catalogJson -> catalogForRead(envelope, catalogJson, identitiesOnly)
                                         .flatMap(canonical -> WorldSummaryTiming.measure("overlay", Mono.fromCallable(
                                                 () -> envelope.overlay().applyTo(canonical))))
-                                        .doOnNext(ignored -> {
+                                        .doOnNext(snapshot -> {
                                             if (identitiesOnly) {
-                                                if (summaryCatalogHints.size() >= 128) summaryCatalogHints.clear();
-                                                summaryCatalogHints.put(requestedOwner, envelope.catalogKey());
+                                                if (summaryReads.size() >= 128) summaryReads.clear();
+                                                summaryReads.put(requestedOwner, new SummaryReadState(
+                                                        sha256(json.getBytes(StandardCharsets.UTF_8)),
+                                                        envelope.catalogKey(), sha256(catalogJson.getBytes(StandardCharsets.UTF_8)),
+                                                        com.footballmanager.domain.model.valueobject.WorldSize.from(snapshot)));
                                             }
-                                        });
+                                        }));
                             });
                 })
                 .onErrorMap(error -> error instanceof WorldStorageFormatException

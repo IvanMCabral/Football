@@ -476,6 +476,13 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
         org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).readValue(
                 org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(WorldSnapshot.class));
 
+        org.mockito.Mockito.clearInvocations(mapperSpy);
+        assertEquals(expected, repository.findSizeByUserId(owner).block());
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).readTree(org.mockito.ArgumentMatchers.anyString());
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).treeToValue(
+                org.mockito.ArgumentMatchers.any(com.fasterxml.jackson.databind.JsonNode.class),
+                org.mockito.ArgumentMatchers.eq(RedisWorldRepository.WorldStorageEnvelope.class));
+
         custom.getWorldTeams().remove(canonical.getWorldTeams().keySet().iterator().next());
         custom.getWorldPlayers().remove(canonical.getWorldPlayers().keySet().iterator().next());
         repository.saveInitial(custom).block();
@@ -605,6 +612,50 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
         String header = response.getHeaders().getFirst("Server-Timing");
         assertTrue(!header.contains(owner.toString()) && !header.contains("world:"));
         return header;
+    }
+
+    @Test
+    void largeOwnerOverlayReusesScalarProofWithoutKeepingOrReparsingTheOwnerPayload() throws Exception {
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot world = snapshot(owner);
+        for (int i = 0; i < 64; i++) {
+            WorldPlayer player = WorldPlayer.createCustom("Owner player " + i, 20, "MID", 70, 70, 70, 70, 70, 70, BigDecimal.ONE);
+            world.getWorldPlayers().put(player.getWorldPlayerId(), player);
+        }
+        isolatedRepository.saveInitial(world).block();
+        assertTrue(reactiveRedisTemplate.opsForValue().get("world:" + owner).block().length() > 16_384);
+        assertEquals(65, isolatedRepository.findSizeByUserId(owner).block().players());
+        var mapperSpy = org.mockito.Mockito.spy(objectMapper);
+        ReflectionTestUtils.setField(isolatedRepository, "objectMapper", mapperSpy);
+        assertEquals(65, isolatedRepository.findSizeByUserId(owner).block().players());
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).readTree(org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void warmSummaryRechecksOverlayWhenCatalogBytesChangeWithoutChangingSemanticFingerprint() throws Exception {
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot canonical = snapshot(owner);
+        var repository = repository(ignored -> reactor.core.publisher.Mono.just(canonical), Duration.ofDays(365));
+        WorldSnapshot customized = snapshot(owner);
+        var customTeam = com.footballmanager.domain.model.entity.WorldTeam.createCustom("Owner team", "AR", BigDecimal.ONE, "4-4-2");
+        customized.getWorldTeams().put(customTeam.getWorldTeamId(), customTeam);
+        repository.saveInitial(customized).block();
+        assertEquals(2, repository.findSizeByUserId(owner).block().clubs());
+        String root = reactiveRedisTemplate.opsForValue().get("world:" + owner).block();
+        var envelope = objectMapper.readTree(root);
+        String catalogKey = envelope.path("catalogKey").asText();
+        var catalog = (com.fasterxml.jackson.databind.node.ObjectNode) objectMapper.readTree(
+                reactiveRedisTemplate.opsForValue().get(catalogKey).block());
+        var teams = (com.fasterxml.jackson.databind.node.ObjectNode) catalog.path("worldTeams");
+        var team = teams.remove(teams.fieldNames().next());
+        teams.set(customTeam.getWorldTeamId(), team);
+        // The fingerprint orders entity values, but the owner overlay must also
+        // reject a collision in the canonical team's map key.
+        assertEquals(envelope.path("catalogFingerprint").asText(),
+                new CanonicalWorldCatalogFingerprint(objectMapper).fingerprint(objectMapper.treeToValue(catalog, WorldSnapshot.class)));
+        reactiveRedisTemplate.opsForValue().set(catalogKey, objectMapper.writeValueAsString(catalog)).block();
+        assertThrows(RedisWorldRepository.WorldStorageFormatException.class, () -> repository.findByUserId(owner).block());
+        assertThrows(RedisWorldRepository.WorldStorageFormatException.class, () -> repository.findSizeByUserId(owner).block());
     }
 
     @Test
