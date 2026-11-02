@@ -50,6 +50,48 @@ class CareerSessionServiceCleanupTest {
     }
 
     @Test
+    void concurrentColdReadsLoadTheCareerOnce() {
+        UUID owner = UUID.randomUUID();
+        var pending = reactor.core.publisher.Sinks.<CareerSave>one();
+        when(continueCareerUseCase.continueCareer(owner)).thenReturn(pending.asMono());
+        var service = newService();
+        var combined = Mono.zip(service.getCareerFromCache(owner), service.getCareerFromCache(owner));
+        StepVerifier.create(combined)
+                .then(() -> pending.tryEmitValue(career))
+                .assertNext(pair -> {
+                    org.assertj.core.api.Assertions.assertThat(pair.getT1()).isSameAs(career);
+                    org.assertj.core.api.Assertions.assertThat(pair.getT2()).isSameAs(career);
+                }).verifyComplete();
+        verify(continueCareerUseCase).continueCareer(owner);
+    }
+
+    @Test
+    void invalidationPreventsOldPendingReadFromReplacingNewCareer() {
+        UUID owner = UUID.randomUUID();
+        var pending = reactor.core.publisher.Sinks.<CareerSave>one();
+        when(continueCareerUseCase.continueCareer(owner)).thenReturn(pending.asMono());
+        var service = newService();
+        service.getCareerFromCache(owner).subscribe();
+        service.invalidateCache(owner);
+        CareerSave replacement = new CareerSave();
+        replacement.setUserId(owner);
+        service.cacheCareer(replacement);
+        pending.tryEmitValue(career);
+        org.assertj.core.api.Assertions.assertThat(service.getCareerFromCache(owner).block()).isSameAs(replacement);
+    }
+
+    @Test
+    void aFailedColdReadDoesNotPoisonTheNextLoad() {
+        UUID owner = UUID.randomUUID();
+        when(continueCareerUseCase.continueCareer(owner)).thenReturn(
+                Mono.error(new IllegalStateException("synthetic")), Mono.just(career));
+        var service = newService();
+        StepVerifier.create(service.getCareerFromCache(owner)).expectError().verify();
+        org.assertj.core.api.Assertions.assertThat(service.getCareerFromCache(owner).block()).isSameAs(career);
+        verify(continueCareerUseCase, org.mockito.Mockito.times(2)).continueCareer(owner);
+    }
+
+    @Test
     void deleteCareerStillCleansUserFamiliesWhenRootIsMissing() {
         UUID userId = UUID.randomUUID();
         when(careerRepository.findById(userId.toString())).thenReturn(Mono.just(Optional.empty()));

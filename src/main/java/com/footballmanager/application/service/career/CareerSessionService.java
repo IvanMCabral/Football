@@ -35,6 +35,7 @@ public class CareerSessionService {
     private final CareerLifecycleCoordinator lifecycleCoordinator;
 
     private final Map<String, CareerSave> careerCache = new ConcurrentHashMap<>();
+    private final Map<String, Mono<CareerSave>> careerLoads = new ConcurrentHashMap<>();
     private final Map<String, CareerSave> lastPersistedSnapshot = new ConcurrentHashMap<>();
     private final Set<String> dirtyOwners = ConcurrentHashMap.newKeySet();
 
@@ -74,12 +75,18 @@ public class CareerSessionService {
             return Mono.just(cached);
         }
 
-        return continueCareerUseCase.continueCareer(userId)
-            .doOnNext(career -> {
-                if (career != null) {
-                    careerCache.put(key, career);
-                }
-            });
+        return careerLoads.computeIfAbsent(key, ignored -> {
+            var request = new java.util.concurrent.atomic.AtomicReference<Mono<CareerSave>>();
+            Mono<CareerSave> load = Mono.defer(() -> continueCareerUseCase.continueCareer(userId))
+                .doOnNext(career -> {
+                    if (careerLoads.get(key) == request.get()) careerCache.put(key, career);
+                })
+                .doOnError(error -> careerLoads.remove(key, request.get()))
+                .doFinally(signal -> careerLoads.remove(key, request.get()))
+                .cache();
+            request.set(load);
+            return load;
+        });
     }
 
     /** Indicates whether the request can reuse the in-process career snapshot. */
@@ -88,12 +95,14 @@ public class CareerSessionService {
     }
 
     public void invalidateCache(UUID userId) {
+        careerLoads.remove(userId.toString());
         careerCache.remove(userId.toString());
         lastPersistedSnapshot.remove(userId.toString());
         dirtyOwners.remove(userId.toString());
     }
 
     public void clearCache() {
+        careerLoads.clear();
         careerCache.clear();
     }
 
@@ -121,6 +130,7 @@ public class CareerSessionService {
             return;
         }
         String key = career.getUserId().toString();
+        careerLoads.remove(key);
         careerCache.put(key, career);
         lastPersistedSnapshot.put(key, career);
         dirtyOwners.remove(key);

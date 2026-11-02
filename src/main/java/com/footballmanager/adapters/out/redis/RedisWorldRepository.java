@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.nio.charset.StandardCharsets;
@@ -254,6 +255,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
 
     private Mono<WorldSnapshot> decodeSnapshot(String json, UUID requestedOwner) {
         return Mono.fromCallable(() -> objectMapper.readTree(json))
+                .subscribeOn(Schedulers.boundedElastic())
                 .onErrorMap(error -> error instanceof WorldStorageFormatException
                         ? error
                         : new WorldStorageFormatException("Invalid world storage payload"))
@@ -282,7 +284,8 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
                                 return verifyOverlayChecksum(envelope, node.path("overlay"))
                                         .then(loadOrRecoverCatalog(envelope))
                                         .flatMap(catalogJson -> Mono.fromCallable(() -> objectMapper.readValue(
-                                                catalogJson, WorldSnapshot.class)))
+                                                catalogJson, WorldSnapshot.class))
+                                                .subscribeOn(Schedulers.boundedElastic()))
                                         .map(canonical -> envelope.overlay().applyTo(canonical));
                             });
                 })
@@ -354,6 +357,7 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
 
     private Mono<Void> validateCatalog(String key, String expectedFingerprint, String catalogJson) {
         return Mono.fromCallable(() -> objectMapper.readValue(catalogJson, WorldSnapshot.class))
+                .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(catalog -> {
                     String actual = catalogFingerprint.fingerprint(catalog);
                     if (!expectedFingerprint.equals(actual) || !key.equals(catalogKey(actual))) {

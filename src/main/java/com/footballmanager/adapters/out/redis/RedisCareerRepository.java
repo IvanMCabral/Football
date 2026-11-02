@@ -13,6 +13,7 @@ import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import com.footballmanager.application.service.world.WorldPersistedWriter;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.List;
@@ -158,6 +159,7 @@ public class RedisCareerRepository implements CareerRepository {
         return RuntimeOperationMetrics.measure("redis.career.load",
             redisTemplate.opsForValue()
                 .get(key)
+                .publishOn(Schedulers.boundedElastic())
                 .map(json -> {
                     try {
                         CareerSave career = objectMapper.readValue(json, CareerSave.class);
@@ -390,6 +392,7 @@ public class RedisCareerRepository implements CareerRepository {
         String key = getKey(userId.toString());
         Mono<Boolean> operation = redisTemplate.opsForValue().get(key)
                         .timeout(Duration.ofSeconds(5))
+                        .publishOn(Schedulers.boundedElastic())
                         .flatMap(json -> {
                             try {
                                 CareerSave career = objectMapper.readValue(json, CareerSave.class);
