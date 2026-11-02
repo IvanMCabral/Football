@@ -6,6 +6,10 @@ WORKDIR /workspace
 COPY pom.xml ./
 COPY src ./src
 RUN mvn -q -DskipTests package
+# Use the standard JDK class loader instead of resolving nested library jars
+# on the first requests. Extraction runs at image build time, without starting
+# the application or connecting to any database.
+RUN java -Djarmode=tools -jar target/football-manager-*.jar extract --destination extracted --application-filename application.jar
 
 # Temurin 21.0.11_10 JRE Alpine 3.23, linux/amd64 manifest digest verified from Docker Hub.
 FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23@sha256:426401268a42785be73823f6115ee0e721bdb59c12c779947b83fcead1a66645
@@ -25,11 +29,11 @@ RUN apk add --no-cache curl ca-certificates tzdata shadow findutils \
     && groupadd --system manager \
     && useradd --system --gid manager --home-dir /app --create-home manager
 WORKDIR /app
-COPY --from=build --chown=manager:manager /workspace/target/*.jar /app/app.jar
+COPY --from=build --chown=manager:manager /workspace/extracted/ /app/
 
 USER manager
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
   CMD curl --fail --silent --show-error --max-time 3 "http://127.0.0.1:${PORT}/api/v1/health/liveness" >/dev/null || exit 1
 
-ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS:-} -jar /app/app.jar \"$@\"", "--"]
+ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS:-} -jar /app/application.jar \"$@\"", "--"]
