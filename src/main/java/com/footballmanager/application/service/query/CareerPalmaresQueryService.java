@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.query;
 
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.TournamentResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -170,7 +171,12 @@ public class CareerPalmaresQueryService {
      */
     public Mono<List<PromotionEntry>> getPromotions(CareerSave career) {
         return Mono.fromCallable(() -> {
-            return career.getSeasonManager().getLastExecutedPromotions().stream()
+            // The finished season has calculated moves which have not been
+            // executed yet. During the next season show the last executed set.
+            var promotions = career.getTournamentState().getCareerPhase() == CareerPhase.FINISHED
+                    ? career.getPromotions()
+                    : career.getSeasonManager().getLastExecutedPromotions();
+            return promotions.stream()
                     .map(p -> new PromotionEntry(
                             p.getTeamId(),
                             p.getTeamName(),

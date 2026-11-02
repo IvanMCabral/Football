@@ -45,10 +45,6 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
                 }
 
                 String careerId = career.getCareerId();
-                log.info("[ContinueSeason] Cleaning owner-scoped registries before continuing season");
-                matchSessionRegistry.clearSessionsForOwner(userId, careerId);
-                roundEngineRegistry.stopEnginesForOwner(userId, careerId);
-
                 TournamentState tournament = career.getTournamentState();
 
                 // VALIDACIÓN: Verificar que el torneo este en FINISHED
@@ -58,6 +54,12 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
                     return Mono.just(ContinueResult.error("FASE_INVALIDA",
                         "No se puede iniciar nuevo torneo. El torneo actual debe estar finalizado."));
                 }
+
+                // A rejected command must leave the active match running.
+                // Only release the completed season's engines after validation.
+                log.info("[ContinueSeason] Cleaning owner-scoped registries after phase validation");
+                matchSessionRegistry.clearSessionsForOwner(userId, careerId);
+                roundEngineRegistry.stopEnginesForOwner(userId, careerId);
 
                 log.info("[ContinueSeason] Phase validated: FINISHED for userId={}, proceeding with new season", userId);
 
@@ -102,6 +104,7 @@ public class ContinueSeasonUseCaseImpl implements ContinueSeasonUseCase {
                 careerSessionService.invalidateCache(userId);
                 return careerSessionService.saveCareer(career).thenReturn(result);
             })
+            .switchIfEmpty(Mono.just(ContinueResult.error("CARRERA_NO_ENCONTRADA", "No hay una carrera activa para continuar.")))
             .onErrorResume(e -> {
                 log.error("[ContinueSeason] Error continuing season for userId={}", userId, e);
                 return Mono.just(ContinueResult.error("ERROR_INTERNO", "No se pudo continuar la temporada."));
