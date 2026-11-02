@@ -27,7 +27,7 @@ public class DashboardEntryController {
     private final CareerSessionService sessions;
 
     public record Entry(AuthUserInfo user, GetCareerStatusUseCase.CareerStatusDto careerStatus,
-                        UserStatsResponse userStats, SquadConditions squadConditions) {}
+                        UserStatsResponse userStats, SquadConditions squadConditions, DashboardCareerOverview careerOverview) {}
 
     public record SquadConditions(int suspended, int injured, int exhausted, int veryTired) {
         static SquadConditions from(CareerSave career) {
@@ -60,7 +60,7 @@ public class DashboardEntryController {
                     var summary = UserStatsService.summarizeCareer(profile.username(), tuple.getT3().orElse(null));
                     return new Entry(profile, tuple.getT2(), new UserStatsResponse(summary.userName(),
                             summary.matchesPlayed(), summary.wins(), summary.losses(), summary.winPercentage()),
-                            SquadConditions.from(tuple.getT3().orElse(null)));
+                            SquadConditions.from(tuple.getT3().orElse(null)), DashboardCareerOverview.from(tuple.getT3().orElse(null)));
                 });
     }
 }
