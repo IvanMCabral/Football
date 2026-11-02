@@ -72,6 +72,16 @@ class UserPlayerManagementUseCaseImplTest {
     }
 
     @Test
+    void getUserPlayersUsesTheSessionViewAndKeepsMissingCareerError() {
+        when(sessionService.getCareerFromCache(USER_ID))
+                .thenReturn(Mono.just(makeCareerWithSquad("team-1", List.of("p1", "p2"))));
+        StepVerifier.create(useCase.getUserPlayers(USER_ID)).expectNextCount(2).verifyComplete();
+        verify(sessionService, never()).getCareer(USER_ID);
+        when(sessionService.getCareerFromCache(USER_ID)).thenReturn(Mono.empty());
+        StepVerifier.create(useCase.getUserPlayers(USER_ID)).expectError(IllegalStateException.class).verify();
+    }
+
+    @Test
     @DisplayName("MVP1-lineup-cancha-1.5: getUserSquad usa getCareerFromCache (no getCareer)")
     void getUserSquad_usesCache_returnsSquadWhenCareerExists() {
         CareerSave career = makeCareerWithSquad("team-1", List.of("p1", "p2", "p3"));

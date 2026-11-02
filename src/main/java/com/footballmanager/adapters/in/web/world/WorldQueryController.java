@@ -56,10 +56,10 @@ public class WorldQueryController {
      */
     @GetMapping("/leagues")
     public Mono<ResponseEntity<List<WorldLeague>>> getLeagues(
-            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID userId,
             Authentication authentication) {
-        controllerHelper.requireSelfUserId(authentication, userId);
-        return getLeaguesUseCase.execute(userId)
+        UUID owner = authenticatedOwner(authentication, userId);
+        return getLeaguesUseCase.execute(owner)
                 .map(ResponseEntity::ok);
     }
 
@@ -117,14 +117,14 @@ public class WorldQueryController {
      */
     @GetMapping("/teams")
     public Mono<ResponseEntity<List<WorldTeam>>> getAllTeams(
-            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID userId,
             Authentication authentication,
             ServerWebExchange exchange) {
         teamsRequestObservability.controllerEnter(
                 TeamsRequestObservability.correlationId(exchange),
                 TeamsRequestObservability.startNanos(exchange));
-        controllerHelper.requireSelfUserId(authentication, userId);
-        return getAllTeamsUseCase.execute(userId)
+        UUID owner = authenticatedOwner(authentication, userId);
+        return getAllTeamsUseCase.execute(owner)
                 .map(ResponseEntity::ok);
     }
 
@@ -134,10 +134,10 @@ public class WorldQueryController {
     @GetMapping("/teams/{worldTeamId}/players")
     public Mono<ResponseEntity<List<WorldPlayer>>> getPlayersByTeam(
             @PathVariable String worldTeamId,
-            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID userId,
             Authentication authentication) {
-        controllerHelper.requireSelfUserId(authentication, userId);
-        return getPlayersByTeamUseCase.execute(userId, worldTeamId)
+        UUID owner = authenticatedOwner(authentication, userId);
+        return getPlayersByTeamUseCase.execute(owner, worldTeamId)
                 .map(ResponseEntity::ok);
     }
 
@@ -158,11 +158,18 @@ public class WorldQueryController {
      */
     @GetMapping("/free-players")
     public Mono<ResponseEntity<List<WorldPlayer>>> getFreePlayers(
-            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID userId,
             Authentication authentication) {
-        controllerHelper.requireSelfUserId(authentication, userId);
-        return getFreePlayersUseCase.execute(userId)
+        UUID owner = authenticatedOwner(authentication, userId);
+        return getFreePlayersUseCase.execute(owner)
                 .map(ResponseEntity::ok);
+    }
+
+    /** Reads may omit the redundant owner parameter; explicit legacy values must still match. */
+    private UUID authenticatedOwner(Authentication authentication, UUID legacyUserId) {
+        UUID owner = controllerHelper.getUserId(authentication);
+        if (legacyUserId != null) controllerHelper.requireSelfUserId(authentication, legacyUserId);
+        return owner;
     }
 
     private static TeamWithOVR toDto(TeamOvrView team) {

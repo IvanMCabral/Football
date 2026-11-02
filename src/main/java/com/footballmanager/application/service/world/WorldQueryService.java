@@ -38,11 +38,9 @@ public class WorldQueryService {
         // League metadata needs neither player hydration nor per-team relation
         // repair. Preserve the owner's snapshot when present, including an
         // intentionally empty league list; otherwise read only canonical leagues.
-        return worldSnapshotRepository.findByUserId(userId)
-                .filter(snapshot -> snapshot.getWorldTeams() != null
-                        && !snapshot.getWorldTeams().isEmpty()
-                        && snapshot.getLeagues() != null)
-                .map(WorldSnapshot::getLeagues)
+        return worldSnapshotRepository.findMetadataByUserId(userId)
+                .filter(metadata -> !metadata.teams().isEmpty() && metadata.leagues() != null)
+                .map(com.footballmanager.domain.model.valueobject.WorldMetadata::leagues)
                 .switchIfEmpty(Mono.defer(loadBaseDataService::loadCanonicalLeagues));
     }
 
@@ -169,10 +167,9 @@ public class WorldQueryService {
      * the player-inclusive world view.
      */
     private Mono<List<WorldTeam>> loadTeamsForQuery(UUID userId) {
-        return worldSnapshotRepository.findByUserId(userId)
-                .filter(snapshot -> snapshot.getWorldTeams() != null
-                        && !snapshot.getWorldTeams().isEmpty())
-                .map(WorldSnapshot::getAllWorldTeams)
+        return worldSnapshotRepository.findMetadataByUserId(userId)
+                .filter(metadata -> !metadata.teams().isEmpty())
+                .map(com.footballmanager.domain.model.valueobject.WorldMetadata::teams)
                 .switchIfEmpty(Mono.defer(loadBaseDataService::loadCanonicalTeams));
     }
 }

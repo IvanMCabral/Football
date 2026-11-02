@@ -22,7 +22,7 @@ class WorldQueryServiceTeamsCatalogTest {
         var loader = mock(LoadBaseDataService.class);
         var owner = UUID.randomUUID();
         var league = mock(com.footballmanager.domain.model.entity.WorldLeague.class);
-        when(snapshots.findByUserId(owner)).thenReturn(Mono.empty());
+        when(snapshots.findMetadataByUserId(owner)).thenReturn(Mono.empty());
         when(loader.loadCanonicalLeagues()).thenReturn(Mono.just(List.of(league)));
         assertThat(new WorldQueryService(builder, snapshots, loader).getLeagues(owner).block())
                 .containsExactly(league);
@@ -42,10 +42,11 @@ class WorldQueryServiceTeamsCatalogTest {
         snapshot.addWorldTeam(mock(WorldTeam.class));
         var custom = mock(com.footballmanager.domain.model.entity.WorldLeague.class);
         snapshot.setLeagues(List.of(custom));
-        when(snapshots.findByUserId(owner)).thenReturn(Mono.just(snapshot));
+        when(snapshots.findMetadataByUserId(owner)).thenReturn(Mono.just(com.footballmanager.domain.model.valueobject.WorldMetadata.from(snapshot)));
         var service = new WorldQueryService(builder, snapshots, loader);
         assertThat(service.getLeagues(owner).block()).containsExactly(custom);
         snapshot.setLeagues(List.of());
+        when(snapshots.findMetadataByUserId(owner)).thenReturn(Mono.just(com.footballmanager.domain.model.valueobject.WorldMetadata.from(snapshot)));
         assertThat(service.getLeagues(owner).block()).isEmpty();
         verifyNoInteractions(builder, loader);
     }
@@ -55,7 +56,7 @@ class WorldQueryServiceTeamsCatalogTest {
         var snapshots = mock(WorldSnapshotRepository.class);
         var loader = mock(LoadBaseDataService.class);
         var owner = UUID.randomUUID();
-        when(snapshots.findByUserId(owner)).thenReturn(Mono.error(new IllegalStateException("synthetic")));
+        when(snapshots.findMetadataByUserId(owner)).thenReturn(Mono.error(new IllegalStateException("synthetic")));
         org.assertj.core.api.Assertions.assertThatThrownBy(() ->
                 new WorldQueryService(mock(BuildWorldViewUseCase.class), snapshots, loader)
                         .getLeagues(owner).block()).isInstanceOf(IllegalStateException.class);
@@ -69,7 +70,7 @@ class WorldQueryServiceTeamsCatalogTest {
         LoadBaseDataService loadBaseDataService = mock(LoadBaseDataService.class);
         WorldTeam team = mock(WorldTeam.class);
         UUID userId = UUID.randomUUID();
-        when(snapshotRepository.findByUserId(userId)).thenReturn(Mono.empty());
+        when(snapshotRepository.findMetadataByUserId(userId)).thenReturn(Mono.empty());
         when(loadBaseDataService.loadCanonicalTeams()).thenReturn(Mono.just(List.of(team)));
 
         WorldQueryService service = new WorldQueryService(
@@ -77,7 +78,7 @@ class WorldQueryServiceTeamsCatalogTest {
 
         assertThat(service.getAllTeams(userId).block()).containsExactly(team);
         verify(loadBaseDataService).loadCanonicalTeams();
-        verify(snapshotRepository).findByUserId(userId);
+        verify(snapshotRepository).findMetadataByUserId(userId);
         verifyNoInteractions(buildWorldViewUseCase);
     }
 
@@ -92,7 +93,7 @@ class WorldQueryServiceTeamsCatalogTest {
         when(matching.getRealLeagueId()).thenReturn(requestedLeague);
         when(other.getRealLeagueId()).thenReturn(UUID.randomUUID());
         UUID userId = UUID.randomUUID();
-        when(snapshotRepository.findByUserId(userId)).thenReturn(Mono.empty());
+        when(snapshotRepository.findMetadataByUserId(userId)).thenReturn(Mono.empty());
         when(loadBaseDataService.loadCanonicalTeams()).thenReturn(
                 Mono.just(List.of(matching, other)));
 
@@ -101,7 +102,7 @@ class WorldQueryServiceTeamsCatalogTest {
 
         assertThat(service.getTeamsByLeague(userId, requestedLeague).block())
                 .containsExactly(matching);
-        verify(snapshotRepository).findByUserId(userId);
+        verify(snapshotRepository).findMetadataByUserId(userId);
         verifyNoInteractions(buildWorldViewUseCase);
     }
 
@@ -115,13 +116,13 @@ class WorldQueryServiceTeamsCatalogTest {
         WorldSnapshot snapshot = new WorldSnapshot();
         snapshot.setUserId(userId);
         snapshot.addWorldTeam(customTeam);
-        when(snapshotRepository.findByUserId(userId)).thenReturn(Mono.just(snapshot));
+        when(snapshotRepository.findMetadataByUserId(userId)).thenReturn(Mono.just(com.footballmanager.domain.model.valueobject.WorldMetadata.from(snapshot)));
 
         WorldQueryService service = new WorldQueryService(
                 buildWorldViewUseCase, snapshotRepository, loadBaseDataService);
 
         assertThat(service.getAllTeams(userId).block()).containsExactly(customTeam);
-        verify(snapshotRepository).findByUserId(userId);
+        verify(snapshotRepository).findMetadataByUserId(userId);
         verifyNoInteractions(buildWorldViewUseCase, loadBaseDataService);
     }
 }

@@ -27,7 +27,8 @@ public class UserPlayerManagementUseCaseImpl implements UserPlayerManagementUseC
 
     @Override
     public Flux<SessionPlayer> getUserPlayers(UUID userId) {
-        return sessionService.getCareer(userId)
+        return sessionService.getCareerFromCache(userId)
+            .switchIfEmpty(Mono.error(new IllegalStateException("No existe carrera activa para userId=" + userId)))
             .flatMapMany(career -> Flux.fromIterable(career.getTeamSquad(career.getUserSessionTeamId())));
     }
 

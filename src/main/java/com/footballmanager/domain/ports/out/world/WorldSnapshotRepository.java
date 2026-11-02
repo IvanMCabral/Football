@@ -22,6 +22,10 @@ public interface WorldSnapshotRepository {
 
     Mono<WorldSnapshot> findByUserId(UUID userId);
 
+    default Mono<com.footballmanager.domain.model.valueobject.WorldMetadata> findMetadataByUserId(UUID userId) {
+        return findByUserId(userId).map(com.footballmanager.domain.model.valueobject.WorldMetadata::from);
+    }
+
     default Mono<com.footballmanager.domain.model.valueobject.WorldSize> findSizeByUserId(UUID userId) {
         return findByUserId(userId).map(com.footballmanager.domain.model.valueobject.WorldSize::from);
     }

@@ -60,6 +60,18 @@ class WorldQueryControllerE2ETest extends AbstractIntegrationTest {
     }
 
     @Test
+    void metadataAndPlayerReadsResolveOwnerFromAuthenticationAndRejectImpersonation() {
+        for (String path : List.of("/world/leagues", "/world/teams", "/world/free-players", "/world/teams/missing/players")) {
+            webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+                    .get().uri("/api/v1" + path).exchange().expectStatus().isOk();
+            webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))
+                    .get().uri("/api/v1" + path + "?userId=" + UUID.randomUUID())
+                    .exchange().expectStatus().isForbidden();
+            webTestClient.get().uri("/api/v1" + path).exchange().expectStatus().isUnauthorized();
+        }
+    }
+
+    @Test
     @DisplayName("GET /world/leagues?userId=... — 200 with the seeded league")
     void leagues_returns200WithLaLiga() {
         webTestClient.mutateWith(mockUser(SEED_USER_ID.toString()))

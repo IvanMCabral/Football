@@ -448,6 +448,45 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void metadataMatchesFullOwnerDataWithoutReparsingPlayersAndReturnsIsolatedObjects() throws Exception {
+        UUID owner = UUID.randomUUID();
+        WorldSnapshot canonical = snapshot(owner);
+        var repository = repository(ignored -> reactor.core.publisher.Mono.just(canonical), Duration.ofDays(365));
+        WorldSnapshot custom = snapshot(owner);
+        var team = com.footballmanager.domain.model.entity.WorldTeam.createCustom("Owner club", "AR", new BigDecimal("123.45"), "3-5-2");
+        team.setCity("Owner city");
+        custom.getWorldTeams().put(team.getWorldTeamId(), team);
+        custom.getLeagues().get(0).setName("Owner league");
+        custom.getAllWorldPlayers().get(0).setName("Full player attributes survive");
+        repository.saveInitial(custom).block();
+        var full = repository.findByUserId(owner).block();
+        var expected = objectMapper.valueToTree(com.footballmanager.domain.model.valueobject.WorldMetadata.from(full));
+        var cold = repository(null, Duration.ofDays(365));
+        var mapperSpy = org.mockito.Mockito.spy(objectMapper);
+        ReflectionTestUtils.setField(cold, "objectMapper", mapperSpy);
+        assertEquals(expected, objectMapper.valueToTree(cold.findMetadataByUserId(owner).block()));
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.times(1)).readValue(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(WorldSnapshot.class));
+        org.mockito.Mockito.clearInvocations(mapperSpy);
+        var metadata = cold.findMetadataByUserId(owner).block();
+        assertEquals(expected, objectMapper.valueToTree(metadata));
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).readTree(org.mockito.ArgumentMatchers.anyString());
+        org.mockito.Mockito.verify(mapperSpy, org.mockito.Mockito.never()).readValue(
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(WorldSnapshot.class));
+        metadata.teams().get(0).setName("Caller mutation");
+        metadata.leagues().get(0).setName("Caller mutation");
+        assertEquals(expected, objectMapper.valueToTree(cold.findMetadataByUserId(owner).block()));
+        assertEquals("Full player attributes survive", cold.findByUserId(owner).block().getAllWorldPlayers().get(0).getName());
+        custom.getWorldTeams().remove(team.getWorldTeamId());
+        custom.setLeagues(List.of());
+        repository.saveInitial(custom).block();
+        assertEquals(1, cold.findMetadataByUserId(owner).block().teams().size());
+        assertTrue(cold.findMetadataByUserId(owner).block().leagues().isEmpty());
+        assertEquals(1, canonical.getWorldTeams().size());
+        org.junit.jupiter.api.Assertions.assertNull(cold.findMetadataByUserId(UUID.randomUUID()).block());
+    }
+
+    @Test
     void summaryMatchesFullReadsAcrossCustomizationsRemovalsAndOwnersWithoutCatalogDeserialization() throws Exception {
         UUID owner = UUID.randomUUID();
         WorldSnapshot canonical = snapshot(owner);
@@ -522,6 +561,8 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
             reactiveRedisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(node)).block();
             assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
                     () -> isolatedRepository.findSizeByUserId(owner).block(), mutation);
+            assertThrows(RedisWorldRepository.WorldStorageFormatException.class,
+                    () -> isolatedRepository.findMetadataByUserId(owner).block(), mutation);
         }
         reactiveRedisTemplate.opsForValue().set(key, raw).block();
         var corruptCatalog = (com.fasterxml.jackson.databind.node.ObjectNode) objectMapper.readTree(catalog);
@@ -656,6 +697,7 @@ class WorldStorageV2RealIntegrationTest extends AbstractIntegrationTest {
         reactiveRedisTemplate.opsForValue().set(catalogKey, objectMapper.writeValueAsString(catalog)).block();
         assertThrows(RedisWorldRepository.WorldStorageFormatException.class, () -> repository.findByUserId(owner).block());
         assertThrows(RedisWorldRepository.WorldStorageFormatException.class, () -> repository.findSizeByUserId(owner).block());
+        assertThrows(RedisWorldRepository.WorldStorageFormatException.class, () -> repository.findMetadataByUserId(owner).block());
     }
 
     @Test

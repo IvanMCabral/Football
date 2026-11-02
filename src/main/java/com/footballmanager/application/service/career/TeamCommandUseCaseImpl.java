@@ -130,7 +130,8 @@ public class TeamCommandUseCaseImpl implements TeamCommandUseCase {
 
     @Override
     public Mono<SessionTeam> getSessionTeam(UUID userId, String sessionTeamId) {
-        return sessionService.getCareer(userId)
+        return sessionService.getCareerFromCache(userId)
+            .switchIfEmpty(Mono.error(new IllegalStateException("No existe carrera activa para userId=" + userId)))
             .map(career -> career.getSessionTeam(sessionTeamId));
     }
 }
