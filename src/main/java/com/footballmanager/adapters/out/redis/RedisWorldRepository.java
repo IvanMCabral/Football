@@ -405,9 +405,10 @@ public class RedisWorldRepository implements WorldSnapshotRepository, WorldStora
     }
 
     private Mono<String> loadOrRecoverCatalog(WorldStorageEnvelope envelope) {
-        return redisTemplate.opsForValue().get(envelope.catalogKey())
+        // Read and renew retention in one round trip. Even when retention was
+        // renewed, the bytes must pass full validation before any caller uses them.
+        return redisTemplate.opsForValue().getAndExpire(envelope.catalogKey(), requireCatalogTtl())
                 .flatMap(json -> validateCatalog(envelope.catalogKey(), envelope.catalogFingerprint(), json)
-                        .then(redisTemplate.expire(envelope.catalogKey(), requireCatalogTtl()))
                         .thenReturn(json))
                 .switchIfEmpty(Mono.defer(() -> recoverCatalog(envelope)));
     }
