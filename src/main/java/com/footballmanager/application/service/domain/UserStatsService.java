@@ -24,6 +24,23 @@ public class UserStatsService {
     private final UserRepository userRepository;
     private final CareerSessionService careerSessionService;
 
+    /** Derived from the same loaded career used by entry status, without another profile query. */
+    public static UserStatsSummary summarizeCareer(String userName, com.footballmanager.domain.model.entity.CareerSave career) {
+        TeamStandings standing = career == null || career.getUserSessionTeamId() == null
+                || career.getTournamentState() == null || career.getTournamentState().getStandings() == null
+                ? null : career.getTournamentState().getStandings().get(career.getUserSessionTeamId());
+        return summarizeStanding(userName, standing);
+    }
+
+    private static UserStatsSummary summarizeStanding(String userName, TeamStandings standing) {
+        if (standing == null) return new UserStatsSummary(userName, 0, 0, 0, 0.0);
+        int played = standing.getPlayed() == null ? 0 : standing.getPlayed();
+        int wins = standing.getWon() == null ? 0 : standing.getWon();
+        int losses = standing.getLost() == null ? 0 : standing.getLost();
+        double percentage = played > 0 ? Math.round((wins * 100.0 / played) * 100.0) / 100.0 : 0.0;
+        return new UserStatsSummary(userName, played, wins, losses, percentage);
+    }
+
     public Mono<UserStatsSummary> getUserStats(UUID userId) {
         Mono<String> userNameMono = RuntimeOperationMetrics.measure("dashboard.userStats.userName",
                 userRepository.findById(userId)
@@ -53,25 +70,7 @@ public class UserStatsService {
                 String userName = tuple.getT1();
                 TeamStandings standing = tuple.getT2();
 
-                if (standing == null) {
-                    return new UserStatsSummary(userName, 0, 0, 0, 0.0);
-                }
-
-                int played = standing.getPlayed() != null ? standing.getPlayed() : 0;
-                int wins = standing.getWon() != null ? standing.getWon() : 0;
-                int losses = standing.getLost() != null ? standing.getLost() : 0;
-
-                double winPercentage = played > 0
-                    ? Math.round((wins * 100.0 / played) * 100.0) / 100.0
-                    : 0.0;
-
-                return new UserStatsSummary(
-                    userName,
-                    played,
-                    wins,
-                    losses,
-                    winPercentage
-                );
+                return summarizeStanding(userName, standing);
             });
     }
 }
