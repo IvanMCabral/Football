@@ -34,12 +34,14 @@ class RequestUserLookupWebFilterTest {
                 .then());
     }
 
-    @Test void securityAndConcurrentHandlerReadsShareOnePhysicalQueryOnBothReadRoutes() {
+    @Test void securityAndConcurrentHandlerReadsShareOnePhysicalQueryOnEntryAndProfileRoutes() {
         when(sql.findById(owner)).thenReturn(Mono.just(user(owner, "USER")));
         request(HttpMethod.GET, "/api/v1/auth/me").block();
         verify(sql).findById(owner);
         request(HttpMethod.GET, "/api/v1/dashboard/user-stats").block();
         verify(sql, times(2)).findById(owner);
+        request(HttpMethod.GET, "/api/v1/dashboard/entry").block();
+        verify(sql, times(3)).findById(owner);
     }
 
     @Test void deletionIsRejectedOnTheVeryNextRequest() {

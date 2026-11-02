@@ -35,6 +35,12 @@ class DashboardEntryControllerTest {
         career.setUserSessionTeamId("team"); career.setTournamentState(new TournamentState());
         var standing = new TeamStandings("team", "Club"); standing.setPlayed(3); standing.setWon(2); standing.setLost(1);
         career.getTournamentState().getStandings().put("team", standing);
+        var hurt = new SessionPlayer(); hurt.setSessionPlayerId("hurt"); hurt.setInjured(true); hurt.setEnergy(0);
+        var banned = new SessionPlayer(); banned.setSessionPlayerId("banned"); banned.setSuspensionRemainingMatches(1); banned.setEnergy(0);
+        var exhausted = new SessionPlayer(); exhausted.setSessionPlayerId("exhausted"); exhausted.setEnergy(19);
+        var tired = new SessionPlayer(); tired.setSessionPlayerId("tired"); tired.setEnergy(39);
+        career.getPlayerManager().setSessionPlayers(java.util.Map.of("hurt", hurt, "banned", banned, "exhausted", exhausted, "tired", tired));
+        career.getTeamManager().setTeamSquads(java.util.Map.of("team", java.util.List.of("hurt", "banned", "exhausted", "tired")));
         StepVerifier.create(controller.entry(new UsernamePasswordAuthenticationToken(owner.toString(), null)))
                 .then(() -> pending.tryEmitValue(career))
                 .assertNext(entry -> {
@@ -43,6 +49,7 @@ class DashboardEntryControllerTest {
                     assertThat(entry.userStats().matchesPlayed()).isEqualTo(3);
                     assertThat(entry.userStats().matchesWon()).isEqualTo(2);
                     assertThat(entry.userStats().winPercentage()).isEqualTo(66.67);
+                    assertThat(entry.squadConditions()).isEqualTo(new DashboardEntryController.SquadConditions(1, 1, 1, 1));
                 }).verifyComplete();
         verify(continuation, times(1)).continueCareer(owner);
         verify(auth, times(1)).getUserInfo(owner.toString());

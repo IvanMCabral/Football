@@ -15,7 +15,7 @@ import java.util.Set;
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class RequestUserLookupWebFilter implements WebFilter {
     private static final Set<String> READS = Set.of(
-            "/api/v1/auth/me", "/api/v1/dashboard/user-stats");
+            "/api/v1/auth/me", "/api/v1/dashboard/user-stats", "/api/v1/dashboard/entry");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

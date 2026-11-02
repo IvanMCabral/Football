@@ -5,6 +5,7 @@ import com.footballmanager.adapters.in.web.dashboard.dto.UserStatsResponse;
 import com.footballmanager.application.service.career.CareerSessionService;
 import com.footballmanager.application.service.domain.UserStatsService;
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.entity.SessionPlayer;
 import com.footballmanager.domain.port.in.auth.AuthUseCase;
 import com.footballmanager.domain.port.in.auth.AuthUserInfo;
 import com.footballmanager.domain.port.in.career.GetCareerStatusUseCase;
@@ -25,7 +26,26 @@ public class DashboardEntryController {
     private final GetCareerStatusUseCase status;
     private final CareerSessionService sessions;
 
-    public record Entry(AuthUserInfo user, GetCareerStatusUseCase.CareerStatusDto careerStatus, UserStatsResponse userStats) {}
+    public record Entry(AuthUserInfo user, GetCareerStatusUseCase.CareerStatusDto careerStatus,
+                        UserStatsResponse userStats, SquadConditions squadConditions) {}
+
+    public record SquadConditions(int suspended, int injured, int exhausted, int veryTired) {
+        static SquadConditions from(CareerSave career) {
+            int suspended = 0, injured = 0, exhausted = 0, tired = 0;
+            if (career != null && career.getUserSessionTeamId() != null) {
+                for (SessionPlayer player : career.getTeamSquad(career.getUserSessionTeamId())) {
+                    boolean banned = Boolean.TRUE.equals(player.getSuspended()) || player.getSuspensionRemainingMatches() > 0;
+                    boolean hurt = Boolean.TRUE.equals(player.getInjured());
+                    int energy = player.getEnergy() == null ? 100 : player.getEnergy();
+                    if (banned) suspended++;
+                    if (hurt) injured++;
+                    if (!banned && !hurt && energy < 20) exhausted++;
+                    if (!banned && !hurt && energy >= 20 && energy <= 39) tired++;
+                }
+            }
+            return new SquadConditions(suspended, injured, exhausted, tired);
+        }
+    }
 
     @GetMapping("/api/v1/dashboard/entry")
     public Mono<Entry> entry(Authentication authentication) {
@@ -39,7 +59,8 @@ public class DashboardEntryController {
                     var profile = tuple.getT1();
                     var summary = UserStatsService.summarizeCareer(profile.username(), tuple.getT3().orElse(null));
                     return new Entry(profile, tuple.getT2(), new UserStatsResponse(summary.userName(),
-                            summary.matchesPlayed(), summary.wins(), summary.losses(), summary.winPercentage()));
+                            summary.matchesPlayed(), summary.wins(), summary.losses(), summary.winPercentage()),
+                            SquadConditions.from(tuple.getT3().orElse(null)));
                 });
     }
 }
