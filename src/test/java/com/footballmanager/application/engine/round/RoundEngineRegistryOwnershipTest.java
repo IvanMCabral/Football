@@ -11,6 +11,48 @@ import static org.mockito.Mockito.mock;
 class RoundEngineRegistryOwnershipTest {
 
     @Test
+    void unregisterRemovesMappingsEvenAfterTheCompletedEngineReleasedItsMatches() {
+        var registry = new RoundEngineRegistry();
+        UUID roundId = UUID.randomUUID(), matchId = UUID.randomUUID();
+        var engine = new RoundEngine(roundId);
+        engine.registerMatch(matchId, mock(com.footballmanager.application.engine.match.MatchEngine.class));
+        registry.register(roundId, engine);
+        engine.stop();
+        registry.unregister(roundId);
+        assertNull(registry.getRoundIdByMatchId(matchId));
+        assertNull(registry.getByMatchId(matchId));
+    }
+
+    @Test
+    void replacingAnAlreadyStoppedRoundAlsoRemovesItsRetainedMappings() {
+        var registry = new RoundEngineRegistry();
+        UUID roundId = UUID.randomUUID(), matchId = UUID.randomUUID();
+        var old = new RoundEngine(roundId);
+        old.registerMatch(matchId, mock(com.footballmanager.application.engine.match.MatchEngine.class));
+        registry.register(roundId, old);
+        old.stop();
+        registry.register(roundId, new RoundEngine(roundId));
+        assertNull(registry.getRoundIdByMatchId(matchId));
+    }
+
+    @Test
+    void stoppingAnOwnerRemovesClearedMappingsAndPreservesOtherOwnersMatches() {
+        var registry = new RoundEngineRegistry();
+        UUID owner = UUID.randomUUID(), other = UUID.randomUUID();
+        UUID roundA = UUID.randomUUID(), roundB = UUID.randomUUID();
+        UUID matchA = UUID.randomUUID(), matchB = UUID.randomUUID();
+        var a = new RoundEngine(roundA); a.setOwner(owner, "career-a");
+        var b = new RoundEngine(roundB); b.setOwner(other, "career-b");
+        a.registerMatch(matchA, mock(com.footballmanager.application.engine.match.MatchEngine.class));
+        b.registerMatch(matchB, mock(com.footballmanager.application.engine.match.MatchEngine.class));
+        registry.register(roundA, a); registry.register(roundB, b); a.stop();
+        registry.stopEnginesForOwner(owner, "career-a");
+        assertNull(registry.getRoundIdByMatchId(matchA));
+        assertEquals(roundB, registry.getRoundIdByMatchId(matchB));
+        assertSame(b, registry.getByMatchId(matchB));
+    }
+
+    @Test
     void stoppingOwnerADoesNotTouchOwnerB() {
         UUID ownerA = UUID.randomUUID();
         UUID ownerB = UUID.randomUUID();

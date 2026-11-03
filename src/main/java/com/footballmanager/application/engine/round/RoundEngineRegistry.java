@@ -18,15 +18,10 @@ public class RoundEngineRegistry {
 
     public synchronized void register(UUID roundId, RoundEngine engine) {
         RoundEngine existing = engines.get(roundId);
-        Set<UUID> replacedMatchIds = existing == null
-                ? Set.of()
-                : Set.copyOf(existing.getMatchIds());
         if (existing != null && existing.isRunning()) {
             existing.stop();
         }
-        for (UUID matchId : replacedMatchIds) {
-            matchToRoundMap.remove(matchId, roundId);
-        }
+        removeRoundMappings(roundId);
         engines.put(roundId, engine);
         for (UUID matchId : engine.getMatchIds()) {
             matchToRoundMap.put(matchId, roundId);
@@ -72,12 +67,16 @@ public class RoundEngineRegistry {
 
     public synchronized void unregister(UUID roundId) {
         RoundEngine removed = engines.remove(roundId);
+        removeRoundMappings(roundId);
         if (removed != null) {
-            for (UUID matchId : removed.getMatchIds()) {
-                matchToRoundMap.remove(matchId);
-            }
             removed.stop();
         }
+    }
+
+    private void removeRoundMappings(UUID roundId) {
+        // stop() releases the engine's match collection before persistence can
+        // unregister it. The index must therefore be cleaned by round identity.
+        matchToRoundMap.entrySet().removeIf(entry -> roundId.equals(entry.getValue()));
     }
 
     public boolean exists(UUID roundId) {
@@ -97,15 +96,12 @@ public class RoundEngineRegistry {
         int stopped = 0;
         for (Map.Entry<UUID, RoundEngine> entry : engines.entrySet()) {
             if (entry.getValue().belongsTo(userId, careerId) && engines.remove(entry.getKey(), entry.getValue())) {
-                Set<UUID> matchIds = Set.copyOf(entry.getValue().getMatchIds());
                 try {
                     entry.getValue().stop();
                 } catch (Exception ignored) {
                     // cleanup remains scoped even if one engine fails to stop
                 }
-                for (UUID matchId : matchIds) {
-                    matchToRoundMap.remove(matchId, entry.getKey());
-                }
+                removeRoundMappings(entry.getKey());
                 stopped++;
             }
         }
