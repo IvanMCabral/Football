@@ -37,6 +37,17 @@ public class RoundEngineRegistry {
         return engines.get(roundId);
     }
 
+    /** Reads live activity only for the exact owner, career and generation. */
+    public RoundEngine getActiveForOwner(UUID ownerId, String careerId, String generation) {
+        return engines.values().stream()
+            .filter(engine -> engine.belongsTo(ownerId, careerId))
+            .filter(engine -> java.util.Objects.equals(generation, engine.getLifecycleGeneration()))
+            .filter(RoundEngine::isRunning)
+            .filter(engine -> engine.getLatestState().getStatus() !=
+                com.footballmanager.application.engine.model.RoundState.RoundStatus.COMPLETED)
+            .findFirst().orElse(null);
+    }
+
     public synchronized RoundEngine getByMatchId(UUID matchId) {
         UUID roundId = matchToRoundMap.get(matchId);
         if (roundId != null) {

@@ -4,7 +4,8 @@ import com.footballmanager.domain.model.entity.CareerSave;
 import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.Division;
 import com.footballmanager.domain.port.in.career.GetCareerStatusUseCase;
-import lombok.RequiredArgsConstructor;
+import com.footballmanager.application.engine.round.RoundEngineRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -16,10 +17,20 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
 
     private final CareerSessionService sessionService;
+    private final RoundEngineRegistry roundEngines;
+
+    @Autowired
+    public GetCareerStatusUseCaseImpl(CareerSessionService sessionService, RoundEngineRegistry roundEngines) {
+        this.sessionService = sessionService;
+        this.roundEngines = roundEngines;
+    }
+
+    public GetCareerStatusUseCaseImpl(CareerSessionService sessionService) {
+        this(sessionService, new RoundEngineRegistry());
+    }
 
     @Override
     public Mono<CareerStatusDto> execute(UUID userId) {
@@ -91,6 +102,8 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                     // seasonManager.promotions when a season ends. We surface that as a
                     // boolean so the frontend can decide when to open the dialog.
                     boolean promotionsAvailable = !career.getPromotions().isEmpty();
+                    var activeRound = roundEngines.getActiveForOwner(userId, career.getCareerId(), career.getLifecycleGeneration());
+                    boolean matchInProgress = activeRound != null;
 
                     CareerStatusDto dto = new CareerStatusDto(
                             career.getCareerId().toString(),
@@ -102,11 +115,11 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                             userTeamName,
                             false,
                             null,
-                            "IDLE",
-                            !Boolean.TRUE.equals(career.getTournamentState().getFinished())
+                            matchInProgress ? (activeRound.isPaused() ? "PAUSED" : "RUNNING") : "IDLE",
+                            !matchInProgress && !Boolean.TRUE.equals(career.getTournamentState().getFinished())
                                     && (career.getTournamentState().getCareerPhase() == CareerPhase.PRE_MATCH
                                         || career.getTournamentState().getCareerPhase() == CareerPhase.WAITING_USER),
-                            career.getTournamentState().getCareerPhase().name(),
+                            matchInProgress ? CareerPhase.IN_MATCH.name() : career.getTournamentState().getCareerPhase().name(),
                             squadSize,
                             freePlayersCount,
                             userDivision,
