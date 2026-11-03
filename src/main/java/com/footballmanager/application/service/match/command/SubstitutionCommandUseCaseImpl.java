@@ -1,5 +1,6 @@
 package com.footballmanager.application.service.match.command;
 
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import com.footballmanager.application.exception.MinuteInPastException;
 import com.footballmanager.application.service.match.session.MatchSession;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
@@ -95,9 +96,11 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                                         String playerOffId,
                                                         String playerOnId,
                                                         Integer requestedMinute) {
-        return Mono.fromCallable(() -> executeSubstitutionInternal(
-                userId, matchId, teamId, playerOffId, playerOnId, requestedMinute))
-            .flatMap(execution -> appendBaselineSubstitution(matchId, execution.baselineAppend())
+        return RuntimeOperationMetrics.measure("live.substitution.apply",
+                Mono.fromCallable(() -> executeSubstitutionInternal(
+                    userId, matchId, teamId, playerOffId, playerOnId, requestedMinute)))
+            .flatMap(execution -> RuntimeOperationMetrics.measure("live.substitution.persist",
+                    Mono.defer(() -> appendBaselineSubstitution(matchId, execution.baselineAppend())))
                 .thenReturn(execution.result()))
             .doOnSuccess(result -> {
                 if (result.success()) {

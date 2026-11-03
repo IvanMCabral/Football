@@ -1,5 +1,6 @@
 package com.footballmanager.infrastructure.security;
 
+import com.footballmanager.application.observability.RuntimeOperationMetrics;
 import com.footballmanager.domain.model.aggregate.User;
 import com.footballmanager.domain.ports.out.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +29,15 @@ public final class CanonicalUserAuthenticationManager implements ReactiveAuthent
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        return Mono.defer(() -> parseSubject(authentication.getName())
-                .map(userRepository::findById)
-                .orElseGet(() -> Mono.error(invalidSubject())))
-            .flatMap(user -> authenticationFor(authentication, user))
-            .switchIfEmpty(Mono.error(invalidSubject()))
-            .onErrorMap(error -> error instanceof BadCredentialsException
-                ? error
-                : invalidSubject());
+        return RuntimeOperationMetrics.measure("security.canonicalAuthentication",
+            Mono.defer(() -> parseSubject(authentication.getName())
+                    .map(userRepository::findById)
+                    .orElseGet(() -> Mono.error(invalidSubject())))
+                .flatMap(user -> authenticationFor(authentication, user))
+                .switchIfEmpty(Mono.error(invalidSubject()))
+                .onErrorMap(error -> error instanceof BadCredentialsException
+                    ? error
+                    : invalidSubject()));
     }
 
     private static BadCredentialsException invalidSubject() {
