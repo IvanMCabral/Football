@@ -30,10 +30,15 @@ RUN apk add --no-cache curl ca-certificates tzdata shadow findutils \
     && useradd --system --gid manager --home-dir /app --create-home manager
 WORKDIR /app
 COPY --from=build --chown=manager:manager /workspace/extracted/ /app/
+COPY --chown=manager:manager tools/train-startup-cache.sh /app/bin/train-startup-cache.sh
 
 USER manager
+# Reuse verified class metadata at every wake-up instead of parsing the same
+# libraries again on the Free CPU. Train with the exact runtime JVM/classpath;
+# production still runs the normal prod profile, validation and Flyway.
+RUN --network=none sh /app/bin/train-startup-cache.sh
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
   CMD curl --fail --silent --show-error --max-time 3 "http://127.0.0.1:${PORT}/api/v1/health/liveness" >/dev/null || exit 1
 
-ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS:-} -jar /app/application.jar \"$@\"", "--"]
+ENTRYPOINT ["sh", "-c", "exec java -Xshare:auto -XX:SharedArchiveFile=/app/application.jsa -Xlog:cds=info ${JAVA_OPTS:-} -jar /app/application.jar \"$@\"", "--"]
