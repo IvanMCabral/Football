@@ -3,6 +3,9 @@ package com.footballmanager.adapters.in.web.career.simulation;
 import com.footballmanager.adapters.in.web.career.simulation.dto.SubstitutionRequestDTO;
 import com.footballmanager.adapters.in.web.career.simulation.dto.SubstitutionResultDTO;
 import com.footballmanager.adapters.in.web.common.ControllerHelper;
+import com.footballmanager.application.engine.round.RoundEngine;
+import com.footballmanager.application.service.security.RoundOwnershipAuthority;
+import com.footballmanager.application.service.security.RoundOwnershipDeniedException;
 import com.footballmanager.domain.port.in.match.SubstitutionCommandUseCase;
 import com.footballmanager.domain.port.in.match.SubstitutionResult;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+import java.util.Optional;
 
 /**
  *
@@ -59,6 +63,7 @@ public class SubstitutionController {
 
     private final SubstitutionCommandUseCase substitutionCommandUseCase;
     private final ControllerHelper controllerHelper;
+    private final RoundOwnershipAuthority roundOwnershipAuthority;
 
     @PostMapping("/matches/{matchId}/substitutions")
     public Mono<ResponseEntity<SubstitutionResultDTO>> substitute(
@@ -96,17 +101,21 @@ public class SubstitutionController {
         // hardcoded ok(0, 0) placeholder. Use case validation failures are caught
         // internally and returned as success=false; only infrastructure errors
         // (NPE, DB, etc.) propagate as Mono.error and are mapped to 500 below.
-        return substitutionCommandUseCase.executeSubstitution(
+        Mono<Optional<RoundEngine>> round = request.resumeRound()
+            ? roundOwnershipAuthority.findOwnedEngineByMatch(userId, matchUuid)
+                .map(Optional::of).defaultIfEmpty(Optional.empty())
+            : Mono.just(Optional.empty());
+        return round.flatMap(ownedRound -> substitutionCommandUseCase.executeSubstitution(
                 userId, matchUuid,
                 /* teamId= */ null, // inferred by the use case
                 request.playerOffId(),
                 request.playerOnId(),
                 request.minute())
-            .map(result -> ResponseEntity.ok(new SubstitutionResultDTO(
-                result.success(),
-                result.minuteApplied(),
-                result.substitutionsRemaining(),
-                result.error())))
+            .map(result -> {
+                boolean roundResumed = result.success() && ownedRound.map(this::resumeAfterSubstitution).orElse(false);
+                return ResponseEntity.ok(new SubstitutionResultDTO(
+                    result.success(), result.minuteApplied(), result.substitutionsRemaining(), result.error(), roundResumed));
+            }))
             .onErrorResume(e -> {
                 // for "no active match session" / missing LiveSession / missing
                 // context, IllegalArgumentException â€” and its subclass
@@ -117,7 +126,8 @@ public class SubstitutionController {
                 // 500 here. The previous implementation swallowed all errors and
                 // returned 500, hiding the F2.5 protocol semantics from the front.
                 if (e instanceof IllegalStateException
-                        || e instanceof IllegalArgumentException) {
+                        || e instanceof IllegalArgumentException
+                        || e instanceof RoundOwnershipDeniedException) {
                     return Mono.error(e);
                 }
                 log.error("Unexpected error during substitution for matchId={}",
@@ -125,5 +135,18 @@ public class SubstitutionController {
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(SubstitutionResultDTO.error("Substitution failed")));
             });
+    }
+
+    private boolean resumeAfterSubstitution(RoundEngine round) {
+        if (!round.isRunning()) {
+            return false;
+        }
+        try {
+            round.resumeAll();
+            return !round.isPaused();
+        } catch (RuntimeException error) {
+            log.warn("Substitution accepted, but the round could not resume", error);
+            return false;
+        }
     }
 }

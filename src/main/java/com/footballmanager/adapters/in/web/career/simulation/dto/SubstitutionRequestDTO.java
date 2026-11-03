@@ -15,5 +15,6 @@ package com.footballmanager.adapters.in.web.career.simulation.dto;
 public record SubstitutionRequestDTO(
     String playerOffId,
     String playerOnId,
-    Integer minute
+    Integer minute,
+    boolean resumeRound
 ) {}

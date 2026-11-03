@@ -11,14 +11,15 @@ public record SubstitutionResultDTO(
     boolean success,
     int minuteApplied,
     int substitutionsRemaining,
-    String error
+    String error,
+    boolean roundResumed
 ) {
 
     public static SubstitutionResultDTO ok(int minuteApplied, int substitutionsRemaining) {
-        return new SubstitutionResultDTO(true, minuteApplied, substitutionsRemaining, null);
+        return new SubstitutionResultDTO(true, minuteApplied, substitutionsRemaining, null, false);
     }
 
     public static SubstitutionResultDTO error(String errorMessage) {
-        return new SubstitutionResultDTO(false, 0, 0, errorMessage);
+        return new SubstitutionResultDTO(false, 0, 0, errorMessage, false);
     }
 }

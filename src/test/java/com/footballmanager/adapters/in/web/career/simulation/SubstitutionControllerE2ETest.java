@@ -1,5 +1,9 @@
 package com.footballmanager.adapters.in.web.career.simulation;
 
+import com.footballmanager.application.engine.match.MatchEngine;
+import com.footballmanager.application.engine.round.RoundEngine;
+import com.footballmanager.application.engine.round.RoundEngineRegistry;
+
 import com.footballmanager.AbstractIntegrationTest;
 import com.footballmanager.domain.model.valueobject.TeamStyle;
 import com.footballmanager.application.service.match.session.MatchSessionRegistry;
@@ -66,6 +70,45 @@ class SubstitutionControllerE2ETest extends AbstractIntegrationTest {
 
     @Autowired
     private MatchSessionRegistry matchSessionRegistry;
+
+    @Autowired
+    private RoundEngineRegistry roundEngineRegistry;
+
+    @Test
+    void resumesOwnedRoundOnlyAfterSubstitutionSucceeds() {
+        UUID userId = UUID.randomUUID();
+        UUID matchId = UUID.randomUUID();
+        UUID roundId = UUID.randomUUID();
+        LiveSession live = new LiveSession(buildHappyPathContext("home", "away"), 12345L);
+        live.tick();
+        var session = matchSessionRegistry.getOrCreateDetailedSession(
+            userId, matchId, UUID.randomUUID(), UUID.randomUUID(), live);
+        RoundEngine round = RoundEngine.forCareerSpeed(roundId, "SLOW");
+        round.setOwner(userId, "test-career");
+        round.registerMatch(matchId, new MatchEngine(session));
+        roundEngineRegistry.register(roundId, round);
+        try {
+            round.start();
+            round.pauseAll();
+            var client = webTestClient.mutateWith(mockUser(userId.toString()));
+            String uri = "/api/v1/match-engine/matches/" + matchId + "/substitutions";
+            client.post().uri(uri).contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"playerOffId\":\"home-starter-0\",\"playerOnId\":\"missing\",\"resumeRound\":true}")
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.success").isEqualTo(false)
+                .jsonPath("$.roundResumed").isEqualTo(false);
+            org.junit.jupiter.api.Assertions.assertTrue(round.isPaused());
+            client.post().uri(uri).contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"playerOffId\":\"home-starter-0\",\"playerOnId\":\"home-bench-0\",\"resumeRound\":true}")
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.success").isEqualTo(true)
+                .jsonPath("$.roundResumed").isEqualTo(true);
+            org.junit.jupiter.api.Assertions.assertFalse(round.isPaused());
+        } finally {
+            round.stop();
+            roundEngineRegistry.unregister(roundId);
+        }
+    }
 
     @AfterEach
     void clearSessions() {
