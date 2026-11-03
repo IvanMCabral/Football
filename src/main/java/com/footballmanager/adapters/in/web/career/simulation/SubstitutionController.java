@@ -105,17 +105,22 @@ public class SubstitutionController {
             ? roundOwnershipAuthority.findOwnedEngineByMatch(userId, matchUuid)
                 .map(Optional::of).defaultIfEmpty(Optional.empty())
             : Mono.just(Optional.empty());
-        return round.flatMap(ownedRound -> substitutionCommandUseCase.executeSubstitution(
-                userId, matchUuid,
-                /* teamId= */ null, // inferred by the use case
-                request.playerOffId(),
-                request.playerOnId(),
-                request.minute())
-            .map(result -> {
-                boolean roundResumed = result.success() && ownedRound.map(this::resumeAfterSubstitution).orElse(false);
-                return ResponseEntity.ok(new SubstitutionResultDTO(
-                    result.success(), result.minuteApplied(), result.substitutionsRemaining(), result.error(), roundResumed));
-            }))
+        return round.flatMap(ownedRound -> {
+            if (ownedRound.isEmpty()) {
+                return substitutionCommandUseCase.executeSubstitution(userId, matchUuid, null,
+                    request.playerOffId(), request.playerOnId(), request.minute())
+                    .map(result -> ResponseEntity.ok(new SubstitutionResultDTO(
+                        result.success(), result.minuteApplied(), result.substitutionsRemaining(), result.error(), false)));
+            }
+            var resumed = new java.util.concurrent.atomic.AtomicBoolean();
+            return substitutionCommandUseCase.executeSubstitution(userId, matchUuid, null,
+                    request.playerOffId(), request.playerOnId(), request.minute(),
+                    () -> resumed.set(resumeAfterSubstitution(ownedRound.get())))
+                // Once started, finish recording even if the browser disconnects.
+                .cache()
+                .map(result -> ResponseEntity.ok(new SubstitutionResultDTO(
+                    result.success(), result.minuteApplied(), result.substitutionsRemaining(), result.error(), resumed.get())));
+        })
             .onErrorResume(e -> {
                 // for "no active match session" / missing LiveSession / missing
                 // context, IllegalArgumentException â€” and its subclass

@@ -52,6 +52,10 @@ public interface BaselineStateStoragePort {
      */
     Mono<Void> save(String careerId, BaselineState state);
 
+    default Mono<Boolean> appendChange(CareerWriteContext context, String matchId, AppliedSubstitution change) {
+        return Mono.just(false);
+    }
+
     default Mono<Void> saveWithContext(CareerWriteContext context, BaselineState state) {
         return save(context.careerId(), state);
     }

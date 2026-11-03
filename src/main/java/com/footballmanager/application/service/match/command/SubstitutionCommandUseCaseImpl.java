@@ -96,12 +96,34 @@ public class SubstitutionCommandUseCaseImpl implements SubstitutionCommandUseCas
                                                         String playerOffId,
                                                         String playerOnId,
                                                         Integer requestedMinute) {
+        return executeSubstitution(userId, matchId, teamId, playerOffId, playerOnId, requestedMinute, null);
+    }
+
+    @Override
+    public Mono<SubstitutionResult> executeSubstitution(UUID userId, UUID matchId, String teamId,
+                                                        String playerOffId, String playerOnId,
+                                                        Integer requestedMinute, Runnable onApplied) {
         return RuntimeOperationMetrics.measure("live.substitution.apply",
                 Mono.fromCallable(() -> executeSubstitutionInternal(
                     userId, matchId, teamId, playerOffId, playerOnId, requestedMinute)))
-            .flatMap(execution -> RuntimeOperationMetrics.measure("live.substitution.persist",
-                    Mono.defer(() -> appendBaselineSubstitution(matchId, execution.baselineAppend())))
-                .thenReturn(execution.result()))
+            .flatMap(execution -> {
+                var command = execution.baselineAppend();
+                if (onApplied == null || command == null) {
+                    return appendBaselineSubstitution(matchId, command).thenReturn(execution.result());
+                }
+                var context = new CareerWriteContext(command.userId(), command.careerId(), command.lifecycleGeneration());
+                var change = new AppliedSubstitution(command.resolvedTeamId(), command.playerOffId(),
+                        command.playerOnId(), command.minute());
+                return RuntimeOperationMetrics.measure("live.substitution.persist",
+                        baselineStoragePort.appendChange(context, matchId.toString(), change))
+                    .flatMap(journaled -> journaled ? Mono.empty() : appendBaselineSubstitution(matchId, command))
+                    .thenReturn(execution.result());
+            })
+            .doOnNext(result -> {
+                if (onApplied != null && result.success()) {
+                    onApplied.run();
+                }
+            })
             .doOnSuccess(result -> {
                 if (result.success()) {
                     log.debug("Substitution persisted, {} subs remaining, minute={}",

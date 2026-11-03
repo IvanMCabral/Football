@@ -177,6 +177,23 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
                 : ownershipTouchService.touchBeforeWrite(context, key, () -> persist);
     }
 
+    private static final com.fasterxml.jackson.databind.ObjectMapper CHANGE_JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    @Override
+    public Mono<Boolean> appendChange(CareerWriteContext context, String matchId,
+                                     com.footballmanager.application.service.simulation.detailed.AppliedSubstitution change) {
+        if (ownershipTouchService == null) return Mono.just(false);
+        String key = buildKey(context.careerId(), matchId);
+        return Mono.fromCallable(() -> CHANGE_JSON.writeValueAsString(change))
+                .flatMap(json -> ownershipTouchService.appendMatchChange(context, key, key + ":changes", json)
+                        .retryWhen(Retry.backoff(MAX_RETRIES, INITIAL_BACKOFF)
+                                .maxBackoff(MAX_BACKOFF)
+                                .filter(this::isRetryableRedisError)))
+                .flatMap(saved -> saved ? Mono.just(true)
+                        : Mono.error(new IllegalStateException("match baseline unavailable for substitution journal")));
+    }
+
     @Override
     public Mono<Optional<BaselineState>> findByMatchId(String careerId, String matchId) {
         // implementation used .blockOptional(Duration.ofSeconds(5)) which
@@ -207,6 +224,12 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
                         key, e.getMessage()))
                 .onErrorMap(e -> new RedisStateAccessException(
                         "Failed to read baseline key=" + key, e))
+                .flatMap(state -> ownershipTouchService == null ? Mono.just(state)
+                        : ownershipTouchService.readMatchChanges(key + ":changes")
+                                .concatMap(json -> Mono.fromCallable(() -> CHANGE_JSON.readValue(json,
+                                        com.footballmanager.application.service.simulation.detailed.AppliedSubstitution.class)))
+                                .reduce(state, (baseline, change) -> baseline.subs().contains(change)
+                                        ? baseline : baseline.withAppendedSub(change)))
                 .map(Optional::ofNullable)
                 .switchIfEmpty(Mono.just(Optional.empty()))
                 .subscribeOn(Schedulers.boundedElastic());
@@ -221,7 +244,8 @@ public class BaselineStateRedisAdapter implements BaselineStateStoragePort {
             return Mono.error(new IllegalArgumentException("matchId must not be blank"));
         }
         String key = buildKey(careerId, matchId);
-        return redisTemplate.delete(key)
+        return redisTemplate.delete(ownershipTouchService == null
+                        ? new String[] {key} : new String[] {key, key + ":changes"})
                 .timeout(WRITE_TIMEOUT)
                 .retryWhen(Retry.backoff(MAX_RETRIES, INITIAL_BACKOFF)
                         .maxBackoff(MAX_BACKOFF)

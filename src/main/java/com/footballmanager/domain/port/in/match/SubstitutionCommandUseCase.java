@@ -61,4 +61,11 @@ public interface SubstitutionCommandUseCase {
         String playerOnId,
         Integer minute
     );
+
+    /** Invokes the callback once an accepted change is in the live engine. */
+    Mono<SubstitutionResult> executeSubstitution(
+        UUID userId, UUID matchId, String teamId, String playerOffId, String playerOnId,
+        Integer minute, Runnable onApplied
+    );
+
 }

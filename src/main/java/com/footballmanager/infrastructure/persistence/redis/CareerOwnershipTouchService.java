@@ -44,6 +44,43 @@ public final class CareerOwnershipTouchService implements CareerOwnershipPort {
                     + "redis.call('sadd', KEYS[1], ARGV[4]); redis.call('expire', KEYS[1], ARGV[5]); return 1",
             Long.class);
 
+    private static final RedisScript<Long> APPEND_MATCH_CHANGE = RedisScript.of("""
+            if redis.call('get', KEYS[3]) ~= ARGV[1]
+                or redis.call('get', KEYS[4]) ~= ARGV[2]
+                or redis.call('exists', KEYS[5], KEYS[6]) ~= 0 then return -1 end
+            local ttl = redis.call('pttl', KEYS[1])
+            if ttl <= 0 or redis.call('sismember', KEYS[7], KEYS[1]) ~= 1 then return 0 end
+            if redis.call('sismember', KEYS[7], KEYS[2]) == 0
+                and redis.call('scard', KEYS[7]) >= tonumber(ARGV[4]) then return -2 end
+            local changes = redis.call('lrange', KEYS[2], 0, -1)
+            for _, change in ipairs(changes) do
+                if change == ARGV[3] then return 1 end
+            end
+            redis.call('sadd', KEYS[7], KEYS[2])
+            redis.call('rpush', KEYS[2], ARGV[3])
+            redis.call('pexpire', KEYS[2], ttl)
+            return 1
+            """, Long.class);
+
+    public Mono<Boolean> appendMatchChange(CareerWriteContext context, String baselineKey,
+                                            String journalKey, String change) {
+        String careerId = context.careerId();
+        return redisTemplate.execute(APPEND_MATCH_CHANGE, List.of(baselineKey, journalKey,
+                        mappingKey(careerId), generationKey(careerId), tombstoneKey(careerId),
+                        tombstoneOwnerKey(context.ownerId()), manifestKey(careerId)),
+                context.ownerId().toString(), context.expectedGeneration(), change,
+                Integer.toString(MAX_MANIFEST_ENTRIES))
+                .single()
+                .timeout(OPERATION_TIMEOUT)
+                .flatMap(code -> code < 0
+                        ? Mono.error(new IllegalStateException("match change journal rejected: " + code))
+                        : Mono.just(code == 1));
+    }
+
+    public Flux<String> readMatchChanges(String journalKey) {
+        return redisTemplate.opsForList().range(journalKey, 0, -1).timeout(OPERATION_TIMEOUT);
+    }
+
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final CareerLifecycleCoordinator lifecycleCoordinator;
 
