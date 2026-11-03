@@ -94,7 +94,7 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
     }
 
     @Test
-    @DisplayName("live match → /api/v1/matches returns the persisted match (no orphan key)")
+    @DisplayName("FAST live match → /api/v1/matches returns the persisted match (no orphan key)")
     void liveMatch_finishes_persistedToMatchRepository_findableByUserId() throws Exception {
         // LaLiga for SEED_USER_ID, so the career-start endpoint must query
         // snapshots for the same user (BuildWorldViewUseCase.getOrCreateSnapshot
@@ -121,7 +121,7 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
             .post().uri("/api/v1/career/start")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(String.format(
-                "{\"leagueId\":\"%s\",\"teamId\":\"%s\",\"difficulty\":\"NORMAL\",\"gameSpeed\":\"NORMAL\",\"teamsPerDivision\":2}",
+                "{\"leagueId\":\"%s\",\"teamId\":\"%s\",\"difficulty\":\"NORMAL\",\"gameSpeed\":\"FAST\",\"teamsPerDivision\":2}",
                 laligaId, teamId))
             .exchange()
             .expectStatus().isCreated();
@@ -164,8 +164,7 @@ class RoundControllerLiveMatchPersistenceE2ETest extends AbstractIntegrationTest
             .exchange()
             .expectStatus().isOk();
 
-        // 8. Poll /api/v1/matches until the match appears (detailed match engine: 90 ticks × 500ms
-        //    ≈ 45s in the worst case; legacy path: 5 ticks ≈ 2.5s; we wait 90s for safety).
+        // 8. Poll /api/v1/matches until the FAST match finishes and is persisted.
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(90);
         List<Map<String, Object>> matches = List.of();
         boolean found = false;

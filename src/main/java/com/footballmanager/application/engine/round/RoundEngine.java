@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RoundEngine {
 
-    private static final Duration ROUND_TICK_INTERVAL = Duration.ofMillis(500);
+    private final Duration tickInterval;
 
     private final UUID roundId;
     private volatile UUID ownerId;
@@ -52,7 +52,21 @@ public class RoundEngine {
     }
 
     public RoundEngine(UUID roundId, RoundStatusCalculator statusCalculator) {
+        this(roundId, statusCalculator, Duration.ofMillis(500));
+    }
+
+    public static RoundEngine forCareerSpeed(UUID roundId, String gameSpeed) {
+        Duration interval = switch (gameSpeed == null ? "" : gameSpeed) {
+            case "FAST" -> Duration.ofMillis(300);
+            case "SLOW" -> Duration.ofMillis(750);
+            default -> Duration.ofMillis(500);
+        };
+        return new RoundEngine(roundId, new RoundStatusCalculator(), interval);
+    }
+
+    private RoundEngine(UUID roundId, RoundStatusCalculator statusCalculator, Duration tickInterval) {
         this.roundId = roundId;
+        this.tickInterval = tickInterval;
         this.matchEngines = new ConcurrentHashMap<>();
         this.statusCalculator = statusCalculator;
         // Keep the latest round state available for SSE clients.
@@ -90,7 +104,7 @@ public class RoundEngine {
             return t;
         });
         tickFuture = scheduler.scheduleAtFixedRate(this::executeTick,
-            ROUND_TICK_INTERVAL.toMillis(), ROUND_TICK_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
+            tickInterval.toMillis(), tickInterval.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     private void shutdownScheduler(long timeout, TimeUnit unit) {

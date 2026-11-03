@@ -143,9 +143,6 @@ public class RoundController {
 
     private Mono<RoundState> startMatches(UUID roundId, UUID userId, StartRoundRequest request,
                                            MatchStartRequestTrace trace) {
-        RoundEngine roundEngine = new RoundEngine(roundId);
-        log.info("[ROUND-CONTROLLER] Created RoundEngine for roundId: {}", roundId);
-
         final int totalMatches = request.matches().size();
         final AtomicInteger matchesFinished = new AtomicInteger(0);
         final List<MatchResultProcessor.MatchResultInfo> matchResults =
@@ -162,6 +159,7 @@ public class RoundController {
             })
             .switchIfEmpty(Mono.error(new IllegalStateException("Career not found for user: " + userId)))
             .flatMapMany(career -> {
+                RoundEngine roundEngine = RoundEngine.forCareerSpeed(roundId, career.getGameSpeed());
                 log.info("[ROUND-CONTROLLER] CareerSave loaded for detailed match context construction");
                 String traceCareerId = career.getData().getCareerId();
                 String lifecycleGeneration = career.getLifecycleGeneration();
