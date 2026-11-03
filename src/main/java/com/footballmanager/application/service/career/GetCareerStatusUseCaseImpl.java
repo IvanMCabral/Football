@@ -1,6 +1,7 @@
 package com.footballmanager.application.service.career;
 
 import com.footballmanager.domain.model.entity.CareerSave;
+import com.footballmanager.domain.model.entity.CareerPhase;
 import com.footballmanager.domain.model.entity.Division;
 import com.footballmanager.domain.port.in.career.GetCareerStatusUseCase;
 import lombok.RequiredArgsConstructor;
@@ -102,7 +103,9 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                             false,
                             null,
                             "IDLE",
-                            true,
+                            !Boolean.TRUE.equals(career.getTournamentState().getFinished())
+                                    && (career.getTournamentState().getCareerPhase() == CareerPhase.PRE_MATCH
+                                        || career.getTournamentState().getCareerPhase() == CareerPhase.WAITING_USER),
                             career.getTournamentState().getCareerPhase().name(),
                             squadSize,
                             freePlayersCount,
@@ -116,7 +119,7 @@ public class GetCareerStatusUseCaseImpl implements GetCareerStatusUseCase {
                     return dto;
                 })
                 .switchIfEmpty(Mono.just(new CareerStatusDto(
-                        null, 0, 0, 0, null, null, null, false, null, "IDLE", true, "NO_CAREER", 0, 0, null, false
+                        null, 0, 0, 0, null, null, null, false, null, "IDLE", false, "NO_CAREER", 0, 0, null, false
                 )));
     }
 }
