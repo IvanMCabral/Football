@@ -68,7 +68,8 @@ final class TestHarnessContextMutationSupport {
             context.awayStyle(),
             context.manualSubstitutions(),
             userIsHome ? userSlots : homeSlots,
-            userIsHome ? awaySlots : userSlots);
+            userIsHome ? awaySlots : userSlots,
+            context.manualSubstitutionTeamId());
     }
 
     static MatchContext buildMovedPositionContext(
@@ -108,7 +109,8 @@ final class TestHarnessContextMutationSupport {
             context.awayStyle(),
             context.manualSubstitutions(),
             userIsHome ? userSlots : homeSlots,
-            userIsHome ? awaySlots : userSlots);
+            userIsHome ? awaySlots : userSlots,
+            context.manualSubstitutionTeamId());
     }
 
     static MatchContext buildRoleOverrideContext(
@@ -151,7 +153,8 @@ final class TestHarnessContextMutationSupport {
             context.awayStyle(),
             context.manualSubstitutions(),
             context.homeSlotsByPlayerId(),
-            context.awaySlotsByPlayerId());
+            context.awaySlotsByPlayerId(),
+            context.manualSubstitutionTeamId());
     }
 
     private static void swapStarterAndBench(

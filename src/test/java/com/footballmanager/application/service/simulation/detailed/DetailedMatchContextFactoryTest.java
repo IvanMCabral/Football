@@ -21,6 +21,22 @@ class MatchContextFactoryTest {
 
     private final MatchContextFactory factory = new MatchContextFactory();
 
+    @Test
+    void careerManagerOwnsSubstitutionsOnEitherSideAndUnrelatedMatchesRemainAutomatic() {
+        CareerSave career=makeCareer("manager-policy","home-t1","away-t2",makePlayers("h",15,75),makePlayers("a",15,70));
+        var fixture=makeFixture("manager-policy-match","home-t1","away-t2",1);
+        var home=makeTeam("home-t1","Home","4-4-2");var away=makeTeam("away-t2","Away","4-4-2");
+        for(String manager:List.of("home-t1","away-t2")) {
+            career.setUserSessionTeamId(manager);
+            var context=factory.build(career,fixture,home,away,42L);
+            assertEquals(manager,context.manualSubstitutionTeamId());
+            assertFalse(context.allowsAutomaticSubstitutions(manager));
+            assertTrue(context.allowsAutomaticSubstitutions(manager.equals("home-t1")?"away-t2":"home-t1"));
+        }
+        career.setUserSessionTeamId("other-club");
+        assertNull(factory.build(career,fixture,home,away,42L).manualSubstitutionTeamId());
+    }
+
     // ========== Happy-path tests ==========
 
     @Test

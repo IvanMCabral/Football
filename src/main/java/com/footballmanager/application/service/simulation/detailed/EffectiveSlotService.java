@@ -25,14 +25,16 @@ final class EffectiveSlotService {
                 || sub.effectiveMinute() > minute) {
                 continue;
             }
-            LineupSlot offSlot = baseSlotsByPlayerId.get(sub.playerOffId());
+            LineupSlot offSlot = (effective != null ? effective : baseSlotsByPlayerId).get(sub.playerOffId());
             if (offSlot == null) {
                 continue;
             }
             if (effective == null) {
                 effective = new HashMap<>(baseSlotsByPlayerId);
             }
-            effective.put(sub.playerOnId(), offSlot);
+            effective.remove(sub.playerOffId());
+            effective.put(sub.playerOnId(), new LineupSlot(sub.playerOnId(), offSlot.subdivisionId(),
+                offSlot.customXPercent(), offSlot.customYPercent()));
         }
         return effective != null ? effective : baseSlotsByPlayerId;
     }

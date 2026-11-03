@@ -10,6 +10,7 @@ final class MinuteAutomaticSubstitutionPhase {
     void apply(MinuteSimulationInput minuteContext, MinutePossessionState possession) {
         int minute = minuteContext.minute();
         if (minute >= 60
+                && minuteContext.matchContext().allowsAutomaticSubstitutions(minuteContext.matchContext().homeTeamId())
                 && !minuteContext.homeState().startingPlayers().isEmpty()
                 && substitutionPolicies.automaticSubstitutionEngine()
                 .hasSubstitutionsRemaining(minuteContext.matchContext().homeTeamId())
@@ -18,6 +19,7 @@ final class MinuteAutomaticSubstitutionPhase {
                     .ifPresent(e -> minuteContext.timeline().addEvent(e));
         }
         if (minute >= 60
+                && minuteContext.matchContext().allowsAutomaticSubstitutions(minuteContext.matchContext().awayTeamId())
                 && !minuteContext.awayState().startingPlayers().isEmpty()
                 && substitutionPolicies.automaticSubstitutionEngine()
                 .hasSubstitutionsRemaining(minuteContext.matchContext().awayTeamId())

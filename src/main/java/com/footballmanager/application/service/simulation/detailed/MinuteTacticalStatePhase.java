@@ -21,16 +21,23 @@ final class MinuteTacticalStatePhase {
                 minuteContext.homeState().startingPlayers(), PlayerSkill.PASSER);
         int awayMaxPasser = tacticalPolicies.playerSkillService().maxSkill(
                 minuteContext.awayState().startingPlayers(), PlayerSkill.PASSER);
+        // Only successful changes affect the shape; include AI replacements too.
+        var appliedSubs = minuteContext.timeline().events().stream()
+            .filter(e -> e.type() == DetailedMatchEventType.SUBSTITUTION)
+            .map(e -> new MatchContext.ScheduledSub(e.teamId(), e.playerId(), e.relatedPlayerId(), e.minute()))
+            .toList();
         Map<String, LineupSlot> homeEffectiveSlots = tacticalPolicies.effectiveSlotService().effectiveSlotsForMinute(
                 minuteContext.matchContext().homeSlotsByPlayerId(),
-                minuteContext.matchContext().manualSubstitutions(),
+                appliedSubs,
                 minuteContext.matchContext().homeTeamId(),
                 minute);
         Map<String, LineupSlot> awayEffectiveSlots = tacticalPolicies.effectiveSlotService().effectiveSlotsForMinute(
                 minuteContext.matchContext().awaySlotsByPlayerId(),
-                minuteContext.matchContext().manualSubstitutions(),
+                appliedSubs,
                 minuteContext.matchContext().awayTeamId(),
                 minute);
+        minuteContext.homeState().applyTacticalSlots(homeEffectiveSlots);
+        minuteContext.awayState().applyTacticalSlots(awayEffectiveSlots);
         TacticalShapeProfile homeShape = tacticalPolicies.tacticalShapeService().tacticalShapeProfile(
                 minuteContext.homeState(), minuteContext.matchContext().homeFormation(), homeEffectiveSlots);
         TacticalShapeProfile awayShape = tacticalPolicies.tacticalShapeService().tacticalShapeProfile(

@@ -24,6 +24,8 @@ public final class LiveSession {
     private static final Logger log = LoggerFactory.getLogger(LiveSession.class);
 
     private volatile MatchContext effectiveContext;
+    private final java.util.NavigableMap<Integer, MatchContext> tacticalHistory = new java.util.TreeMap<>();
+    private final java.util.NavigableMap<Integer, MatchContext> simulationHistory = new java.util.TreeMap<>();
 
     private final long seed;
 
@@ -47,7 +49,9 @@ public final class LiveSession {
     private boolean cachedResultFinal;
 
     public LiveSession(MatchContext context, long seed) {
-        this.effectiveContext = context;
+        this.effectiveContext = copyContext(context);
+        this.tacticalHistory.put(0, copyContext(context));
+        rebuildSimulationHistory();
         this.seed = seed;
         this.cachedRandom = new CachingRandomWrapper(seed);
         this.engine = new DetailedMatchEngine();
@@ -68,7 +72,7 @@ public final class LiveSession {
         }
         cachedRandom.rewind();
         int maxMinute = Math.min(ticksRun + 1, 90);
-        DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom, maxMinute);
+        DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom, maxMinute, this::tacticsAtMinute);
         this.cachedResult = result;
         this.cachedResultFinal = maxMinute >= 90;
         this.homeGoals = result.homeGoals();
@@ -395,7 +399,7 @@ public final class LiveSession {
     public synchronized DetailedMatchResult finalResult() {
         if (cachedResult == null || !cachedResultFinal) {
             cachedRandom.rewind();
-            this.cachedResult = engine.simulate(effectiveContext, cachedRandom);
+            this.cachedResult = engine.simulate(effectiveContext, cachedRandom, 90, this::tacticsAtMinute);
             this.cachedResultFinal = true;
             this.homeGoals = cachedResult.homeGoals();
             this.awayGoals = cachedResult.awayGoals();
@@ -422,10 +426,11 @@ public final class LiveSession {
         final String teamId = event.teamId();
         final String playerOffId = event.playerId();
         final String playerOnId = event.relatedPlayerId();
-        final int minute = event.minute();
+        final int minute = Math.max(event.minute(), currentMinute + 1);
 
         mutateContext(ctx -> ctx.withManualSubstitution(
             teamId, playerOffId, playerOnId, minute));
+        // Project the accepted swap immediately; simulation resumes at the next unplayed minute.
         this.manualEvents.add(event);
         log.trace("Manual substitution recorded + applied: teamId={} off={} on={} minute={}",
             teamId, playerOffId, playerOnId, minute);
@@ -459,9 +464,10 @@ public final class LiveSession {
         cachedRandom.invalidateFromIndex(index);
         log.trace("replayFromMinute({}) invalidated cache index {}, replaying engine",
             fromMinute, index);
-        DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom);
+        cachedRandom.rewind();
+        DetailedMatchResult result = engine.simulate(effectiveContext, cachedRandom, currentMinute, this::tacticsAtMinute);
         this.cachedResult = result;
-        this.cachedResultFinal = true;
+        this.cachedResultFinal = currentMinute >= 90;
         this.homeGoals = result.homeGoals();
         this.awayGoals = result.awayGoals();
         this.engineTimeline.clear();
@@ -491,13 +497,28 @@ public final class LiveSession {
             if (safePositions.isEmpty()) {
                 return changed;
             }
-            for (SessionPlayer player : playersForTeam(changed, teamId)) {
-                String position = safePositions.get(player.getSessionPlayerId());
-                if (position != null && !position.equals(player.getPosition())) {
-                    player.setPosition(position);
+            // SessionPlayer.position is the natural role, not a writable tactical assignment.
+            // Coordinates carry live placement. Legacy role-only commands receive an anchor.
+            Map<String, LineupSlot> placements = new LinkedHashMap<>(
+                teamId.equals(changed.homeTeamId()) ? changed.homeSlotsByPlayerId() : changed.awaySlotsByPlayerId());
+            List<SessionPlayer> players = playersForTeam(changed, teamId);
+            for (int i = 0; i < players.size(); i++) {
+                SessionPlayer player = players.get(i);
+                String id = player.getSessionPlayerId();
+                String position = safePositions.get(id);
+                LineupSlot supplied = safeSlots.get(id);
+                if (position != null && (supplied == null
+                        || supplied.customYPercent() == null || !Double.isFinite(supplied.customYPercent()))) {
+                    double y = switch (position) {
+                        case "GK" -> 93.5;
+                        case "DEF" -> 83.0;
+                        case "MID" -> 55.0;
+                        default -> 17.0;
+                    };
+                    placements.put(id, new LineupSlot(id, "GK".equals(position) ? "GK-1" : "LIVE-" + i, 50.0, y));
                 }
             }
-            return changed;
+            return changed.withSlots(teamId, placements);
         });
     }
 
@@ -528,6 +549,8 @@ public final class LiveSession {
             throw new IllegalArgumentException("mutator must not return null");
         }
         this.effectiveContext = copyContext(next);
+        this.tacticalHistory.put(currentMinute + 1, copyContext(next));
+        rebuildSimulationHistory();
         log.trace("mutateContext applied, triggering replay from currentMinute={}",
             currentMinute);
         if (currentMinute >= 1) {
@@ -570,8 +593,7 @@ public final class LiveSession {
 
     private String visibleEventKey(DetailedMatchEvent event) {
         if (event.type() == DetailedMatchEventType.SUBSTITUTION) {
-            return event.minute()
-                + "|" + event.type()
+            return event.type()
                 + "|" + visibleSubstitutionTeamKey(event)
                 + "|" + nullSafe(event.playerId())
                 + "|" + nullSafe(event.relatedPlayerId());
@@ -724,6 +746,16 @@ public final class LiveSession {
         return List.copyOf(views);
     }
 
+    private void rebuildSimulationHistory() {
+        simulationHistory.clear();
+        tacticalHistory.forEach((minute, tactics) ->
+            simulationHistory.put(minute, effectiveContext.withTacticsFrom(tactics)));
+    }
+
+    private MatchContext tacticsAtMinute(int minute) {
+        return simulationHistory.floorEntry(minute).getValue();
+    }
+
     private MatchContext copyContext(MatchContext context) {
         return new MatchContext(
                 context.matchId(),
@@ -741,7 +773,8 @@ public final class LiveSession {
                 context.awayStyle(),
                 context.manualSubstitutions(),
                 context.homeSlotsByPlayerId(),
-                context.awaySlotsByPlayerId());
+                context.awaySlotsByPlayerId(),
+                context.manualSubstitutionTeamId());
     }
 
     private SessionTeam copyTeam(SessionTeam team) {

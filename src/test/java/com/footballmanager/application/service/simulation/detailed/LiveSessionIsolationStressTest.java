@@ -260,9 +260,11 @@ class LiveSessionIsolationStressTest {
                 .as(owner.id() + " must expose its manual sub exactly once in the live snapshot")
                 .hasSize(1);
         assertThat(snapshot.matchId()).isEqualTo(owner.context().matchId());
-        assertThat(snapshot.homeSlots().stream().map(FormationSlot::playerId))
-                .contains(owner.onPlayerId())
-                .doesNotContain(owner.offPlayerId());
+        boolean sentOff = snapshot.allEvents().stream().anyMatch(e -> e.type() == DetailedMatchEventType.RED_CARD && owner.onPlayerId().equals(e.playerId()));
+        var visibleIds = snapshot.homeSlots().stream().map(FormationSlot::playerId).toList();
+        assertThat(visibleIds).doesNotContain(owner.offPlayerId());
+        if (sentOff) assertThat(visibleIds).doesNotContain(owner.onPlayerId());
+        else assertThat(visibleIds).contains(owner.onPlayerId());
         assertThat(ownerSession.context().manualSubstitutions())
                 .containsExactly(new MatchContext.ScheduledSub(
                         owner.context().homeTeamId(),
@@ -357,7 +359,7 @@ class LiveSessionIsolationStressTest {
                 "4-3-3",
                 "4-4-2",
                 style,
-                TeamStyle.BALANCED);
+                TeamStyle.BALANCED).withManualSubstitutionTeam(homeTeamId);
         String offPlayerId = homeTeamId + "-starter-" + offIndex;
         String onPlayerId = homeTeamId + "-bench-" + onIndex;
         DetailedMatchEvent event = new DetailedMatchEvent(

@@ -79,7 +79,8 @@ class LiveSessionContextEncapsulationTest {
 
         LiveSessionContextView view = session.contextView();
         assertThat(view.homeFormation()).isEqualTo("4-4-2");
-        assertThat(view.findPlayer(teamId, playerId).position()).isEqualTo("ATT");
+        assertThat(view.findPlayer(teamId, playerId).position()).isEqualTo("MID");
+
         assertThat(view.homeTeam().slotsByPlayerId().get(playerId).customXPercent()).isEqualTo(51.5);
     }
 

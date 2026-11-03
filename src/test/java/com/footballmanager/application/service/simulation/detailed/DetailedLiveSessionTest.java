@@ -567,14 +567,14 @@ class LiveSessionTest {
     @Test
     @DisplayName("F2.5: early vs late sub (different effectiveMinute) produces DIFFERENT outcomes")
     void earlyVsLateSubstitution_producesDifferentOutcomes() {
-        LiveSession earlySession = new LiveSession(context, 42L);
+        LiveSession earlySession = new LiveSession(context.withManualSubstitutionTeam(homeTeamId), 42L);
         earlySession.recordManualSubstitution(buildManualSubstitutionEvent(
             homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 1));
         for (int i = 0; i < 90; i++) earlySession.tick();
         DetailedMatchResult earlyResult = earlySession.finalResult();
 
-        LiveSession lateSession = new LiveSession(context, 42L);
+        LiveSession lateSession = new LiveSession(context.withManualSubstitutionTeam(homeTeamId), 42L);
         lateSession.recordManualSubstitution(buildManualSubstitutionEvent(
             homeTeamId, "team-home-starter-10", "Home Starter 10",
             "team-home-bench-4", "Home Bench 4", 89));

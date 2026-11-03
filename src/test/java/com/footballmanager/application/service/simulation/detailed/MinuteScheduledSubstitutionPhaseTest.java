@@ -35,8 +35,8 @@ class MinuteScheduledSubstitutionPhaseTest {
                 .extracting(DetailedMatchEvent::type)
                 .containsExactly(DetailedMatchEventType.SUBSTITUTION);
         assertThat(fixture.appliedScheduledSubs).hasSize(1);
-        assertThat(fixture.home.startingPlayers().get(10).onPitch()).isFalse();
-        assertThat(fixture.home.benchPlayers().get(0).onPitch()).isTrue();
+        assertThat(fixture.home.startingPlayers().get(10).onPitch()).isTrue();
+        assertThat(fixture.home.benchPlayers().get(fixture.home.benchPlayers().size()-1).onPitch()).isFalse();
     }
 
     @Test

@@ -97,7 +97,9 @@ public final class MatchContextFactory {
                 awayStyle,
                 List.of(),
                 homeSlotsByPlayerId,
-                awaySlotsByPlayerId);
+                awaySlotsByPlayerId,
+                homeTeamId.equals(career.getUserSessionTeamId()) || awayTeamId.equals(career.getUserSessionTeamId())
+                    ? career.getUserSessionTeamId() : null);
     }
 
     public boolean canBuild(

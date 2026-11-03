@@ -48,6 +48,11 @@ public class DetailedMatchEngine implements DetailedMatchEngineProvider {
         return flow.simulate(context, random, maxMinute);
     }
 
+    DetailedMatchResult simulate(MatchContext context, Random random, int maxMinute,
+            java.util.function.IntFunction<MatchContext> tacticsAtMinute) {
+        return flow.simulate(context, random, maxMinute, tacticsAtMinute);
+    }
+
     static double onTargetProbability(double xg) {
         return DetailedMatchEngineFlow.onTargetProbability(xg);
     }

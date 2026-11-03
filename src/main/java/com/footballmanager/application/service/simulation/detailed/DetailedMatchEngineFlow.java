@@ -56,6 +56,11 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
         return simulateWithRandomBounded(context, random, random, random, maxMinute);
     }
 
+    DetailedMatchResult simulate(MatchContext context, Random random, int maxMinute,
+            java.util.function.IntFunction<MatchContext> tacticsAtMinute) {
+        return simulateWithRandomBounded(context, random, random, random, maxMinute, tacticsAtMinute);
+    }
+
     private DetailedMatchResult simulateWithRandom(
             MatchContext context,
             Random random,
@@ -70,22 +75,31 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
             Random homeSelectorRandom,
             Random awaySelectorRandom,
             int maxMinute) {
+        return simulateWithRandomBounded(context, random, homeSelectorRandom, awaySelectorRandom, maxMinute, null);
+    }
+
+    private DetailedMatchResult simulateWithRandomBounded(
+            MatchContext context,
+            Random random,
+            Random homeSelectorRandom,
+            Random awaySelectorRandom,
+            int maxMinute,
+            java.util.function.IntFunction<MatchContext> tacticsAtMinute) {
         validate(context, maxMinute);
 
+        MatchContext initial = tacticsAtMinute != null ? tacticsAtMinute.apply(1) : context;
         TeamMatchState homeState = createTeamState(
                 context.homeTeam(), context.homeStartingPlayers(), context.homeBenchPlayers(),
-                context.homeStyle(), context.homeSlotsByPlayerId());
+                initial.homeStyle(), initial.homeSlotsByPlayerId());
         TeamMatchState awayState = createTeamState(
                 context.awayTeam(), context.awayStartingPlayers(), context.awayBenchPlayers(),
-                context.awayStyle(), context.awaySlotsByPlayerId());
+                initial.awayStyle(), initial.awaySlotsByPlayerId());
         MatchTimeline timeline = new MatchTimeline();
         Set<String> appliedScheduledSubs = new HashSet<>();
         PlayerSelector homeSelector = new PlayerSelector(homeSelectorRandom);
         PlayerSelector awaySelector = new PlayerSelector(awaySelectorRandom);
         DetailedMatchMinuteFlow simulationMinuteFlow = new DetailedMatchMinuteFlow(disciplineModel, log);
 
-        double homePossBase = matchProbabilityService.possessionBase(context.homeStyle());
-        double awayPossBase = matchProbabilityService.possessionBase(context.awayStyle());
         double matchIntensity = matchIntensity(context);
 
         MatchClock clock = new MatchClock(90);
@@ -94,10 +108,15 @@ final class DetailedMatchEngineFlow implements DetailedMatchEngineProvider {
             if (minute > maxMinute) {
                 break;
             }
+            MatchContext active = tacticsAtMinute != null ? tacticsAtMinute.apply(minute) : context;
+            homeState.setFormation(active.homeFormation());
+            awayState.setFormation(active.awayFormation());
+            homeState.setStyle(active.homeStyle());
+            awayState.setStyle(active.awayStyle());
             MinuteSimulationConfig minuteConfig = new MinuteSimulationConfig(
-                    context,
-                    homePossBase,
-                    awayPossBase,
+                    active,
+                    matchProbabilityService.possessionBase(active.homeStyle()),
+                    matchProbabilityService.possessionBase(active.awayStyle()),
                     matchIntensity);
             MinuteMatchState minuteMatchState = new MinuteMatchState(
                     random,

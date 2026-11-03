@@ -137,9 +137,9 @@ public final class SubstitutionEngine {
         substitutedOnPlayerIds.add(subOn.sessionPlayerId());
 
         // Update state
-        subOff.substituteOff();
-        subOn.setTeamId(teamId);
-        subOn.substituteOn();
+        if (!team.replaceActivePlayer(subOff.sessionPlayerId(), subOn.sessionPlayerId())) {
+            throw new IllegalStateException("Could not replace player in active lineup");
+        }
 
         // Increment counter
         substitutionsUsed.merge(teamId, 1, Integer::sum);
@@ -204,7 +204,7 @@ public final class SubstitutionEngine {
     private PlayerMatchState selectBenchPlayer(List<PlayerMatchState> bench, String position) {
         // Filter eligible bench players
         var eligible = bench.stream()
-                .filter(p -> !p.onPitch() && !p.redCard() && !p.injured() && !isSubstitutedOn(p.sessionPlayerId()))
+                .filter(p -> !p.onPitch() && !p.redCard() && !p.injured() && !isSubstitutedOn(p.sessionPlayerId()) && !isSubstitutedOff(p.sessionPlayerId()))
                 .toList();
 
         if (eligible.isEmpty()) {
@@ -368,7 +368,7 @@ public final class SubstitutionEngine {
             throw new IllegalStateException(
                 "Player " + playerOnId + " is injured and cannot come on");
         }
-        if (isSubstitutedOn(playerOnId)) {
+        if (isSubstitutedOn(playerOnId) || isSubstitutedOff(playerOnId)) {
             throw new IllegalStateException(
                 "Player " + playerOnId + " has already been substituted on");
         }
@@ -385,9 +385,9 @@ public final class SubstitutionEngine {
         substitutedOnPlayerIds.add(subOn.sessionPlayerId());
 
         // Mutate state
-        subOff.substituteOff();
-        subOn.setTeamId(teamId);
-        subOn.substituteOn();
+        if (!team.replaceActivePlayer(subOff.sessionPlayerId(), subOn.sessionPlayerId())) {
+            throw new IllegalStateException("Could not replace player in active lineup");
+        }
 
         // Increment counter
         substitutionsUsed.merge(teamId, 1, Integer::sum);

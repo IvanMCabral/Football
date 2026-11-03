@@ -149,6 +149,10 @@ public class TeamMatchState {
         );
     }
 
+    void applyTacticalSlots(Map<String, LineupSlot> slots) {
+        for (PlayerMatchState player : startingPlayers) applyPersistedTacticalSlot(player, slots);
+    }
+
     private static void applyPersistedTacticalSlot(
             PlayerMatchState playerState,
             Map<String, LineupSlot> slotsByPlayerId) {
@@ -239,7 +243,7 @@ public class TeamMatchState {
      * @param playerOnId  sessionPlayerId of the player coming on (NOT NULL)
      * @return true if both players were found and swapped; false otherwise
      */
-    boolean swapStartingBenchForF25(String playerOffId, String playerOnId) {
+    boolean replaceActivePlayer(String playerOffId, String playerOnId) {
         if (playerOffId == null || playerOnId == null) return false;
         PlayerMatchState offPlayer = null;
         for (PlayerMatchState p : startingPlayers) {
@@ -258,7 +262,8 @@ public class TeamMatchState {
         if (offPlayer == null || onPlayer == null) {
             return false;
         }
-        startingPlayers.remove(offPlayer);
+        int slotIndex = startingPlayers.indexOf(offPlayer);
+        startingPlayers.set(slotIndex, onPlayer);
         benchPlayers.remove(onPlayer);
         offPlayer.substituteOff();
         onPlayer.setTeamId(teamId);
@@ -268,7 +273,7 @@ public class TeamMatchState {
         onPlayer.setPosition(offPlayer.position());
         onPlayer.substituteOn();
         benchPlayers.add(offPlayer);
-        startingPlayers.add(onPlayer);
+
         return true;
     }
     public int goals() { return goals; }

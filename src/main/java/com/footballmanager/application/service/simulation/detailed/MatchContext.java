@@ -45,6 +45,7 @@ public final class MatchContext {
     private final Map<String, LineupSlot> homeSlotsByPlayerId;
     private final Map<String, LineupSlot> awaySlotsByPlayerId;
     private final List<ScheduledSub> manualSubstitutions;
+    private final String manualSubstitutionTeamId;
 
     public MatchContext(
             @JsonProperty("matchId") String matchId,
@@ -84,9 +85,39 @@ public final class MatchContext {
             List<ScheduledSub> manualSubstitutions,
             Map<String, LineupSlot> homeSlotsByPlayerId,
             Map<String, LineupSlot> awaySlotsByPlayerId) {
+        this(matchId, homeTeamId, awayTeamId, homeTeam, awayTeam,
+                homeStartingPlayers, awayStartingPlayers, homeBenchPlayers, awayBenchPlayers,
+                homeFormation, awayFormation, homeStyle, awayStyle, manualSubstitutions,
+                homeSlotsByPlayerId, awaySlotsByPlayerId, null);
+    }
+
+    @JsonCreator
+    public MatchContext(
+            @JsonProperty("matchId") String matchId,
+            @JsonProperty("homeTeamId") String homeTeamId,
+            @JsonProperty("awayTeamId") String awayTeamId,
+            @JsonProperty("homeTeam") SessionTeam homeTeam,
+            @JsonProperty("awayTeam") SessionTeam awayTeam,
+            @JsonProperty("homeStartingPlayers") List<SessionPlayer> homeStartingPlayers,
+            @JsonProperty("awayStartingPlayers") List<SessionPlayer> awayStartingPlayers,
+            @JsonProperty("homeBenchPlayers") List<SessionPlayer> homeBenchPlayers,
+            @JsonProperty("awayBenchPlayers") List<SessionPlayer> awayBenchPlayers,
+            @JsonProperty("homeFormation") String homeFormation,
+            @JsonProperty("awayFormation") String awayFormation,
+            @JsonProperty("homeStyle") TeamStyle homeStyle,
+            @JsonProperty("awayStyle") TeamStyle awayStyle,
+            @JsonProperty("manualSubstitutions") List<ScheduledSub> manualSubstitutions,
+            @JsonProperty("homeSlotsByPlayerId") Map<String, LineupSlot> homeSlotsByPlayerId,
+            @JsonProperty("awaySlotsByPlayerId") Map<String, LineupSlot> awaySlotsByPlayerId,
+            @JsonProperty("manualSubstitutionTeamId") String manualSubstitutionTeamId) {
         if (matchId == null || matchId.isBlank()) {
             throw new IllegalArgumentException("matchId must not be blank");
         }
+        if (manualSubstitutionTeamId != null && !manualSubstitutionTeamId.equals(homeTeamId)
+                && !manualSubstitutionTeamId.equals(awayTeamId)) {
+            throw new IllegalArgumentException("manual substitution team must belong to match");
+        }
+        this.manualSubstitutionTeamId = manualSubstitutionTeamId;
         this.matchId = matchId;
         this.homeTeamId = Objects.requireNonNull(homeTeamId, "homeTeamId must not be null");
         this.awayTeamId = Objects.requireNonNull(awayTeamId, "awayTeamId must not be null");
@@ -126,6 +157,28 @@ public final class MatchContext {
                 homeBenchPlayers, awayBenchPlayers,
                 homeFormation, awayFormation, homeStyle, awayStyle,
                 new ArrayList<>());
+    }
+
+    @JsonProperty("manualSubstitutionTeamId")
+    public String manualSubstitutionTeamId() { return manualSubstitutionTeamId; }
+
+    public boolean allowsAutomaticSubstitutions(String teamId) {
+        return !Objects.equals(manualSubstitutionTeamId, teamId);
+    }
+
+    public MatchContext withManualSubstitutionTeam(String teamId) {
+        return new MatchContext(matchId, homeTeamId, awayTeamId, homeTeam, awayTeam,
+            homeStartingPlayers, awayStartingPlayers, homeBenchPlayers, awayBenchPlayers,
+            homeFormation, awayFormation, homeStyle, awayStyle, manualSubstitutions,
+            homeSlotsByPlayerId, awaySlotsByPlayerId, teamId);
+    }
+
+    MatchContext withTacticsFrom(MatchContext tactics) {
+        return new MatchContext(matchId, homeTeamId, awayTeamId, homeTeam, awayTeam,
+            homeStartingPlayers, awayStartingPlayers, homeBenchPlayers, awayBenchPlayers,
+            tactics.homeFormation, tactics.awayFormation, tactics.homeStyle, tactics.awayStyle,
+            manualSubstitutions, tactics.homeSlotsByPlayerId, tactics.awaySlotsByPlayerId,
+            manualSubstitutionTeamId);
     }
 
     private void validate() {
@@ -211,7 +264,7 @@ public final class MatchContext {
                     homeFormation, awayFormation,
                     newStyle, awayStyle,
                     manualSubstitutions,
-                    homeSlotsByPlayerId, awaySlotsByPlayerId);
+                    homeSlotsByPlayerId, awaySlotsByPlayerId, manualSubstitutionTeamId);
         }
         if (awayTeamId.equals(teamId)) {
             return new MatchContext(
@@ -222,7 +275,7 @@ public final class MatchContext {
                     homeFormation, awayFormation,
                     homeStyle, newStyle,
                     manualSubstitutions,
-                    homeSlotsByPlayerId, awaySlotsByPlayerId);
+                    homeSlotsByPlayerId, awaySlotsByPlayerId, manualSubstitutionTeamId);
         }
         throw new IllegalArgumentException(
                 "teamId '" + teamId + "' does not match home ('"
@@ -245,7 +298,7 @@ public final class MatchContext {
                     newFormation, awayFormation,
                     homeStyle, awayStyle,
                     manualSubstitutions,
-                    homeSlotsByPlayerId, awaySlotsByPlayerId);
+                    homeSlotsByPlayerId, awaySlotsByPlayerId, manualSubstitutionTeamId);
         }
         if (awayTeamId.equals(teamId)) {
             return new MatchContext(
@@ -256,7 +309,7 @@ public final class MatchContext {
                     homeFormation, newFormation,
                     homeStyle, awayStyle,
                     manualSubstitutions,
-                    homeSlotsByPlayerId, awaySlotsByPlayerId);
+                    homeSlotsByPlayerId, awaySlotsByPlayerId, manualSubstitutionTeamId);
         }
         throw new IllegalArgumentException(
                 "teamId '" + teamId + "' does not match home ('"
@@ -277,7 +330,7 @@ public final class MatchContext {
                     homeFormation, awayFormation,
                     homeStyle, awayStyle,
                     manualSubstitutions,
-                    safeSlots, awaySlotsByPlayerId);
+                    safeSlots, awaySlotsByPlayerId, manualSubstitutionTeamId);
         }
         if (awayTeamId.equals(teamId)) {
             return new MatchContext(
@@ -288,7 +341,7 @@ public final class MatchContext {
                     homeFormation, awayFormation,
                     homeStyle, awayStyle,
                     manualSubstitutions,
-                    homeSlotsByPlayerId, safeSlots);
+                    homeSlotsByPlayerId, safeSlots, manualSubstitutionTeamId);
         }
         throw new IllegalArgumentException(
                 "teamId '" + teamId + "' does not match home ('"
@@ -367,6 +420,6 @@ public final class MatchContext {
                 homeFormation, awayFormation,
                 homeStyle, awayStyle,
                 nextManualSubs,
-                homeSlotsByPlayerId, awaySlotsByPlayerId);
+                homeSlotsByPlayerId, awaySlotsByPlayerId, manualSubstitutionTeamId);
     }
 }
