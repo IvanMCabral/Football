@@ -248,10 +248,15 @@ public class RoundController {
                 log.info("[ROUND-CONTROLLER] Registered round engine, calling start()");
                 return RuntimeOperationMetrics.measure("match.start.initialization", Mono.whenDelayError(matchStarts))
                         .then(Mono.fromRunnable(() -> {
-                            roundEngine.start();
+                            if (request.simulate()) {
+                                roundEngine.simulate();
+                            } else {
+                                roundEngine.start();
+                            }
                             log.info("[ROUND-CONTROLLER] Round engine start() called, isRunning: {}",
                                     roundEngine.isRunning());
-                        }))
+                        }).subscribeOn(request.simulate() ? reactor.core.scheduler.Schedulers.boundedElastic()
+                                : reactor.core.scheduler.Schedulers.immediate()))
                         .thenMany(Flux.fromIterable(request.matches())
                                 .flatMap(matchInfo -> {
                                     UUID matchId = UUID.fromString(matchInfo.matchId());
@@ -510,7 +515,11 @@ public class RoundController {
                 tracking.seasonNumber);
     }
 
-    public record StartRoundRequest(String roundId, String userId, List<MatchInfo> matches) {
+    public record StartRoundRequest(String roundId, String userId, List<MatchInfo> matches, boolean simulate) {
+        public StartRoundRequest(String roundId, String userId, List<MatchInfo> matches) {
+            this(roundId, userId, matches, false);
+        }
+
         public record MatchInfo(String matchId, String homeTeamId, String awayTeamId) {}
     }
 

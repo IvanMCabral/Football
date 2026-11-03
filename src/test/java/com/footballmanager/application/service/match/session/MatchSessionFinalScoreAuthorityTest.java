@@ -29,6 +29,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MatchSessionFinalScoreAuthorityTest {
 
     @Test
+    void simulateToEndPublishesOneCanonicalResult() {
+        MatchSession session = session(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        AtomicInteger completions = new AtomicInteger();
+        session.setOnFinishCallback(result -> completions.incrementAndGet());
+
+        session.start();
+        session.simulateToEnd();
+        session.simulateToEnd();
+
+        assertEquals(90, session.getCurrentState().currentMinute());
+        assertEquals(MatchStatus.FINISHED, session.getCurrentState().status());
+        assertEquals(1, completions.get());
+    }
+
+    @Test
     void acceptedSwapAndNextMinuteExecutionAppearOnceInCanonicalTerminal() {
         UUID matchId=UUID.randomUUID(), home=UUID.randomUUID(), away=UUID.randomUUID();
         MatchSession session=session(matchId,home,away);

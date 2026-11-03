@@ -149,6 +149,18 @@ public class MatchSession {
         emitState();
     }
 
+    public void simulateToEnd() {
+        if (isFinished()) return;
+        if (detailedMatchSession != null) {
+            detailedMatchSession.finalResult();
+            publishCanonicalDetailedTerminal(detailedMatchSession.snapshot());
+            return;
+        }
+        for (int tick = 0; tick < 90 && !isFinished(); tick++) {
+            advanceTick();
+        }
+    }
+
     public MatchStateSnapshot advanceTick() {
         if (isFinished()) {
             return currentState;

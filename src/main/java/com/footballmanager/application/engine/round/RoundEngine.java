@@ -95,6 +95,23 @@ public class RoundEngine {
         startScheduler();
     }
 
+    public synchronized void simulate() {
+        if (matchEngines.isEmpty() || isRunning) return;
+        isRunning = true;
+        isPaused = false;
+        matchEngines.values().forEach(MatchEngine::start);
+        try {
+            matchEngines.values().forEach(MatchEngine::simulateToEnd);
+            if (statusCalculator.allFinished(getMatchStates())) {
+                emitCompletedState();
+            } else {
+                emitRoundState();
+            }
+        } finally {
+            stop();
+        }
+    }
+
     private void startScheduler() {
         shutdownScheduler(5, TimeUnit.SECONDS);
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {

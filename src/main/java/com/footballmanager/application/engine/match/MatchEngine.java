@@ -29,6 +29,10 @@ public class MatchEngine {
         session.start();
     }
 
+    public void simulateToEnd() {
+        session.simulateToEnd();
+    }
+
     public void advanceTick() {
         session.advanceTick();
     }
