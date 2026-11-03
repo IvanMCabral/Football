@@ -18,6 +18,9 @@ import java.util.function.UnaryOperator;
 
 public final class LiveSession {
 
+    private static final com.footballmanager.application.service.editor.FormationService FORMATIONS =
+        new com.footballmanager.application.service.editor.FormationService();
+
     private static final Logger log = LoggerFactory.getLogger(LiveSession.class);
 
     private volatile MatchContext effectiveContext;
@@ -189,10 +192,10 @@ public final class LiveSession {
                 effectiveContext.awayFormation(),
                 buildLiveSlotsForSnapshot(
                         startersForSnapshot(true),
-                        slotsForSnapshot(true)),
+                        slotsForSnapshot(true), effectiveContext.homeTeamId()),
                 buildLiveSlotsForSnapshot(
                         startersForSnapshot(false),
-                        slotsForSnapshot(false))
+                        slotsForSnapshot(false), effectiveContext.awayTeamId())
         );
     }
 
@@ -246,7 +249,7 @@ public final class LiveSession {
     private List<MatchContext.ScheduledSub> scheduledSubsForSnapshot() {
         List<MatchContext.ScheduledSub> subs =
                 new ArrayList<>(effectiveContext.manualSubstitutions());
-        for (DetailedMatchEvent event : manualEvents) {
+        for (DetailedMatchEvent event : accumulatedEvents()) {
             if (event.type() != DetailedMatchEventType.SUBSTITUTION
                     || event.teamId() == null
                     || event.playerId() == null
@@ -272,6 +275,7 @@ public final class LiveSession {
                 ));
             }
         }
+        subs.sort(Comparator.comparingInt(MatchContext.ScheduledSub::effectiveMinute));
         return subs;
     }
 
@@ -306,7 +310,7 @@ public final class LiveSession {
 
     private List<FormationSlot> buildLiveSlotsForSnapshot(
             List<SessionPlayer> starters,
-            Map<String, LineupSlot> slotsByPlayerId) {
+            Map<String, LineupSlot> slotsByPlayerId, String teamId) {
         if (starters == null || starters.isEmpty()) {
             return List.of();
         }
@@ -316,13 +320,19 @@ public final class LiveSession {
             if (player == null || player.getSessionPlayerId() == null) {
                 continue;
             }
+            if (engineTimeline.stream().anyMatch(event -> event.minute() <= currentMinute &&
+                    event.type() == DetailedMatchEventType.RED_CARD && teamId.equals(event.teamId()) &&
+                    player.getSessionPlayerId().equals(event.playerId()))) {
+                continue;
+            }
             LineupSlot liveSlot = slotsByPlayerId != null
                     ? slotsByPlayerId.get(player.getSessionPlayerId())
                     : null;
             slots.add(new FormationSlot(
                     player.getSessionPlayerId(),
                     player.getPosition(),
-                    resolveLiveSlotIndex(liveSlot, i),
+                    resolveLiveSlotIndex(liveSlot, i, teamId.equals(effectiveContext.homeTeamId())
+                        ? effectiveContext.homeFormation() : effectiveContext.awayFormation()),
                     liveSlot != null ? liveSlot.customXPercent() : null,
                     liveSlot != null ? liveSlot.customYPercent() : null
             ));
@@ -330,7 +340,7 @@ public final class LiveSession {
         return slots;
     }
 
-    private Integer resolveLiveSlotIndex(LineupSlot slot, int fallbackIndex) {
+    private Integer resolveLiveSlotIndex(LineupSlot slot, int fallbackIndex, String formation) {
         if (slot == null || slot.subdivisionId() == null) {
             return fallbackIndex;
         }
@@ -344,6 +354,12 @@ public final class LiveSession {
         }
         if ("GK-1".equalsIgnoreCase(id)) {
             return 0;
+        }
+        var definition = FORMATIONS.getFormationByName(formation);
+        if (definition != null) {
+            for (var position : definition.positions()) {
+                if (id.equals(position.subdivisionId())) return position.index();
+            }
         }
         return fallbackIndex;
     }

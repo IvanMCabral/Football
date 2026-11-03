@@ -17,6 +17,78 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class LiveSessionSubstitutionEventIdentityTest {
 
     @Test
+    void canonicalSlotIndexesFollowPlacementRatherThanTheRosterArrayForAllFormations() {
+        var catalog = new com.footballmanager.application.service.editor.FormationService();
+        for (var formation : catalog.getAllFormations()) {
+            var context = contextWithUniquePlayerIds("shuffled-" + formation.name());
+            var placements = new java.util.LinkedHashMap<String, com.footballmanager.domain.model.valueobject.LineupSlot>();
+            for (int i = 0; i < 11; i++) {
+                var position = formation.positions().get(i == 0 ? 0 : 11 - i);
+                String playerId = context.homeStartingPlayers().get(i).getSessionPlayerId();
+                placements.put(playerId, new com.footballmanager.domain.model.valueobject.LineupSlot(
+                    playerId, position.subdivisionId(), position.xPercent(), position.yPercent()));
+            }
+            context = context.withNewFormation(context.homeTeamId(), formation.name()).withSlots(context.homeTeamId(), placements);
+            var snapshot = new LiveSession(context, 1L).snapshot();
+            for (var slot : snapshot.homeSlots()) {
+                var placed = placements.get(slot.playerId());
+                var expected = formation.positions().stream().filter(p -> p.subdivisionId().equals(placed.subdivisionId())).findFirst().orElseThrow();
+                assertThat(slot.slotIndex()).as(formation.name() + " " + slot.playerId()).isEqualTo(expected.index());
+                assertThat(slot.customXPercent()).isEqualTo(expected.xPercent());
+                assertThat(slot.customYPercent()).isEqualTo(expected.yPercent());
+            }
+        }
+    }
+
+    @Test
+    void sentOffPlayerDisappearsWithoutMovingTheOtherTenSlots() throws ReflectiveOperationException {
+        var context = contextWithUniquePlayerIds("red-slot");
+        var session = new LiveSession(context, 42L);
+        session.tick();
+        var timelineField = LiveSession.class.getDeclaredField("engineTimeline");
+        timelineField.setAccessible(true);
+        @SuppressWarnings("unchecked") var timeline = (List<DetailedMatchEvent>) timelineField.get(session);
+        String offId = context.homeStartingPlayers().get(3).getSessionPlayerId();
+        timeline.add(new DetailedMatchEvent(1, DetailedMatchEventType.RED_CARD, context.homeTeamId(), offId,
+            "Sent Off", null, null, 0.0, "Sent Off received a red card"));
+        var snapshot = session.snapshot();
+        assertThat(snapshot.homeSlots()).hasSize(10).noneMatch(slot -> slot.playerId().equals(offId));
+        assertThat(snapshot.homeSlots()).extracting(slot -> slot.slotIndex()).containsExactly(0, 1, 2, 4, 5, 6, 7, 8, 9, 10);
+        assertThat(snapshot.awaySlots()).hasSize(11);
+        assertThat(context.homeStartingPlayers()).hasSize(11);
+    }
+
+    @Test
+    void liveSlotsFollowAutomaticSubstitutionsAndDismissalsAtEveryMinuteWithoutRenumbering() {
+        MatchContext context = contextWithUniquePlayerIds("automatic-slots");
+        LiveSession session = new LiveSession(context, 42L);
+        int substitutions = 0;
+        for (int minute = 1; minute <= 90; minute++) {
+            LiveSnapshot snapshot = session.tick();
+            for (boolean home : List.of(true, false)) {
+                String teamId = home ? context.homeTeamId() : context.awayTeamId();
+                var starters = home ? context.homeStartingPlayers() : context.awayStartingPlayers();
+                var expected = new java.util.LinkedHashMap<String, Integer>();
+                for (int i = 0; i < starters.size(); i++) expected.put(starters.get(i).getSessionPlayerId(), i);
+                for (var event : snapshot.allEvents()) {
+                    if (!teamId.equals(event.teamId())) continue;
+                    if (event.type() == DetailedMatchEventType.SUBSTITUTION) {
+                        Integer slot = expected.remove(event.playerId());
+                        if (slot != null) expected.put(event.relatedPlayerId(), slot);
+                    } else if (event.type() == DetailedMatchEventType.RED_CARD) expected.remove(event.playerId());
+                }
+                var actual = new java.util.LinkedHashMap<String, Integer>();
+                for (var slot : home ? snapshot.homeSlots() : snapshot.awaySlots())
+                    actual.put(slot.playerId(), slot.slotIndex());
+                assertThat(actual).as("minute %s team %s", minute, teamId).isEqualTo(expected);
+            }
+            substitutions = Math.max(substitutions, (int) snapshot.allEvents().stream()
+                .filter(e -> e.type() == DetailedMatchEventType.SUBSTITUTION).count());
+        }
+        assertThat(substitutions).as("real automatic substitutions must be exercised").isPositive();
+    }
+
+    @Test
     @DisplayName("same minute and player ids on different teams remain distinct visible substitutions")
     void samePlayerIdsOnDifferentTeamsRemainDistinct() {
         MatchContext context = contextWithSharedPlayerIds();
