@@ -29,6 +29,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MatchSessionFinalScoreAuthorityTest {
 
     @Test
+    void acceptedSwapAndNextMinuteExecutionAppearOnceInCanonicalTerminal() {
+        UUID matchId=UUID.randomUUID(), home=UUID.randomUUID(), away=UUID.randomUUID();
+        MatchSession session=session(matchId,home,away);
+        var accepted=new DetailedMatchEvent(62,DetailedMatchEventType.SUBSTITUTION,home.toString(),"off","Off","on","On",0,"Accepted swap");
+        var applied=new DetailedMatchEvent(63,DetailedMatchEventType.SUBSTITUTION,home.toString(),"off","Off","on","On",0,"Applied swap");
+        var rival=new DetailedMatchEvent(63,DetailedMatchEventType.SUBSTITUTION,away.toString(),"off","Off","on","On",0,"Different team");
+        MatchTimeline timeline=new MatchTimeline();timeline.addEvent(applied);timeline.addEvent(rival);
+        DetailedMatchResult result=DetailedMatchResult.builder().matchId(matchId.toString()).homeTeamId(home.toString())
+            .awayTeamId(away.toString()).timeline(timeline).build();
+        forceFinishedLiveSession(session.getLiveSession(),result,List.of(accepted,rival));
+        var terminal=session.finalizeDetailedSnapshot(result);
+        assertEquals(2,terminal.events().size());
+        assertEquals(1,terminal.events().stream().filter(e->home.toString().equals(e.getTeamId())).count());
+        assertTrue(terminal.events().stream().allMatch(e->e.getMinute()==63));
+    }
+
+    @Test
     void h8287Shape_staleEventDerivedSnapshotCannotOverrideFinalDetailedScore() {
         UUID matchId = UUID.fromString("00000000-0000-0000-0000-000000008701");
         UUID homeId = UUID.fromString("00000000-0000-0000-0000-000000008702");

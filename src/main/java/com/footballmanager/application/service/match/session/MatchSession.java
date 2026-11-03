@@ -265,7 +265,7 @@ public class MatchSession {
         for (DetailedMatchEvent event : detailedMatchSession.accumulatedEvents()) {
             if ((event.type() == DetailedMatchEventType.SUBSTITUTION
                     || event.type() == DetailedMatchEventType.TACTICAL_CHANGE)
-                    && !finalEvents.contains(event)) {
+                    && finalEvents.stream().noneMatch(existing -> sameFinalEvent(existing, event))) {
                 finalEvents.add(event);
             }
         }
@@ -289,6 +289,17 @@ public class MatchSession {
                 .withScore(new Score(result.homeGoals(), result.awayGoals()))
                 .withEvents(authoritativeEvents)
                 .withStatus(MatchStatus.FINISHED);
+    }
+
+    private boolean sameFinalEvent(DetailedMatchEvent left, DetailedMatchEvent right) {
+        if (left.type() == DetailedMatchEventType.SUBSTITUTION
+                && right.type() == DetailedMatchEventType.SUBSTITUTION) {
+            // Acceptance is projected immediately; execution occurs at the next unplayed minute.
+            return java.util.Objects.equals(left.teamId(), right.teamId())
+                && java.util.Objects.equals(left.playerId(), right.playerId())
+                && java.util.Objects.equals(left.relatedPlayerId(), right.relatedPlayerId());
+        }
+        return left.equals(right);
     }
 
     /**
