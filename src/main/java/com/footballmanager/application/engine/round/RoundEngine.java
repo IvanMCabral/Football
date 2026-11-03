@@ -44,6 +44,7 @@ public class RoundEngine {
     private volatile boolean isRunning = false;
     private volatile boolean isPaused = false;
     private ScheduledExecutorService scheduler;
+    private volatile Thread schedulerThread;
     private ScheduledFuture<?> tickFuture;
 
     public RoundEngine(UUID roundId) {
@@ -85,6 +86,7 @@ public class RoundEngine {
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "round-engine-" + roundId);
             t.setDaemon(true);
+            schedulerThread = t;
             return t;
         });
         tickFuture = scheduler.scheduleAtFixedRate(this::executeTick,
@@ -94,6 +96,11 @@ public class RoundEngine {
     private void shutdownScheduler(long timeout, TimeUnit unit) {
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdown();
+            // The final tick calls stop() on this worker. Awaiting its own
+            // termination stalls cleanup for the full timeout on every date.
+            if (Thread.currentThread() == schedulerThread) {
+                return;
+            }
             try {
                 if (!scheduler.awaitTermination(timeout, unit)) {
                     scheduler.shutdownNow();

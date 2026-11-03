@@ -13,12 +13,44 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class RoundEngineTerminalPublicationTest {
+
+    @Test
+    void finalSchedulerTickReleasesMatchesWithoutWaitingForItsOwnTermination() throws InterruptedException {
+        RoundEngine engine = new RoundEngine(UUID.randomUUID());
+        MatchEngine match = mock(MatchEngine.class);
+        UUID matchId = UUID.randomUUID();
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CountDownLatch released = new CountDownLatch(1);
+        when(match.isFinished()).thenAnswer(inv -> finished.get());
+        when(match.getCurrentState()).thenAnswer(inv -> new MatchStateSnapshot(
+            matchId, UUID.randomUUID(), UUID.randomUUID(), finished.get() ? 90 : 89,
+            finished.get() ? MatchStatus.FINISHED : MatchStatus.RUNNING,
+            new Score(2, 1), List.of(), "test-career", "test-user"));
+        doAnswer(inv -> { finished.set(true); return null; }).when(match).advanceTick();
+        doAnswer(inv -> { released.countDown(); return null; }).when(match).stop();
+        engine.registerMatch(matchId, match);
+        List<RoundState> events = new CopyOnWriteArrayList<>();
+        engine.getStateStream().subscribe(events::add);
+        try {
+            engine.start();
+            assertTrue(released.await(2, TimeUnit.SECONDS),
+                "The final tick must release matches without waiting five seconds for itself");
+            assertCanonicalSingleTerminal(events, 2, 1);
+            assertEquals(2, engine.getCurrentMatchSnapshot(matchId).score().home());
+        } finally {
+            engine.stop();
+        }
+    }
 
     @Test
     void rawPublicStream_emitsOneCanonicalTerminalWhenHistoricalPathsBothTrigger() {
